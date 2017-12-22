@@ -8,6 +8,8 @@ def code_01(register):
 
 
 def code_02(register):
+    """ LD (BC),A - Stores reg at the address in BC """
+    # TODO after memory is implemented
     pass
 
 
@@ -41,6 +43,8 @@ def code_09(register):
 
 
 def code_0a(register):
+    """ LD A,(BC) - Load reg with the value at the address in BC """
+    # TODO after memory is implemented
     pass
 
 
@@ -72,8 +76,12 @@ def code_10(register):
 def code_11(register):
     pass
 
+
 def code_12(register):
+    """ LD (DE),A - Stores reg at the address in DE """
+    # TODO after memory is implemented
     pass
+
 
 def code_13(register):
     pass
@@ -99,8 +107,12 @@ def code_18(register):
 def code_19(register):
     pass
 
+
 def code_1a(register):
+    """ LD A,(DE) - Load reg with the value at the address in DE """
+    # TODO after memory is implemented
     pass
+
 
 def code_1b(register):
     pass
@@ -194,8 +206,12 @@ def code_34(register):
 def code_35(register):
     pass
 
-def code_36(register):
+
+def code_36(register, d8):
+    """ LD (HL),d8 - Stores d8 at the address in HL """
+    # TODO after memory is implemented
     pass
+
 
 def code_37(register):
     pass
@@ -206,8 +222,13 @@ def code_38(register):
 def code_39(register):
     pass
 
+
 def code_3a(register):
+    """ LD A,(HL-) or LD A,(HLD) or LDD A,(HL) - Put value at address HL into A. Decrement HL """
+    # TODO after memory is implemented
+    register.HL -= 1  # TODO: what if HL is already 0x0000?
     pass
+
 
 def code_3b(register):
     pass
@@ -218,207 +239,352 @@ def code_3c(register):
 def code_3d(register):
     pass
 
-def code_3e(register):
-    pass
+
+def code_3e(register, d8):
+    """ LD A,d8 """
+    register.A = d8
+
 
 def code_3f(register):
     pass
 
+
 # OPCODES 4x
 def code_40(register):
-    pass
+    """ LD B,B (might be a newbie question but... why?) """
+    register.B = register.B
+
 
 def code_41(register):
-    pass
+    """ LD B,C """
+    register.B = register.C
+
 
 def code_42(register):
-    pass
+    """ LD B,D """
+    register.B = register.D
+
 
 def code_43(register):
-    pass
+    """ LD B,E """
+    register.B = register.E
+
 
 def code_44(register):
-    pass
+    """ LD B,H """
+    register.B = register.H
+
 
 def code_45(register):
-    pass
+    """ LD B,L """
+    register.B = register.L
+
 
 def code_46(register):
+    """ LD B,(HL) - Load reg with the value at the address in HL """
+    # TODO after memory is implemented
     pass
+
 
 def code_47(register):
-    pass
+    """ LD B,A """
+    register.B = register.A
+
 
 def code_48(register):
-    pass
+    """ LD C,B """
+    register.C = register.B
+
 
 def code_49(register):
-    pass
+    """ LD C,C (might be a newbie question but... why?) """
+    register.C = register.C
+
 
 def code_4a(register):
-    pass
+    """ LD C,D """
+    register.C = register.D
+
 
 def code_4b(register):
-    pass
+    """ LD C,E """
+    register.C = register.E
+
 
 def code_4c(register):
-    pass
+    """ LD C,H """
+    register.C = register.H
+
 
 def code_4d(register):
-    pass
+    """ LD C,L """
+    register.C = register.L
+
 
 def code_4e(register):
+    """ LD C,(HL) - Load reg with the value at the address in HL """
+    # TODO after memory is implemented
     pass
 
+
 def code_4f(register):
-    pass
+    """ LD C,A """
+    register.C = register.A
+
 
 # OPCODES 5x
 def code_50(register):
-    pass
+    """ LD D,B """
+    register.D = register.B
+
 
 def code_51(register):
-    pass
+    """ LD D,C """
+    register.D = register.C
+
 
 def code_52(register):
-    pass
+    """ LD D,D (might be a newbie question but... why?) """
+    register.D = register.D
+
 
 def code_53(register):
-    pass
+    """ LD D,E """
+    register.D = register.E
+
 
 def code_54(register):
-    pass
+    """ LD D,H """
+    register.D = register.H
+
 
 def code_55(register):
-    pass
+    """ LD D,L """
+    register.D = register.L
+
 
 def code_56(register):
+    """ LD D,(HL) - Load reg with the value at the address in HL """
+    # TODO after memory is implemented
     pass
+
 
 def code_57(register):
-    pass
+    """ LD D,A """
+    register.D = register.A
+
 
 def code_58(register):
-    pass
+    """ LD E,B """
+    register.E = register.B
+
 
 def code_59(register):
-    pass
+    """ LD E,C """
+    register.E = register.C
+
 
 def code_5a(register):
-    pass
+    """ LD E,D """
+    register.E = register.D
+
 
 def code_5b(register):
-    pass
+    """ LD E,E (might be a newbie question but... why?) """
+    register.E = register.E
+
 
 def code_5c(register):
-    pass
+    """ LD E,H """
+    register.E = register.H
+
 
 def code_5d(register):
-    pass
+    """ LD E,L """
+    register.E = register.L
+
 
 def code_5e(register):
+    """ LD E,(HL) - Load reg with the value at the address in HL """
+    # TODO after memory is implemented
     pass
 
+
 def code_5f(register):
-    pass
+    """ LD E,A """
+    register.E = register.A
+
 
 # OPCODES 6x
 def code_60(register):
-    pass
+    """ LD H,B """
+    register.H = register.B
+
 
 def code_61(register):
-    pass
+    """ LD H,C """
+    register.H = register.C
+
 
 def code_62(register):
-    pass
+    """ LD H,D """
+    register.H = register.D
+
 
 def code_63(register):
-    pass
+    """ LD H,E """
+    register.H = register.E
+
 
 def code_64(register):
-    pass
+    """ LD H,H (might be a newbie question but... why?) """
+    register.H = register.H
+
 
 def code_65(register):
-    pass
+    """ LD H,L """
+    register.H = register.L
+
 
 def code_66(register):
+    """ LD H,(HL) - Load reg with the value at the address in HL """
+    # TODO after memory is implemented
     pass
+
 
 def code_67(register):
-    pass
+    """ LD H,A """
+    register.H = register.A
+
 
 def code_68(register):
-    pass
+    """ LD L,B """
+    register.L = register.B
+
 
 def code_69(register):
-    pass
+    """ LD L,C """
+    register.L = register.C
+
 
 def code_6a(register):
-    pass
+    """ LD L,D """
+    register.L = register.D
+
 
 def code_6b(register):
-    pass
+    """ LD L,E """
+    register.L = register.E
+
 
 def code_6c(register):
-    pass
+    """ LD L,H """
+    register.L = register.H
+
 
 def code_6d(register):
-    pass
+    """ LD L,L (might be a newbie question but... why?) """
+    register.L = register.L
+
 
 def code_6e(register):
+    """ LD L,(HL) - Load reg with the value at the address in HL """
+    # TODO after memory is implemented
     pass
 
+
 def code_6f(register):
-    pass
+    """ LD L,A """
+    register.L = register.A
+
 
 # OPCODES 7x
 def code_70(register):
+    """ LD (HL),B - Stores reg at the address in HL """
+    # TODO after memory is implemented
     pass
+
 
 def code_71(register):
+    """ LD (HL),C - Stores reg at the address in HL """
+    # TODO after memory is implemented
     pass
+
 
 def code_72(register):
+    """ LD (HL),D - Stores reg at the address in HL """
+    # TODO after memory is implemented
     pass
+
 
 def code_73(register):
+    """ LD (HL),E - Stores reg at the address in HL """
+    # TODO after memory is implemented
     pass
+
 
 def code_74(register):
+    """ LD (HL),H - Stores reg at the address in HL """
+    # TODO after memory is implemented
     pass
 
+
 def code_75(register):
+    """ LD (HL),L - Stores reg at the address in HL """
+    # TODO after memory is implemented
     pass
+
 
 def code_76(register):
     pass
 
+
 def code_77(register):
+    """ LD (HL),A - Stores reg at the address in HL """
+    # TODO after memory is implemented
     pass
+
 
 def code_78(register):
-    pass
+    """ LD A,B """
+    register.A = register.B
+
 
 def code_79(register):
-    pass
+    """ LD A,C """
+    register.A = register.C
+
 
 def code_7a(register):
-    pass
+    """ LD A,D """
+    register.A = register.D
+
 
 def code_7b(register):
-    pass
+    """ LD A,E """
+    register.A = register.E
+
 
 def code_7c(register):
-    pass
+    """ LD A,H """
+    register.A = register.H
+
 
 def code_7d(register):
-    pass
+    """ LD A,L """
+    register.A = register.L
+
 
 def code_7e(register):
+    """ LD A,(HL) - Load reg with the value at the address in HL """
+    # TODO after memory is implemented
     pass
 
+
 def code_7f(register):
-    pass
+    """ LD A,A (might be a newbie question but... why?) """
+    register.A = register.A
+
 
 # OPCODES 8x
 def code_80(register):
@@ -721,8 +887,12 @@ def code_e0(register):
 def code_e1(register):
     pass
 
+
 def code_e2(register):
+    """ LD (C),A or LD ($FF00+C),A - Put A into address ($FF00 + register C) """
+    # TODO after memory is implemented
     pass
+
 
 def code_e3(register):
     pass
@@ -745,8 +915,12 @@ def code_e8(register):
 def code_e9(register):
     pass
 
-def code_ea(register):
+
+def code_ea(register,a16):
+    """ LD (a16),A - Stores reg at the address in a16 (least significant byte first) """
+    # TODO after memory is implemented
     pass
+
 
 def code_eb(register):
     pass
@@ -770,8 +944,12 @@ def code_f0(register):
 def code_f1(register):
     pass
 
+
 def code_f2(register):
+    """ LD A,(C) or LD A,($FF00+C) - Put value at address ($FF00 + register C) into A """
+    # TODO after memory is implemented
     pass
+
 
 def code_f3(register):
     pass
@@ -794,8 +972,12 @@ def code_f8(register):
 def code_f9(register):
     pass
 
-def code_fa(register):
+
+def code_fa(register,a16):
+    """ LD A,(a16) - Load reg with the value at the address in a16 (least significant byte first) """
+    # TODO after memory is implemented
     pass
+
 
 def code_fb(register):
     pass
