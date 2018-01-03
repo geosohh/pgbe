@@ -1,10 +1,19 @@
+"""
+CPU Operations Codes
+
+TODO: Description
+TODO: Maybe store cycles as method's return value?
+"""
+
+
 # OPCODES 0x
 def code_00(register):
     pass
 
 
-def code_01(register):
-    pass
+def code_01(register, d16):
+    """ LD BC,d16 - Stores given 16-bit value at BC """
+    register.set_bc(d16)
 
 
 def code_02(register):
@@ -73,8 +82,10 @@ def code_0f(register):
 def code_10(register):
     pass
 
-def code_11(register):
-    pass
+
+def code_11(register, d16):
+    """ LD DE,d16 - Stores given 16-bit value at DE """
+    register.set_de(d16)
 
 
 def code_12(register):
@@ -136,11 +147,17 @@ def code_1f(register):
 def code_20(register):
     pass
 
-def code_21(register):
-    pass
+
+def code_21(register, d16):
+    """ LD HL,d16 - Stores given 16-bit value at HL """
+    register.set_hl(d16)
+
 
 def code_22(register):
-    pass
+    """ LD (HL+),A or LD (HLI),A or LDI (HL),A - Put value at A into address HL. Increment HL """
+    # TODO after memory is implemented
+    register.add_hl(0x0001)  # TODO: what if HL is already 0xFFFF?
+
 
 def code_23(register):
     pass
@@ -166,8 +183,12 @@ def code_28(register):
 def code_29(register):
     pass
 
+
 def code_2a(register):
-    pass
+    """ LD A,(HL+) or LD A,(HLI) or LDI A,(HL) - Put value at address HL into A. Increment HL """
+    # TODO after memory is implemented
+    register.add_hl(0x0001)  # TODO: what if HL is already 0xFFFF?
+
 
 def code_2b(register):
     pass
@@ -191,11 +212,17 @@ def code_2f(register):
 def code_30(register):
     pass
 
-def code_31(register):
-    pass
+
+def code_31(register, d16):
+    """ LD SP,d16 - Stores given 16-bit value at SP """
+    register.SP = d16
+
 
 def code_32(register):
-    pass
+    """ LD (HL-),A or LD (HLD),A or LDD (HL),A - Put value at A into address HL. Decrement HL """
+    # TODO after memory is implemented
+    register.sub_hl(0x0001)  # TODO: what if HL is already 0x0000?
+
 
 def code_33(register):
     pass
@@ -226,8 +253,7 @@ def code_39(register):
 def code_3a(register):
     """ LD A,(HL-) or LD A,(HLD) or LDD A,(HL) - Put value at address HL into A. Decrement HL """
     # TODO after memory is implemented
-    register.HL -= 1  # TODO: what if HL is already 0x0000?
-    pass
+    register.sub_hl(0x0001)  # TODO: what if HL is already 0x0000?
 
 
 def code_3b(register):
@@ -880,9 +906,13 @@ def code_de(register):
 def code_df(register):
     pass
 
+
 # OPCODES Ex
-def code_e0(register):
+def code_e0(register, d8):
+    """ LDH (d8),A or LD ($FF00+d8),A - Put A into address ($FF00 + d8) """
+    # TODO after memory is implemented
     pass
+
 
 def code_e1(register):
     pass
@@ -937,9 +967,13 @@ def code_ee(register):
 def code_ef(register):
     pass
 
+
 # OPCODES Fx
-def code_f0(register):
+def code_f0(register, d8):
+    """ LDH A,(d8) or LD A,($FF00+d8) - Put value at address ($FF00 + d8) into A """
+    # TODO after memory is implemented
     pass
+
 
 def code_f1(register):
     pass

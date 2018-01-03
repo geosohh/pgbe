@@ -19,15 +19,16 @@ Tests
 
 
 # noinspection PyShadowingNames
-def test_default_initial_values(register):
-    assert register.A  == 0x00
-    assert register.F  == 0x00
-    assert register.B  == 0x00
-    assert register.C  == 0x00
-    assert register.D  == 0x00
-    assert register.E  == 0x00
-    assert register.H  == 0x00
-    assert register.L  == 0x00
+def test_code_01(register):
+    cpu.op.code_01(register, 0x9933)
+    assert register.A == 0x00
+    assert register.F == 0x00
+    assert register.B == 0x99
+    assert register.C == 0x33
+    assert register.D == 0x00
+    assert register.E == 0x00
+    assert register.H == 0x00
+    assert register.L == 0x00
     assert register.SP == 0xFFFE
     assert register.PC == 0x0100
 
@@ -68,6 +69,21 @@ def test_code_0e(register):
     assert register.C == 0x99
     assert register.D == 0x00
     assert register.E == 0x00
+    assert register.H == 0x00
+    assert register.L == 0x00
+    assert register.SP == 0xFFFE
+    assert register.PC == 0x0100
+
+
+# noinspection PyShadowingNames
+def test_code_11(register):
+    cpu.op.code_11(register, 0x9933)
+    assert register.A == 0x00
+    assert register.F == 0x00
+    assert register.B == 0x00
+    assert register.C == 0x00
+    assert register.D == 0x99
+    assert register.E == 0x33
     assert register.H == 0x00
     assert register.L == 0x00
     assert register.SP == 0xFFFE
@@ -117,6 +133,27 @@ def test_code_1e(register):
 
 
 # noinspection PyShadowingNames
+def test_code_21(register):
+    cpu.op.code_21(register, 0x9933)
+    assert register.A == 0x00
+    assert register.F == 0x00
+    assert register.B == 0x00
+    assert register.C == 0x00
+    assert register.D == 0x00
+    assert register.E == 0x00
+    assert register.H == 0x99
+    assert register.L == 0x33
+    assert register.SP == 0xFFFE
+    assert register.PC == 0x0100
+
+
+# noinspection PyShadowingNames
+def test_code_22(register):
+    # TODO after memory is implemented
+    pass
+
+
+# noinspection PyShadowingNames
 def test_code_26(register):
     cpu.op.code_26(register,0x99)
     assert register.A == 0x00
@@ -132,6 +169,12 @@ def test_code_26(register):
 
 
 # noinspection PyShadowingNames
+def test_code_2a(register):
+    # TODO after memory is implemented
+    pass
+
+
+# noinspection PyShadowingNames
 def test_code_2e(register):
     cpu.op.code_2e(register,0x99)
     assert register.A == 0x00
@@ -144,6 +187,27 @@ def test_code_2e(register):
     assert register.L == 0x99
     assert register.SP == 0xFFFE
     assert register.PC == 0x0100
+
+
+# noinspection PyShadowingNames
+def test_code_31(register):
+    cpu.op.code_31(register, 0x9933)
+    assert register.A == 0x00
+    assert register.F == 0x00
+    assert register.B == 0x00
+    assert register.C == 0x00
+    assert register.D == 0x00
+    assert register.E == 0x00
+    assert register.H == 0x00
+    assert register.L == 0x00
+    assert register.SP == 0x9933
+    assert register.PC == 0x0100
+
+
+# noinspection PyShadowingNames
+def test_code_32(register):
+    # TODO after memory is implemented
+    pass
 
 
 # noinspection PyShadowingNames
@@ -1042,6 +1106,12 @@ def test_code_7f(register):
 
 
 # noinspection PyShadowingNames
+def test_code_e0(register):
+    # TODO after memory is implemented
+    pass
+
+
+# noinspection PyShadowingNames
 def test_code_e2(register):
     # TODO after memory is implemented
     pass
@@ -1049,6 +1119,12 @@ def test_code_e2(register):
 
 # noinspection PyShadowingNames
 def test_code_ea(register):
+    # TODO after memory is implemented
+    pass
+
+
+# noinspection PyShadowingNames
+def test_code_f0(register):
     # TODO after memory is implemented
     pass
 
