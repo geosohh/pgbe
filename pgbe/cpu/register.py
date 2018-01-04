@@ -78,6 +78,31 @@ class Register:
         self.SP = 0xFFFE  # Stack Pointer
         self.PC = 0x0100  # Program Counter
 
+    # Get Flags
+    def _get_flag(self, bit_position):
+        """
+        Get specified flag bit.
+        :param bit_position: Flag to return
+        """
+        mask = 1 << bit_position
+        return (self.F & mask) >> bit_position
+
+    def get_zero_flag(self):
+        """ Get Zero flag. """
+        return self._get_flag(7)
+
+    def get_subtract_flag(self):
+        """ Get Subtract flag. """
+        return self._get_flag(6)
+
+    def get_half_carry_flag(self):
+        """ Get Half Carry flag. """
+        return self._get_flag(5)
+
+    def get_carry_flag(self):
+        """ Get Carry flag. """
+        return self._get_flag(4)
+
     # Set/reset Flags
     def _set_flag(self,bit_position,new_value):
         """
@@ -85,6 +110,7 @@ class Register:
         :param bit_position: Bit to change
         :param new_value: New value for specified bit
         """
+        new_value = int(new_value)  # True == 1; False == 0
         mask = 1 << bit_position
         if (self.F & mask) != (new_value << bit_position):  # If current value is != from new_value, flip current value
             self.F = self.F ^ mask

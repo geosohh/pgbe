@@ -693,52 +693,222 @@ def code_7f(register):
 
 # OPCODES 8x
 def code_80(register):
-    pass
+    """ ADD A,B - A=A+B """
+    result = register.A + register.B
+
+    register.set_zero_flag((result & 0xFF) == 0)
+    register.set_subtract_flag(False)
+    register.set_half_carry_flag(((register.A & 0x0F) + (register.B & 0x0F)) > 0x0F)
+    register.set_carry_flag(result > 0xFF)
+
+    register.A = result & 0xFF
+    return 4
+
 
 def code_81(register):
-    pass
+    """ ADD A,C - A=A+C """
+    result = register.A + register.C
+
+    register.set_zero_flag((result & 0xFF) == 0)
+    register.set_subtract_flag(False)
+    register.set_half_carry_flag(((register.A & 0x0F) + (register.C & 0x0F)) > 0x0F)
+    register.set_carry_flag(result > 0xFF)
+
+    register.A = result & 0xFF
+    return 4
+
 
 def code_82(register):
-    pass
+    """ ADD A,D - A=A+D """
+    result = register.A + register.D
+
+    register.set_zero_flag((result & 0xFF) == 0)
+    register.set_subtract_flag(False)
+    register.set_half_carry_flag(((register.A & 0x0F) + (register.D & 0x0F)) > 0x0F)
+    register.set_carry_flag(result > 0xFF)
+
+    register.A = result & 0xFF
+    return 4
+
 
 def code_83(register):
-    pass
+    """ ADD A,E - A=A+E """
+    result = register.A + register.E
+
+    register.set_zero_flag((result & 0xFF) == 0)
+    register.set_subtract_flag(False)
+    register.set_half_carry_flag(((register.A & 0x0F) + (register.E & 0x0F)) > 0x0F)
+    register.set_carry_flag(result > 0xFF)
+
+    register.A = result & 0xFF
+    return 4
+
 
 def code_84(register):
-    pass
+    """ ADD A,H - A=A+H """
+    result = register.A + register.H
+
+    register.set_zero_flag((result & 0xFF) == 0)
+    register.set_subtract_flag(False)
+    register.set_half_carry_flag(((register.A & 0x0F) + (register.H & 0x0F)) > 0x0F)
+    register.set_carry_flag(result > 0xFF)
+
+    register.A = result & 0xFF
+    return 4
+
 
 def code_85(register):
-    pass
+    """ ADD A,L - A=A+L """
+    result = register.A + register.L
+
+    register.set_zero_flag((result & 0xFF) == 0)
+    register.set_subtract_flag(False)
+    register.set_half_carry_flag(((register.A & 0x0F) + (register.L & 0x0F)) > 0x0F)
+    register.set_carry_flag(result > 0xFF)
+
+    register.A = result & 0xFF
+    return 4
+
 
 def code_86(register):
-    pass
+    """ ADD A,(HL) - A=A+(value at address HL) """
+    # TODO after memory is implemented
+    # result = register.A + register.C
+
+    register.set_zero_flag((result & 0xFF) == 0)
+    register.set_subtract_flag(False)
+    # register.set_half_carry_flag(((register.A & 0x0F) + (register.C & 0x0F)) > 0x0F)
+    register.set_carry_flag(result > 0xFF)
+
+    register.A = result & 0xFF
+    return 8
+
 
 def code_87(register):
-    pass
+    """ ADD A,A - A=A+A """
+    result = register.A + register.A
+
+    register.set_zero_flag((result & 0xFF) == 0)
+    register.set_subtract_flag(False)
+    register.set_half_carry_flag(((register.A & 0x0F) + (register.A & 0x0F)) > 0x0F)
+    register.set_carry_flag(result > 0xFF)
+
+    register.A = result & 0xFF
+    return 4
+
 
 def code_88(register):
-    pass
+    """ ADC A,B - A=A+B+carry_flag (yes, '+carry_flag' is just +1 or +0) """
+    carry_flag = register.get_carry_flag()
+    result = register.A + register.B + carry_flag
+
+    register.set_zero_flag((result & 0xFF) == 0)
+    register.set_subtract_flag(False)
+    register.set_half_carry_flag(((register.A & 0x0F) + (register.B & 0x0F) + carry_flag) > 0x0F)
+    register.set_carry_flag(result > 0xFF)
+
+    register.A = result & 0xFF
+    return 4
+
 
 def code_89(register):
-    pass
+    """ ADC A,C - A=A+C+carry_flag (yes, '+carry_flag' is just +1 or +0) """
+    carry_flag = register.get_carry_flag()
+    result = register.A + register.C + carry_flag
+
+    register.set_zero_flag((result & 0xFF) == 0)
+    register.set_subtract_flag(False)
+    register.set_half_carry_flag(((register.A & 0x0F) + (register.C & 0x0F) + carry_flag) > 0x0F)
+    register.set_carry_flag(result > 0xFF)
+
+    register.A = result & 0xFF
+    return 4
+
 
 def code_8a(register):
-    pass
+    """ ADC A,D - A=A+D+carry_flag (yes, '+carry_flag' is just +1 or +0) """
+    carry_flag = register.get_carry_flag()
+    result = register.A + register.D + carry_flag
+
+    register.set_zero_flag((result & 0xFF) == 0)
+    register.set_subtract_flag(False)
+    register.set_half_carry_flag(((register.A & 0x0F) + (register.D & 0x0F) + carry_flag) > 0x0F)
+    register.set_carry_flag(result > 0xFF)
+
+    register.A = result & 0xFF
+    return 4
+
 
 def code_8b(register):
-    pass
+    """ ADC A,E - A=A+E+carry_flag (yes, '+carry_flag' is just +1 or +0) """
+    carry_flag = register.get_carry_flag()
+    result = register.A + register.E + carry_flag
+
+    register.set_zero_flag((result & 0xFF) == 0)
+    register.set_subtract_flag(False)
+    register.set_half_carry_flag(((register.A & 0x0F) + (register.E & 0x0F) + carry_flag) > 0x0F)
+    register.set_carry_flag(result > 0xFF)
+
+    register.A = result & 0xFF
+    return 4
+
 
 def code_8c(register):
-    pass
+    """ ADC A,H - A=A+H+carry_flag (yes, '+carry_flag' is just +1 or +0) """
+    carry_flag = register.get_carry_flag()
+    result = register.A + register.H + carry_flag
+
+    register.set_zero_flag((result & 0xFF) == 0)
+    register.set_subtract_flag(False)
+    register.set_half_carry_flag(((register.A & 0x0F) + (register.H & 0x0F) + carry_flag) > 0x0F)
+    register.set_carry_flag(result > 0xFF)
+
+    register.A = result & 0xFF
+    return 4
+
 
 def code_8d(register):
-    pass
+    """ ADC A,L - A=A+L+carry_flag (yes, '+carry_flag' is just +1 or +0) """
+    carry_flag = register.get_carry_flag()
+    result = register.A + register.L + carry_flag
+
+    register.set_zero_flag((result & 0xFF) == 0)
+    register.set_subtract_flag(False)
+    register.set_half_carry_flag(((register.A & 0x0F) + (register.L & 0x0F) + carry_flag) > 0x0F)
+    register.set_carry_flag(result > 0xFF)
+
+    register.A = result & 0xFF
+    return 4
+
 
 def code_8e(register):
-    pass
+    """ ADC A,(HL) - A=A+(value at address HL)+carry_flag (yes, '+carry_flag' is just +1 or +0) """
+    carry_flag = register.get_carry_flag()
+    # TODO after memory is implemented
+    # result = register.A + register.L + carry_flag
+
+    register.set_zero_flag((result & 0xFF) == 0)
+    register.set_subtract_flag(False)
+    # register.set_half_carry_flag(((register.A & 0x0F) + (register.L & 0x0F) + carry_flag) > 0x0F)
+    register.set_carry_flag(result > 0xFF)
+
+    register.A = result & 0xFF
+    return 8
+
 
 def code_8f(register):
-    pass
+    """ ADC A,A - A=A+A+carry_flag (yes, '+carry_flag' is just +1 or +0) """
+    carry_flag = register.get_carry_flag()
+    result = register.A + register.A + carry_flag
+
+    register.set_zero_flag((result & 0xFF) == 0)
+    register.set_subtract_flag(False)
+    register.set_half_carry_flag(((register.A & 0x0F) + (register.A & 0x0F) + carry_flag) > 0x0F)
+    register.set_carry_flag(result > 0xFF)
+
+    register.A = result & 0xFF
+    return 4
+
 
 # OPCODES 9x
 def code_90(register):
@@ -916,8 +1086,18 @@ def code_c5(register):
     return 16
 
 
-def code_c6(register):
-    pass
+def code_c6(register, d8):
+    """ ADD A,d8 - A=A+d8 """
+    result = register.A + d8
+
+    register.set_zero_flag((result & 0xFF) == 0)
+    register.set_subtract_flag(False)
+    register.set_half_carry_flag(((register.A & 0x0F) + (d8 & 0x0F)) > 0x0F)
+    register.set_carry_flag(result > 0xFF)
+
+    register.A = result & 0xFF
+    return 8
+
 
 def code_c7(register):
     pass
@@ -940,8 +1120,20 @@ def code_cc(register):
 def code_cd(register):
     pass
 
-def code_ce(register):
-    pass
+
+def code_ce(register, d8):
+    """ ADC A,d8 - A=A+d8+carry_flag (yes, '+carry_flag' is just +1 or +0) """
+    carry_flag = register.get_carry_flag()
+    result = register.A + d8 + carry_flag
+
+    register.set_zero_flag((result & 0xFF) == 0)
+    register.set_subtract_flag(False)
+    register.set_half_carry_flag(((register.A & 0x0F) + (d8 & 0x0F) + carry_flag) > 0x0F)
+    register.set_carry_flag(result > 0xFF)
+
+    register.A = result & 0xFF
+    return 8
+
 
 def code_cf(register):
     pass
@@ -1140,20 +1332,12 @@ def code_f7(register):
 def code_f8(register, r8):
     """ LD HL,SP+d8 or LDHL SP,r8 - Put result of SP+r8 into HL (r8 is a signed value) """
     r8 = cpu.util.convert_unsigned_integer_to_signed(r8)
-
-    register.set_zero_flag(0)
-    register.set_subtract_flag(0)
-
-    if ((register.SP & 0x0F) + (r8 & 0x0F)) > 0x0F:
-        register.set_half_carry_flag(1)
-    else:
-        register.set_half_carry_flag(0)
-
     result = register.SP + r8
-    if result > 0xFFFF:
-        register.set_carry_flag(1)
-    else:
-        register.set_carry_flag(0)
+
+    register.set_zero_flag(False)
+    register.set_subtract_flag(False)
+    register.set_half_carry_flag(((register.SP & 0x0F) + (r8 & 0x0F)) > 0x0F)
+    register.set_carry_flag(result > 0xFFFF)
 
     register.set_hl(result & 0xFFFF)
     return 12
