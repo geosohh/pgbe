@@ -1,8 +1,20 @@
+import cpu.util
+
 """
 CPU Operations Codes
 
-TODO: Description
-TODO: Maybe store cycles as method's return value?
+See:
+- http://www.pastraiser.com/cpu/gameboy/gameboy_opcodes.html
+- https://realboyemulator.files.wordpress.com/2013/01/gbcpuman.pdf (pages 61-118)
+- https://datacrystal.romhacking.net/wiki/Endianness
+
+- http://gbdev.gg8.se/files/docs/mirrors/pandocs.html#cpuinstructionset
+- https://github.com/CTurt/Cinoop/blob/master/source/cpu.c
+- https://github.com/CTurt/Cinoop/blob/master/source/memory.c
+- https://github.com/xerpi/realboy-vita/blob/master/src/gboy_cpu.c
+
+The Game Boy uses Little-endian, i.e. least significant byte first. Therefore, in order to properly execute opcodes
+values have to be converted to Big-endian first.
 """
 
 
@@ -13,7 +25,9 @@ def code_00(register):
 
 def code_01(register, d16):
     """ LD BC,d16 - Stores given 16-bit value at BC """
+    d16 = cpu.util.convert_little_endian_to_big_endian(d16)
     register.set_bc(d16)
+    return 8
 
 
 def code_02(register):
@@ -37,14 +51,18 @@ def code_05(register):
 def code_06(register, d8):
     """ LD B,d8 """
     register.B = d8
+    return 8
 
 
 def code_07(register):
     pass
 
 
-def code_08(register):
-    pass
+def code_08(register, a16):
+    """ LD (a16),SP - Set SP value into address (a16) """
+    a16 = cpu.util.convert_little_endian_to_big_endian(a16)
+    # TODO after memory is implemented
+    return 20
 
 
 def code_09(register):
@@ -72,6 +90,7 @@ def code_0d(register):
 def code_0e(register, d8):
     """ LD C,d8 """
     register.C = d8
+    return 8
 
 
 def code_0f(register):
@@ -85,7 +104,9 @@ def code_10(register):
 
 def code_11(register, d16):
     """ LD DE,d16 - Stores given 16-bit value at DE """
+    d16 = cpu.util.convert_little_endian_to_big_endian(d16)
     register.set_de(d16)
+    return 12
 
 
 def code_12(register):
@@ -107,6 +128,7 @@ def code_15(register):
 def code_16(register, d8):
     """ LD D,d8 """
     register.D = d8
+    return 8
 
 
 def code_17(register):
@@ -138,6 +160,7 @@ def code_1d(register):
 def code_1e(register, d8):
     """ LD E,d8 """
     register.E = d8
+    return 8
 
 
 def code_1f(register):
@@ -150,7 +173,9 @@ def code_20(register):
 
 def code_21(register, d16):
     """ LD HL,d16 - Stores given 16-bit value at HL """
+    d16 = cpu.util.convert_little_endian_to_big_endian(d16)
     register.set_hl(d16)
+    return 12
 
 
 def code_22(register):
@@ -172,6 +197,7 @@ def code_25(register):
 def code_26(register, d8):
     """ LD H,d8 """
     register.H = d8
+    return 8
 
 
 def code_27(register):
@@ -203,6 +229,7 @@ def code_2d(register):
 def code_2e(register, d8):
     """ LD L,d8 """
     register.L = d8
+    return 8
 
 
 def code_2f(register):
@@ -215,7 +242,9 @@ def code_30(register):
 
 def code_31(register, d16):
     """ LD SP,d16 - Stores given 16-bit value at SP """
+    d16 = cpu.util.convert_little_endian_to_big_endian(d16)
     register.SP = d16
+    return 12
 
 
 def code_32(register):
@@ -269,6 +298,7 @@ def code_3d(register):
 def code_3e(register, d8):
     """ LD A,d8 """
     register.A = d8
+    return 8
 
 
 def code_3f(register):
@@ -279,31 +309,37 @@ def code_3f(register):
 def code_40(register):
     """ LD B,B (might be a newbie question but... why?) """
     register.B = register.B
+    return 4
 
 
 def code_41(register):
     """ LD B,C """
     register.B = register.C
+    return 4
 
 
 def code_42(register):
     """ LD B,D """
     register.B = register.D
+    return 4
 
 
 def code_43(register):
     """ LD B,E """
     register.B = register.E
+    return 4
 
 
 def code_44(register):
     """ LD B,H """
     register.B = register.H
+    return 4
 
 
 def code_45(register):
     """ LD B,L """
     register.B = register.L
+    return 4
 
 
 def code_46(register):
@@ -315,36 +351,43 @@ def code_46(register):
 def code_47(register):
     """ LD B,A """
     register.B = register.A
+    return 4
 
 
 def code_48(register):
     """ LD C,B """
     register.C = register.B
+    return 4
 
 
 def code_49(register):
     """ LD C,C (might be a newbie question but... why?) """
     register.C = register.C
+    return 4
 
 
 def code_4a(register):
     """ LD C,D """
     register.C = register.D
+    return 4
 
 
 def code_4b(register):
     """ LD C,E """
     register.C = register.E
+    return 4
 
 
 def code_4c(register):
     """ LD C,H """
     register.C = register.H
+    return 4
 
 
 def code_4d(register):
     """ LD C,L """
     register.C = register.L
+    return 4
 
 
 def code_4e(register):
@@ -356,37 +399,44 @@ def code_4e(register):
 def code_4f(register):
     """ LD C,A """
     register.C = register.A
+    return 4
 
 
 # OPCODES 5x
 def code_50(register):
     """ LD D,B """
     register.D = register.B
+    return 4
 
 
 def code_51(register):
     """ LD D,C """
     register.D = register.C
+    return 4
 
 
 def code_52(register):
     """ LD D,D (might be a newbie question but... why?) """
     register.D = register.D
+    return 4
 
 
 def code_53(register):
     """ LD D,E """
     register.D = register.E
+    return 4
 
 
 def code_54(register):
     """ LD D,H """
     register.D = register.H
+    return 4
 
 
 def code_55(register):
     """ LD D,L """
     register.D = register.L
+    return 4
 
 
 def code_56(register):
@@ -398,36 +448,43 @@ def code_56(register):
 def code_57(register):
     """ LD D,A """
     register.D = register.A
+    return 4
 
 
 def code_58(register):
     """ LD E,B """
     register.E = register.B
+    return 4
 
 
 def code_59(register):
     """ LD E,C """
     register.E = register.C
+    return 4
 
 
 def code_5a(register):
     """ LD E,D """
     register.E = register.D
+    return 4
 
 
 def code_5b(register):
     """ LD E,E (might be a newbie question but... why?) """
     register.E = register.E
+    return 4
 
 
 def code_5c(register):
     """ LD E,H """
     register.E = register.H
+    return 4
 
 
 def code_5d(register):
     """ LD E,L """
     register.E = register.L
+    return 4
 
 
 def code_5e(register):
@@ -439,37 +496,44 @@ def code_5e(register):
 def code_5f(register):
     """ LD E,A """
     register.E = register.A
+    return 4
 
 
 # OPCODES 6x
 def code_60(register):
     """ LD H,B """
     register.H = register.B
+    return 4
 
 
 def code_61(register):
     """ LD H,C """
     register.H = register.C
+    return 4
 
 
 def code_62(register):
     """ LD H,D """
     register.H = register.D
+    return 4
 
 
 def code_63(register):
     """ LD H,E """
     register.H = register.E
+    return 4
 
 
 def code_64(register):
     """ LD H,H (might be a newbie question but... why?) """
     register.H = register.H
+    return 4
 
 
 def code_65(register):
     """ LD H,L """
     register.H = register.L
+    return 4
 
 
 def code_66(register):
@@ -481,36 +545,43 @@ def code_66(register):
 def code_67(register):
     """ LD H,A """
     register.H = register.A
+    return 4
 
 
 def code_68(register):
     """ LD L,B """
     register.L = register.B
+    return 4
 
 
 def code_69(register):
     """ LD L,C """
     register.L = register.C
+    return 4
 
 
 def code_6a(register):
     """ LD L,D """
     register.L = register.D
+    return 4
 
 
 def code_6b(register):
     """ LD L,E """
     register.L = register.E
+    return 4
 
 
 def code_6c(register):
     """ LD L,H """
     register.L = register.H
+    return 4
 
 
 def code_6d(register):
     """ LD L,L (might be a newbie question but... why?) """
     register.L = register.L
+    return 4
 
 
 def code_6e(register):
@@ -522,6 +593,7 @@ def code_6e(register):
 def code_6f(register):
     """ LD L,A """
     register.L = register.A
+    return 4
 
 
 # OPCODES 7x
@@ -574,31 +646,37 @@ def code_77(register):
 def code_78(register):
     """ LD A,B """
     register.A = register.B
+    return 4
 
 
 def code_79(register):
     """ LD A,C """
     register.A = register.C
+    return 4
 
 
 def code_7a(register):
     """ LD A,D """
     register.A = register.D
+    return 4
 
 
 def code_7b(register):
     """ LD A,E """
     register.A = register.E
+    return 4
 
 
 def code_7c(register):
     """ LD A,H """
     register.A = register.H
+    return 4
 
 
 def code_7d(register):
     """ LD A,L """
     register.A = register.L
+    return 4
 
 
 def code_7e(register):
@@ -610,6 +688,7 @@ def code_7e(register):
 def code_7f(register):
     """ LD A,A (might be a newbie question but... why?) """
     register.A = register.A
+    return 4
 
 
 # OPCODES 8x
@@ -812,8 +891,13 @@ def code_bf(register):
 def code_c0(register):
     pass
 
+
 def code_c1(register):
-    pass
+    """ POP BC - Copy 16-bit value from stack (i.e. SP address) into BC, then increment SP by 2 """
+    # TODO after memory is implemented
+    register.SP += 2
+    return 12
+
 
 def code_c2(register):
     pass
@@ -824,8 +908,13 @@ def code_c3(register):
 def code_c4(register):
     pass
 
+
 def code_c5(register):
-    pass
+    """ PUSH BC - Decrement SP by 2 then push BC value onto stack (i.e. SP address) """
+    register.SP -= 2
+    # TODO after memory is implemented
+    return 16
+
 
 def code_c6(register):
     pass
@@ -861,20 +950,33 @@ def code_cf(register):
 def code_d0(register):
     pass
 
+
 def code_d1(register):
-    pass
+    """ POP DE - Copy 16-bit value from stack (i.e. SP address) into DE, then increment SP by 2 """
+    # TODO after memory is implemented
+    register.SP += 2
+    return 12
+
 
 def code_d2(register):
     pass
 
-def code_d3(register):
+
+def code_d3():
+    """ Unused opcode """
     pass
+
 
 def code_d4(register):
     pass
 
+
 def code_d5(register):
-    pass
+    """ PUSH DE - Decrement SP by 2 then push DE value onto stack (i.e. SP address) """
+    register.SP -= 2
+    # TODO after memory is implemented
+    return 16
+
 
 def code_d6(register):
     pass
@@ -891,14 +993,20 @@ def code_d9(register):
 def code_da(register):
     pass
 
-def code_db(register):
+
+def code_db():
+    """ Unused opcode """
     pass
+
 
 def code_dc(register):
     pass
 
-def code_dd(register):
+
+def code_dd():
+    """ Unused opcode """
     pass
+
 
 def code_de(register):
     pass
@@ -915,7 +1023,10 @@ def code_e0(register, d8):
 
 
 def code_e1(register):
-    pass
+    """ POP HL - Copy 16-bit value from stack (i.e. SP address) into HL, then increment SP by 2 """
+    # TODO after memory is implemented
+    register.SP += 2
+    return 12
 
 
 def code_e2(register):
@@ -924,14 +1035,22 @@ def code_e2(register):
     pass
 
 
-def code_e3(register):
+def code_e3():
+    """ Unused opcode """
     pass
 
-def code_e4(register):
+
+def code_e4():
+    """ Unused opcode """
     pass
+
 
 def code_e5(register):
-    pass
+    """ PUSH HL - Decrement SP by 2 then push HL value onto stack (i.e. SP address) """
+    register.SP -= 2
+    # TODO after memory is implemented
+    return 16
+
 
 def code_e6(register):
     pass
@@ -946,20 +1065,27 @@ def code_e9(register):
     pass
 
 
-def code_ea(register,a16):
+def code_ea(register, a16):
     """ LD (a16),A - Stores reg at the address in a16 (least significant byte first) """
+    a16 = cpu.util.convert_little_endian_to_big_endian(a16)
     # TODO after memory is implemented
     pass
 
 
-def code_eb(register):
+def code_eb():
+    """ Unused opcode """
     pass
 
-def code_ec(register):
+
+def code_ec():
+    """ Unused opcode """
     pass
 
-def code_ed(register):
+
+def code_ed():
+    """ Unused opcode """
     pass
+
 
 def code_ee(register):
     pass
@@ -976,7 +1102,10 @@ def code_f0(register, d8):
 
 
 def code_f1(register):
-    pass
+    """ POP AF - Copy 16-bit value from stack (i.e. SP address) into AF, then increment SP by 2 """
+    # TODO after memory is implemented
+    register.SP += 2
+    return 12
 
 
 def code_f2(register):
@@ -988,11 +1117,18 @@ def code_f2(register):
 def code_f3(register):
     pass
 
-def code_f4(register):
+
+def code_f4():
+    """ Unused opcode """
     pass
 
+
 def code_f5(register):
-    pass
+    """ PUSH AF - Decrement SP by 2 then push AF value onto stack (i.e. SP address) """
+    register.SP -= 2
+    # TODO after memory is implemented
+    return 16
+
 
 def code_f6(register):
     pass
@@ -1000,15 +1136,38 @@ def code_f6(register):
 def code_f7(register):
     pass
 
-def code_f8(register):
-    pass
+
+def code_f8(register, r8):
+    """ LD HL,SP+d8 or LDHL SP,r8 - Put result of SP+r8 into HL (r8 is a signed value) """
+    r8 = cpu.util.convert_unsigned_integer_to_signed(r8)
+
+    register.set_zero_flag(0)
+    register.set_subtract_flag(0)
+
+    if ((register.SP & 0x0F) + (r8 & 0x0F)) > 0x0F:
+        register.set_half_carry_flag(1)
+    else:
+        register.set_half_carry_flag(0)
+
+    result = register.SP + r8
+    if result > 0xFFFF:
+        register.set_carry_flag(1)
+    else:
+        register.set_carry_flag(0)
+
+    register.set_hl(result & 0xFFFF)
+    return 12
+
 
 def code_f9(register):
-    pass
+    """ LD SP,HL - Put HL value into SP """
+    register.SP = register.get_hl()
+    return 8
 
 
-def code_fa(register,a16):
+def code_fa(register, a16):
     """ LD A,(a16) - Load reg with the value at the address in a16 (least significant byte first) """
+    a16 = cpu.util.convert_little_endian_to_big_endian(a16)
     # TODO after memory is implemented
     pass
 
@@ -1016,11 +1175,16 @@ def code_fa(register,a16):
 def code_fb(register):
     pass
 
-def code_fc(register):
+
+def code_fc():
+    """ Unused opcode """
     pass
 
-def code_fd(register):
+
+def code_fd():
+    """ Unused opcode """
     pass
+
 
 def code_fe(register):
     pass

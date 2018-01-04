@@ -32,6 +32,226 @@ def test_default_initial_values(register):
 
 
 # noinspection PyShadowingNames
+def test_set_zero_flag(register):
+    register.F = 0b11110000
+    register.set_zero_flag(1)
+    assert register.A == 0x00
+    assert register.F == 0b11110000
+    assert register.B == 0x00
+    assert register.C == 0x00
+    assert register.D == 0x00
+    assert register.E == 0x00
+    assert register.H == 0x00
+    assert register.L == 0x00
+    assert register.SP == 0xFFFE
+    assert register.PC == 0x0100
+
+    register.F = 0b11110000
+    register.set_zero_flag(0)
+    assert register.A == 0x00
+    assert register.F == 0b01110000
+    assert register.B == 0x00
+    assert register.C == 0x00
+    assert register.D == 0x00
+    assert register.E == 0x00
+    assert register.H == 0x00
+    assert register.L == 0x00
+    assert register.SP == 0xFFFE
+    assert register.PC == 0x0100
+
+    register.F = 0b00000000
+    register.set_zero_flag(1)
+    assert register.A == 0x00
+    assert register.F == 0b10000000
+    assert register.B == 0x00
+    assert register.C == 0x00
+    assert register.D == 0x00
+    assert register.E == 0x00
+    assert register.H == 0x00
+    assert register.L == 0x00
+    assert register.SP == 0xFFFE
+    assert register.PC == 0x0100
+
+    register.F = 0b00000000
+    register.set_zero_flag(0)
+    assert register.A == 0x00
+    assert register.F == 0b00000000
+    assert register.B == 0x00
+    assert register.C == 0x00
+    assert register.D == 0x00
+    assert register.E == 0x00
+    assert register.H == 0x00
+    assert register.L == 0x00
+    assert register.SP == 0xFFFE
+    assert register.PC == 0x0100
+
+
+# noinspection PyShadowingNames
+def test_set_subtract_flag(register):
+    register.F = 0b11110000
+    register.set_subtract_flag(1)
+    assert register.A == 0x00
+    assert register.F == 0b11110000
+    assert register.B == 0x00
+    assert register.C == 0x00
+    assert register.D == 0x00
+    assert register.E == 0x00
+    assert register.H == 0x00
+    assert register.L == 0x00
+    assert register.SP == 0xFFFE
+    assert register.PC == 0x0100
+
+    register.F = 0b11110000
+    register.set_subtract_flag(0)
+    assert register.A == 0x00
+    assert register.F == 0b10110000
+    assert register.B == 0x00
+    assert register.C == 0x00
+    assert register.D == 0x00
+    assert register.E == 0x00
+    assert register.H == 0x00
+    assert register.L == 0x00
+    assert register.SP == 0xFFFE
+    assert register.PC == 0x0100
+
+    register.F = 0b00000000
+    register.set_subtract_flag(1)
+    assert register.A == 0x00
+    assert register.F == 0b01000000
+    assert register.B == 0x00
+    assert register.C == 0x00
+    assert register.D == 0x00
+    assert register.E == 0x00
+    assert register.H == 0x00
+    assert register.L == 0x00
+    assert register.SP == 0xFFFE
+    assert register.PC == 0x0100
+
+    register.F = 0b00000000
+    register.set_subtract_flag(0)
+    assert register.A == 0x00
+    assert register.F == 0b00000000
+    assert register.B == 0x00
+    assert register.C == 0x00
+    assert register.D == 0x00
+    assert register.E == 0x00
+    assert register.H == 0x00
+    assert register.L == 0x00
+    assert register.SP == 0xFFFE
+    assert register.PC == 0x0100
+
+
+# noinspection PyShadowingNames
+def test_set_half_carry_flag(register):
+    register.F = 0b11110000
+    register.set_half_carry_flag(1)
+    assert register.A == 0x00
+    assert register.F == 0b11110000
+    assert register.B == 0x00
+    assert register.C == 0x00
+    assert register.D == 0x00
+    assert register.E == 0x00
+    assert register.H == 0x00
+    assert register.L == 0x00
+    assert register.SP == 0xFFFE
+    assert register.PC == 0x0100
+
+    register.F = 0b11110000
+    register.set_half_carry_flag(0)
+    assert register.A == 0x00
+    assert register.F == 0b11010000
+    assert register.B == 0x00
+    assert register.C == 0x00
+    assert register.D == 0x00
+    assert register.E == 0x00
+    assert register.H == 0x00
+    assert register.L == 0x00
+    assert register.SP == 0xFFFE
+    assert register.PC == 0x0100
+
+    register.F = 0b00000000
+    register.set_half_carry_flag(1)
+    assert register.A == 0x00
+    assert register.F == 0b00100000
+    assert register.B == 0x00
+    assert register.C == 0x00
+    assert register.D == 0x00
+    assert register.E == 0x00
+    assert register.H == 0x00
+    assert register.L == 0x00
+    assert register.SP == 0xFFFE
+    assert register.PC == 0x0100
+
+    register.F = 0b00000000
+    register.set_half_carry_flag(0)
+    assert register.A == 0x00
+    assert register.F == 0b00000000
+    assert register.B == 0x00
+    assert register.C == 0x00
+    assert register.D == 0x00
+    assert register.E == 0x00
+    assert register.H == 0x00
+    assert register.L == 0x00
+    assert register.SP == 0xFFFE
+    assert register.PC == 0x0100
+
+
+# noinspection PyShadowingNames
+def test_set_carry_flag(register):
+    register.F = 0b11110000
+    register.set_carry_flag(1)
+    assert register.A == 0x00
+    assert register.F == 0b11110000
+    assert register.B == 0x00
+    assert register.C == 0x00
+    assert register.D == 0x00
+    assert register.E == 0x00
+    assert register.H == 0x00
+    assert register.L == 0x00
+    assert register.SP == 0xFFFE
+    assert register.PC == 0x0100
+
+    register.F = 0b11110000
+    register.set_carry_flag(0)
+    assert register.A == 0x00
+    assert register.F == 0b11100000
+    assert register.B == 0x00
+    assert register.C == 0x00
+    assert register.D == 0x00
+    assert register.E == 0x00
+    assert register.H == 0x00
+    assert register.L == 0x00
+    assert register.SP == 0xFFFE
+    assert register.PC == 0x0100
+
+    register.F = 0b00000000
+    register.set_carry_flag(1)
+    assert register.A == 0x00
+    assert register.F == 0b00010000
+    assert register.B == 0x00
+    assert register.C == 0x00
+    assert register.D == 0x00
+    assert register.E == 0x00
+    assert register.H == 0x00
+    assert register.L == 0x00
+    assert register.SP == 0xFFFE
+    assert register.PC == 0x0100
+
+    register.F = 0b00000000
+    register.set_carry_flag(0)
+    assert register.A == 0x00
+    assert register.F == 0b00000000
+    assert register.B == 0x00
+    assert register.C == 0x00
+    assert register.D == 0x00
+    assert register.E == 0x00
+    assert register.H == 0x00
+    assert register.L == 0x00
+    assert register.SP == 0xFFFE
+    assert register.PC == 0x0100
+
+
+# noinspection PyShadowingNames
 def test_add_af_zeros(register):
     register.add_af(0xFE15)
     assert register.A == 0xFE
@@ -337,6 +557,38 @@ def test_add_hl_over_ff(register):
     assert register.L == 0xFE
     assert register.SP == 0xFFFE
     assert register.PC == 0x0100
+
+
+# noinspection PyShadowingNames
+def test_get_af(register):
+    register.A = 0xFE
+    register.F = 0x15
+    af = register.get_af()
+    assert af == 0xFE15
+
+
+# noinspection PyShadowingNames
+def test_get_bc(register):
+    register.B = 0xFE
+    register.C = 0x15
+    bc = register.get_bc()
+    assert bc == 0xFE15
+
+
+# noinspection PyShadowingNames
+def test_get_de(register):
+    register.D = 0xFE
+    register.E = 0x15
+    de = register.get_de()
+    assert de == 0xFE15
+
+
+# noinspection PyShadowingNames
+def test_get_hl(register):
+    register.H = 0xFE
+    register.L = 0x15
+    hl = register.get_hl()
+    assert hl == 0xFE15
 
 
 # noinspection PyShadowingNames

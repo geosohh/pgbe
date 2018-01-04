@@ -20,11 +20,12 @@ Tests
 
 # noinspection PyShadowingNames
 def test_code_01(register):
-    cpu.op.code_01(register, 0x9933)
+    cycles = cpu.op.code_01(register, 0x9933)  # Little-endian
+    assert cycles == 8
     assert register.A == 0x00
     assert register.F == 0x00
-    assert register.B == 0x99
-    assert register.C == 0x33
+    assert register.B == 0x33
+    assert register.C == 0x99
     assert register.D == 0x00
     assert register.E == 0x00
     assert register.H == 0x00
@@ -41,7 +42,8 @@ def test_code_02(register):
 
 # noinspection PyShadowingNames
 def test_code_06(register):
-    cpu.op.code_06(register,0x99)
+    cycles = cpu.op.code_06(register,0x99)
+    assert cycles == 8
     assert register.A == 0x00
     assert register.F == 0x00
     assert register.B == 0x99
@@ -55,6 +57,12 @@ def test_code_06(register):
 
 
 # noinspection PyShadowingNames
+def test_code_08(register):
+    # TODO after memory is implemented
+    pass
+
+
+# noinspection PyShadowingNames
 def test_code_0a(register):
     # TODO after memory is implemented
     pass
@@ -62,7 +70,8 @@ def test_code_0a(register):
 
 # noinspection PyShadowingNames
 def test_code_0e(register):
-    cpu.op.code_0e(register,0x99)
+    cycles = cpu.op.code_0e(register,0x99)
+    assert cycles == 8
     assert register.A == 0x00
     assert register.F == 0x00
     assert register.B == 0x00
@@ -77,13 +86,14 @@ def test_code_0e(register):
 
 # noinspection PyShadowingNames
 def test_code_11(register):
-    cpu.op.code_11(register, 0x9933)
+    cycles = cpu.op.code_11(register, 0x9933)  # Little-endian
+    assert cycles == 12
     assert register.A == 0x00
     assert register.F == 0x00
     assert register.B == 0x00
     assert register.C == 0x00
-    assert register.D == 0x99
-    assert register.E == 0x33
+    assert register.D == 0x33
+    assert register.E == 0x99
     assert register.H == 0x00
     assert register.L == 0x00
     assert register.SP == 0xFFFE
@@ -98,7 +108,8 @@ def test_code_12(register):
 
 # noinspection PyShadowingNames
 def test_code_16(register):
-    cpu.op.code_16(register,0x99)
+    cycles = cpu.op.code_16(register,0x99)
+    assert cycles == 8
     assert register.A == 0x00
     assert register.F == 0x00
     assert register.B == 0x00
@@ -119,7 +130,8 @@ def test_code_1a(register):
 
 # noinspection PyShadowingNames
 def test_code_1e(register):
-    cpu.op.code_1e(register,0x99)
+    cycles = cpu.op.code_1e(register,0x99)
+    assert cycles == 8
     assert register.A == 0x00
     assert register.F == 0x00
     assert register.B == 0x00
@@ -134,15 +146,16 @@ def test_code_1e(register):
 
 # noinspection PyShadowingNames
 def test_code_21(register):
-    cpu.op.code_21(register, 0x9933)
+    cycles = cpu.op.code_21(register, 0x9933)  # Little-endian
+    assert cycles == 12
     assert register.A == 0x00
     assert register.F == 0x00
     assert register.B == 0x00
     assert register.C == 0x00
     assert register.D == 0x00
     assert register.E == 0x00
-    assert register.H == 0x99
-    assert register.L == 0x33
+    assert register.H == 0x33
+    assert register.L == 0x99
     assert register.SP == 0xFFFE
     assert register.PC == 0x0100
 
@@ -155,7 +168,8 @@ def test_code_22(register):
 
 # noinspection PyShadowingNames
 def test_code_26(register):
-    cpu.op.code_26(register,0x99)
+    cycles = cpu.op.code_26(register,0x99)
+    assert cycles == 8
     assert register.A == 0x00
     assert register.F == 0x00
     assert register.B == 0x00
@@ -176,7 +190,8 @@ def test_code_2a(register):
 
 # noinspection PyShadowingNames
 def test_code_2e(register):
-    cpu.op.code_2e(register,0x99)
+    cycles = cpu.op.code_2e(register,0x99)
+    assert cycles == 8
     assert register.A == 0x00
     assert register.F == 0x00
     assert register.B == 0x00
@@ -191,7 +206,8 @@ def test_code_2e(register):
 
 # noinspection PyShadowingNames
 def test_code_31(register):
-    cpu.op.code_31(register, 0x9933)
+    cycles = cpu.op.code_31(register, 0x9933)
+    assert cycles == 12
     assert register.A == 0x00
     assert register.F == 0x00
     assert register.B == 0x00
@@ -200,7 +216,7 @@ def test_code_31(register):
     assert register.E == 0x00
     assert register.H == 0x00
     assert register.L == 0x00
-    assert register.SP == 0x9933
+    assert register.SP == 0x3399
     assert register.PC == 0x0100
 
 
@@ -224,7 +240,8 @@ def test_code_3a(register):
 
 # noinspection PyShadowingNames
 def test_code_3e(register):
-    cpu.op.code_3e(register,0x99)
+    cycles = cpu.op.code_3e(register,0x99)
+    assert cycles == 8
     assert register.A == 0x99
     assert register.F == 0x00
     assert register.B == 0x00
@@ -240,7 +257,8 @@ def test_code_3e(register):
 # noinspection PyShadowingNames
 def test_code_40(register):
     register.B = 0x99
-    cpu.op.code_40(register)
+    cycles = cpu.op.code_40(register)
+    assert cycles == 4
     assert register.A == 0x00
     assert register.F == 0x00
     assert register.B == 0x99
@@ -256,7 +274,8 @@ def test_code_40(register):
 # noinspection PyShadowingNames
 def test_code_41(register):
     register.C = 0x99
-    cpu.op.code_41(register)
+    cycles = cpu.op.code_41(register)
+    assert cycles == 4
     assert register.A == 0x00
     assert register.F == 0x00
     assert register.B == 0x99
@@ -272,7 +291,8 @@ def test_code_41(register):
 # noinspection PyShadowingNames
 def test_code_42(register):
     register.D = 0x99
-    cpu.op.code_42(register)
+    cycles = cpu.op.code_42(register)
+    assert cycles == 4
     assert register.A == 0x00
     assert register.F == 0x00
     assert register.B == 0x99
@@ -288,7 +308,8 @@ def test_code_42(register):
 # noinspection PyShadowingNames
 def test_code_43(register):
     register.E = 0x99
-    cpu.op.code_43(register)
+    cycles = cpu.op.code_43(register)
+    assert cycles == 4
     assert register.A == 0x00
     assert register.F == 0x00
     assert register.B == 0x99
@@ -304,7 +325,8 @@ def test_code_43(register):
 # noinspection PyShadowingNames
 def test_code_44(register):
     register.H = 0x99
-    cpu.op.code_44(register)
+    cycles = cpu.op.code_44(register)
+    assert cycles == 4
     assert register.A == 0x00
     assert register.F == 0x00
     assert register.B == 0x99
@@ -320,7 +342,8 @@ def test_code_44(register):
 # noinspection PyShadowingNames
 def test_code_45(register):
     register.L = 0x99
-    cpu.op.code_45(register)
+    cycles = cpu.op.code_45(register)
+    assert cycles == 4
     assert register.A == 0x00
     assert register.F == 0x00
     assert register.B == 0x99
@@ -342,7 +365,8 @@ def test_code_46(register):
 # noinspection PyShadowingNames
 def test_code_47(register):
     register.A = 0x99
-    cpu.op.code_47(register)
+    cycles = cpu.op.code_47(register)
+    assert cycles == 4
     assert register.A == 0x99
     assert register.F == 0x00
     assert register.B == 0x99
@@ -358,7 +382,8 @@ def test_code_47(register):
 # noinspection PyShadowingNames
 def test_code_48(register):
     register.B = 0x99
-    cpu.op.code_48(register)
+    cycles = cpu.op.code_48(register)
+    assert cycles == 4
     assert register.A == 0x00
     assert register.F == 0x00
     assert register.B == 0x99
@@ -374,7 +399,8 @@ def test_code_48(register):
 # noinspection PyShadowingNames
 def test_code_49(register):
     register.C = 0x99
-    cpu.op.code_49(register)
+    cycles = cpu.op.code_49(register)
+    assert cycles == 4
     assert register.A == 0x00
     assert register.F == 0x00
     assert register.B == 0x00
@@ -390,7 +416,8 @@ def test_code_49(register):
 # noinspection PyShadowingNames
 def test_code_4a(register):
     register.D = 0x99
-    cpu.op.code_4a(register)
+    cycles = cpu.op.code_4a(register)
+    assert cycles == 4
     assert register.A == 0x00
     assert register.F == 0x00
     assert register.B == 0x00
@@ -406,7 +433,8 @@ def test_code_4a(register):
 # noinspection PyShadowingNames
 def test_code_4b(register):
     register.E = 0x99
-    cpu.op.code_4b(register)
+    cycles = cpu.op.code_4b(register)
+    assert cycles == 4
     assert register.A == 0x00
     assert register.F == 0x00
     assert register.B == 0x00
@@ -422,7 +450,8 @@ def test_code_4b(register):
 # noinspection PyShadowingNames
 def test_code_4c(register):
     register.H = 0x99
-    cpu.op.code_4c(register)
+    cycles = cpu.op.code_4c(register)
+    assert cycles == 4
     assert register.A == 0x00
     assert register.F == 0x00
     assert register.B == 0x00
@@ -438,7 +467,8 @@ def test_code_4c(register):
 # noinspection PyShadowingNames
 def test_code_4d(register):
     register.L = 0x99
-    cpu.op.code_4d(register)
+    cycles = cpu.op.code_4d(register)
+    assert cycles == 4
     assert register.A == 0x00
     assert register.F == 0x00
     assert register.B == 0x00
@@ -460,7 +490,8 @@ def test_code_4e(register):
 # noinspection PyShadowingNames
 def test_code_4f(register):
     register.A = 0x99
-    cpu.op.code_4f(register)
+    cycles = cpu.op.code_4f(register)
+    assert cycles == 4
     assert register.A == 0x99
     assert register.F == 0x00
     assert register.B == 0x00
@@ -476,7 +507,8 @@ def test_code_4f(register):
 # noinspection PyShadowingNames
 def test_code_50(register):
     register.B = 0x99
-    cpu.op.code_50(register)
+    cycles = cpu.op.code_50(register)
+    assert cycles == 4
     assert register.A == 0x00
     assert register.F == 0x00
     assert register.B == 0x99
@@ -492,7 +524,8 @@ def test_code_50(register):
 # noinspection PyShadowingNames
 def test_code_51(register):
     register.C = 0x99
-    cpu.op.code_51(register)
+    cycles = cpu.op.code_51(register)
+    assert cycles == 4
     assert register.A == 0x00
     assert register.F == 0x00
     assert register.B == 0x00
@@ -508,7 +541,8 @@ def test_code_51(register):
 # noinspection PyShadowingNames
 def test_code_52(register):
     register.D = 0x99
-    cpu.op.code_52(register)
+    cycles = cpu.op.code_52(register)
+    assert cycles == 4
     assert register.A == 0x00
     assert register.F == 0x00
     assert register.B == 0x00
@@ -524,7 +558,8 @@ def test_code_52(register):
 # noinspection PyShadowingNames
 def test_code_53(register):
     register.E = 0x99
-    cpu.op.code_53(register)
+    cycles = cpu.op.code_53(register)
+    assert cycles == 4
     assert register.A == 0x00
     assert register.F == 0x00
     assert register.B == 0x00
@@ -540,7 +575,8 @@ def test_code_53(register):
 # noinspection PyShadowingNames
 def test_code_54(register):
     register.H = 0x99
-    cpu.op.code_54(register)
+    cycles = cpu.op.code_54(register)
+    assert cycles == 4
     assert register.A == 0x00
     assert register.F == 0x00
     assert register.B == 0x00
@@ -556,7 +592,8 @@ def test_code_54(register):
 # noinspection PyShadowingNames
 def test_code_55(register):
     register.L = 0x99
-    cpu.op.code_55(register)
+    cycles = cpu.op.code_55(register)
+    assert cycles == 4
     assert register.A == 0x00
     assert register.F == 0x00
     assert register.B == 0x00
@@ -578,7 +615,8 @@ def test_code_56(register):
 # noinspection PyShadowingNames
 def test_code_57(register):
     register.A = 0x99
-    cpu.op.code_57(register)
+    cycles = cpu.op.code_57(register)
+    assert cycles == 4
     assert register.A == 0x99
     assert register.F == 0x00
     assert register.B == 0x00
@@ -594,7 +632,8 @@ def test_code_57(register):
 # noinspection PyShadowingNames
 def test_code_58(register):
     register.B = 0x99
-    cpu.op.code_58(register)
+    cycles = cpu.op.code_58(register)
+    assert cycles == 4
     assert register.A == 0x00
     assert register.F == 0x00
     assert register.B == 0x99
@@ -610,7 +649,8 @@ def test_code_58(register):
 # noinspection PyShadowingNames
 def test_code_59(register):
     register.C = 0x99
-    cpu.op.code_59(register)
+    cycles = cpu.op.code_59(register)
+    assert cycles == 4
     assert register.A == 0x00
     assert register.F == 0x00
     assert register.B == 0x00
@@ -626,7 +666,8 @@ def test_code_59(register):
 # noinspection PyShadowingNames
 def test_code_5a(register):
     register.D = 0x99
-    cpu.op.code_5a(register)
+    cycles = cpu.op.code_5a(register)
+    assert cycles == 4
     assert register.A == 0x00
     assert register.F == 0x00
     assert register.B == 0x00
@@ -642,7 +683,8 @@ def test_code_5a(register):
 # noinspection PyShadowingNames
 def test_code_5b(register):
     register.E = 0x99
-    cpu.op.code_5b(register)
+    cycles = cpu.op.code_5b(register)
+    assert cycles == 4
     assert register.A == 0x00
     assert register.F == 0x00
     assert register.B == 0x00
@@ -658,7 +700,8 @@ def test_code_5b(register):
 # noinspection PyShadowingNames
 def test_code_5c(register):
     register.H = 0x99
-    cpu.op.code_5c(register)
+    cycles = cpu.op.code_5c(register)
+    assert cycles == 4
     assert register.A == 0x00
     assert register.F == 0x00
     assert register.B == 0x00
@@ -674,7 +717,8 @@ def test_code_5c(register):
 # noinspection PyShadowingNames
 def test_code_5d(register):
     register.L = 0x99
-    cpu.op.code_5d(register)
+    cycles = cpu.op.code_5d(register)
+    assert cycles == 4
     assert register.A == 0x00
     assert register.F == 0x00
     assert register.B == 0x00
@@ -696,7 +740,8 @@ def test_code_5e(register):
 # noinspection PyShadowingNames
 def test_code_5f(register):
     register.A = 0x99
-    cpu.op.code_5f(register)
+    cycles = cpu.op.code_5f(register)
+    assert cycles == 4
     assert register.A == 0x99
     assert register.F == 0x00
     assert register.B == 0x00
@@ -712,7 +757,8 @@ def test_code_5f(register):
 # noinspection PyShadowingNames
 def test_code_60(register):
     register.B = 0x99
-    cpu.op.code_60(register)
+    cycles = cpu.op.code_60(register)
+    assert cycles == 4
     assert register.A == 0x00
     assert register.F == 0x00
     assert register.B == 0x99
@@ -728,7 +774,8 @@ def test_code_60(register):
 # noinspection PyShadowingNames
 def test_code_61(register):
     register.C = 0x99
-    cpu.op.code_61(register)
+    cycles = cpu.op.code_61(register)
+    assert cycles == 4
     assert register.A == 0x00
     assert register.F == 0x00
     assert register.B == 0x00
@@ -744,7 +791,8 @@ def test_code_61(register):
 # noinspection PyShadowingNames
 def test_code_62(register):
     register.D = 0x99
-    cpu.op.code_62(register)
+    cycles = cpu.op.code_62(register)
+    assert cycles == 4
     assert register.A == 0x00
     assert register.F == 0x00
     assert register.B == 0x00
@@ -760,7 +808,8 @@ def test_code_62(register):
 # noinspection PyShadowingNames
 def test_code_63(register):
     register.E = 0x99
-    cpu.op.code_63(register)
+    cycles = cpu.op.code_63(register)
+    assert cycles == 4
     assert register.A == 0x00
     assert register.F == 0x00
     assert register.B == 0x00
@@ -776,7 +825,8 @@ def test_code_63(register):
 # noinspection PyShadowingNames
 def test_code_64(register):
     register.H = 0x99
-    cpu.op.code_64(register)
+    cycles = cpu.op.code_64(register)
+    assert cycles == 4
     assert register.A == 0x00
     assert register.F == 0x00
     assert register.B == 0x00
@@ -792,7 +842,8 @@ def test_code_64(register):
 # noinspection PyShadowingNames
 def test_code_65(register):
     register.L = 0x99
-    cpu.op.code_65(register)
+    cycles = cpu.op.code_65(register)
+    assert cycles == 4
     assert register.A == 0x00
     assert register.F == 0x00
     assert register.B == 0x00
@@ -814,7 +865,8 @@ def test_code_66(register):
 # noinspection PyShadowingNames
 def test_code_67(register):
     register.A = 0x99
-    cpu.op.code_67(register)
+    cycles = cpu.op.code_67(register)
+    assert cycles == 4
     assert register.A == 0x99
     assert register.F == 0x00
     assert register.B == 0x00
@@ -830,7 +882,8 @@ def test_code_67(register):
 # noinspection PyShadowingNames
 def test_code_68(register):
     register.B = 0x99
-    cpu.op.code_68(register)
+    cycles = cpu.op.code_68(register)
+    assert cycles == 4
     assert register.A == 0x00
     assert register.F == 0x00
     assert register.B == 0x99
@@ -846,7 +899,8 @@ def test_code_68(register):
 # noinspection PyShadowingNames
 def test_code_69(register):
     register.C = 0x99
-    cpu.op.code_69(register)
+    cycles = cpu.op.code_69(register)
+    assert cycles == 4
     assert register.A == 0x00
     assert register.F == 0x00
     assert register.B == 0x00
@@ -862,7 +916,8 @@ def test_code_69(register):
 # noinspection PyShadowingNames
 def test_code_6a(register):
     register.D = 0x99
-    cpu.op.code_6a(register)
+    cycles = cpu.op.code_6a(register)
+    assert cycles == 4
     assert register.A == 0x00
     assert register.F == 0x00
     assert register.B == 0x00
@@ -878,7 +933,8 @@ def test_code_6a(register):
 # noinspection PyShadowingNames
 def test_code_6b(register):
     register.E = 0x99
-    cpu.op.code_6b(register)
+    cycles = cpu.op.code_6b(register)
+    assert cycles == 4
     assert register.A == 0x00
     assert register.F == 0x00
     assert register.B == 0x00
@@ -894,7 +950,8 @@ def test_code_6b(register):
 # noinspection PyShadowingNames
 def test_code_6c(register):
     register.H = 0x99
-    cpu.op.code_6c(register)
+    cycles = cpu.op.code_6c(register)
+    assert cycles == 4
     assert register.A == 0x00
     assert register.F == 0x00
     assert register.B == 0x00
@@ -910,7 +967,8 @@ def test_code_6c(register):
 # noinspection PyShadowingNames
 def test_code_6d(register):
     register.L = 0x99
-    cpu.op.code_6d(register)
+    cycles = cpu.op.code_6d(register)
+    assert cycles == 4
     assert register.A == 0x00
     assert register.F == 0x00
     assert register.B == 0x00
@@ -932,7 +990,8 @@ def test_code_6e(register):
 # noinspection PyShadowingNames
 def test_code_6f(register):
     register.A = 0x99
-    cpu.op.code_6f(register)
+    cycles = cpu.op.code_6f(register)
+    assert cycles == 4
     assert register.A == 0x99
     assert register.F == 0x00
     assert register.B == 0x00
@@ -990,7 +1049,8 @@ def test_code_77(register):
 # noinspection PyShadowingNames
 def test_code_78(register):
     register.B = 0x99
-    cpu.op.code_78(register)
+    cycles = cpu.op.code_78(register)
+    assert cycles == 4
     assert register.A == 0x99
     assert register.F == 0x00
     assert register.B == 0x99
@@ -1006,7 +1066,8 @@ def test_code_78(register):
 # noinspection PyShadowingNames
 def test_code_79(register):
     register.C = 0x99
-    cpu.op.code_79(register)
+    cycles = cpu.op.code_79(register)
+    assert cycles == 4
     assert register.A == 0x99
     assert register.F == 0x00
     assert register.B == 0x00
@@ -1022,7 +1083,8 @@ def test_code_79(register):
 # noinspection PyShadowingNames
 def test_code_7a(register):
     register.D = 0x99
-    cpu.op.code_7a(register)
+    cycles = cpu.op.code_7a(register)
+    assert cycles == 4
     assert register.A == 0x99
     assert register.F == 0x00
     assert register.B == 0x00
@@ -1038,7 +1100,8 @@ def test_code_7a(register):
 # noinspection PyShadowingNames
 def test_code_7b(register):
     register.E = 0x99
-    cpu.op.code_7b(register)
+    cycles = cpu.op.code_7b(register)
+    assert cycles == 4
     assert register.A == 0x99
     assert register.F == 0x00
     assert register.B == 0x00
@@ -1054,7 +1117,8 @@ def test_code_7b(register):
 # noinspection PyShadowingNames
 def test_code_7c(register):
     register.H = 0x99
-    cpu.op.code_7c(register)
+    cycles = cpu.op.code_7c(register)
+    assert cycles == 4
     assert register.A == 0x99
     assert register.F == 0x00
     assert register.B == 0x00
@@ -1070,7 +1134,8 @@ def test_code_7c(register):
 # noinspection PyShadowingNames
 def test_code_7d(register):
     register.L = 0x99
-    cpu.op.code_7d(register)
+    cycles = cpu.op.code_7d(register)
+    assert cycles == 4
     assert register.A == 0x99
     assert register.F == 0x00
     assert register.B == 0x00
@@ -1092,7 +1157,8 @@ def test_code_7e(register):
 # noinspection PyShadowingNames
 def test_code_7f(register):
     register.A = 0x99
-    cpu.op.code_7f(register)
+    cycles = cpu.op.code_7f(register)
+    assert cycles == 4
     assert register.A == 0x99
     assert register.F == 0x00
     assert register.B == 0x00
@@ -1106,13 +1172,49 @@ def test_code_7f(register):
 
 
 # noinspection PyShadowingNames
+def test_code_c1(register):
+    # TODO after memory is implemented
+    pass
+
+
+# noinspection PyShadowingNames
+def test_code_c5(register):
+    # TODO after memory is implemented
+    pass
+
+
+# noinspection PyShadowingNames
+def test_code_d1(register):
+    # TODO after memory is implemented
+    pass
+
+
+# noinspection PyShadowingNames
+def test_code_d5(register):
+    # TODO after memory is implemented
+    pass
+
+
+# noinspection PyShadowingNames
 def test_code_e0(register):
     # TODO after memory is implemented
     pass
 
 
 # noinspection PyShadowingNames
+def test_code_e1(register):
+    # TODO after memory is implemented
+    pass
+
+
+# noinspection PyShadowingNames
 def test_code_e2(register):
+    # TODO after memory is implemented
+    pass
+
+
+# noinspection PyShadowingNames
+def test_code_e5(register):
     # TODO after memory is implemented
     pass
 
@@ -1130,9 +1232,97 @@ def test_code_f0(register):
 
 
 # noinspection PyShadowingNames
+def test_code_f1(register):
+    # TODO after memory is implemented
+    pass
+
+
+# noinspection PyShadowingNames
 def test_code_f2(register):
     # TODO after memory is implemented
     pass
+
+
+# noinspection PyShadowingNames
+def test_code_f5(register):
+    # TODO after memory is implemented
+    pass
+
+
+# noinspection PyShadowingNames
+def test_code_f8(register):
+    register.SP = 0x0000
+    cycles = cpu.op.code_f8(register,0x0F)
+    assert cycles == 12
+    assert register.A == 0x00
+    assert register.F == 0b00000000
+    assert register.B == 0x00
+    assert register.C == 0x00
+    assert register.D == 0x00
+    assert register.E == 0x00
+    assert register.H == 0x00
+    assert register.L == 0x0F
+    assert register.SP == 0x0000
+    assert register.PC == 0x0100
+
+    register.SP = 0x0101
+    cycles = cpu.op.code_f8(register, 0x7F)
+    assert cycles == 12
+    assert register.A == 0x00
+    assert register.F == 0b00100000
+    assert register.B == 0x00
+    assert register.C == 0x00
+    assert register.D == 0x00
+    assert register.E == 0x00
+    assert register.H == 0x01
+    assert register.L == 0x80
+    assert register.SP == 0x0101
+    assert register.PC == 0x0100
+
+    register.SP = 0xFFFF
+    cycles = cpu.op.code_f8(register, 0x01)
+    assert cycles == 12
+    assert register.A == 0x00
+    assert register.F == 0b00110000
+    assert register.B == 0x00
+    assert register.C == 0x00
+    assert register.D == 0x00
+    assert register.E == 0x00
+    assert register.H == 0x00
+    assert register.L == 0x00
+    assert register.SP == 0xFFFF
+    assert register.PC == 0x0100
+
+    register.SP = 0xFFFF
+    cycles = cpu.op.code_f8(register, 0x80)  # negative value, -128
+    assert cycles == 12
+    assert register.A == 0x00
+    assert register.F == 0b00000000
+    assert register.B == 0x00
+    assert register.C == 0x00
+    assert register.D == 0x00
+    assert register.E == 0x00
+    assert register.H == 0xFF
+    assert register.L == 0x7F
+    assert register.SP == 0xFFFF
+    assert register.PC == 0x0100
+
+
+# noinspection PyShadowingNames
+def test_code_f9(register):
+    register.set_hl(0x9933)
+    cycles = cpu.op.code_f9(register)
+    assert cycles == 8
+    assert register.A == 0x00
+    assert register.F == 0x00
+    assert register.B == 0x00
+    assert register.C == 0x00
+    assert register.D == 0x00
+    assert register.E == 0x00
+    assert register.H == 0x99
+    assert register.L == 0x33
+    assert register.SP == 0x9933
+    assert register.PC == 0x0100
 
 
 # noinspection PyShadowingNames
