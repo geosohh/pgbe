@@ -912,52 +912,219 @@ def code_8f(register):
 
 # OPCODES 9x
 def code_90(register):
-    pass
+    """ SUB A,B - A=A-B """
+    result = (register.A - register.B) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
+
+    register.set_zero_flag((result & 0xFF) == 0)
+    register.set_subtract_flag(True)
+    register.set_half_carry_flag((register.B & 0x0F) > (register.A & 0x0F))
+    register.set_carry_flag(register.B > register.A)
+
+    register.A = result
+    return 4
+
 
 def code_91(register):
-    pass
+    """ SUB A,C - A=A-C """
+    result = (register.A - register.C) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
+
+    register.set_zero_flag((result & 0xFF) == 0)
+    register.set_subtract_flag(True)
+    register.set_half_carry_flag((register.C & 0x0F) > (register.A & 0x0F))
+    register.set_carry_flag(register.C > register.A)
+
+    register.A = result
+    return 4
+
 
 def code_92(register):
-    pass
+    """ SUB A,D - A=A-D """
+    result = (register.A - register.D) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
+
+    register.set_zero_flag((result & 0xFF) == 0)
+    register.set_subtract_flag(True)
+    register.set_half_carry_flag((register.D & 0x0F) > (register.A & 0x0F))
+    register.set_carry_flag(register.D > register.A)
+
+    register.A = result
+    return 4
+
 
 def code_93(register):
-    pass
+    """ SUB A,E - A=A-E """
+    result = (register.A - register.E) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
+
+    register.set_zero_flag((result & 0xFF) == 0)
+    register.set_subtract_flag(True)
+    register.set_half_carry_flag((register.E & 0x0F) > (register.A & 0x0F))
+    register.set_carry_flag(register.E > register.A)
+
+    register.A = result
+    return 4
+
 
 def code_94(register):
-    pass
+    """ SUB A,H - A=A-H """
+    result = (register.A - register.H) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
+
+    register.set_zero_flag((result & 0xFF) == 0)
+    register.set_subtract_flag(True)
+    register.set_half_carry_flag((register.H & 0x0F) > (register.A & 0x0F))
+    register.set_carry_flag(register.H > register.A)
+
+    register.A = result
+    return 4
+
 
 def code_95(register):
-    pass
+    """ SUB A,L - A=A-L """
+    result = (register.A - register.L) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
+
+    register.set_zero_flag((result & 0xFF) == 0)
+    register.set_subtract_flag(True)
+    register.set_half_carry_flag((register.L & 0x0F) > (register.A & 0x0F))
+    register.set_carry_flag(register.L > register.A)
+
+    register.A = result
+    return 4
+
 
 def code_96(register):
-    pass
+    """ SUB A,(HL) - A=A-(value at address HL) """
+    # TODO after memory is implemented
+    # result = (register.A - register.B) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
+
+    register.set_zero_flag((result & 0xFF) == 0)
+    register.set_subtract_flag(True)
+    # register.set_half_carry_flag((register.B & 0x0F) > (register.A & 0x0F))
+    # register.set_carry_flag(register.B > register.A)
+
+    register.A = result
+    return 8
+
 
 def code_97(register):
-    pass
+    """ SUB A,A - A=A-A """
+    register.set_zero_flag(True)
+    register.set_subtract_flag(True)
+    register.set_half_carry_flag(False)
+    register.set_carry_flag(False)
+
+    register.A = 0x00  # A-A, therefore result is zero, always
+    return 4
+
 
 def code_98(register):
-    pass
+    """ SBC A,B - A=A-B-carry_flag (yes, '-carry_flag' is just -1 or -0) """
+    value = register.B + register.get_carry_flag()
+    result = (register.A - value) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
+
+    register.set_zero_flag((result & 0xFF) == 0)
+    register.set_subtract_flag(True)
+    register.set_half_carry_flag((value & 0x0F) > (register.A & 0x0F))
+    register.set_carry_flag(value > register.A)
+
+    register.A = result
+    return 4
+
 
 def code_99(register):
-    pass
+    """ SBC A,C - A=A-C-carry_flag (yes, '-carry_flag' is just -1 or -0) """
+    value = register.C + register.get_carry_flag()
+    result = (register.A - value) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
+
+    register.set_zero_flag((result & 0xFF) == 0)
+    register.set_subtract_flag(True)
+    register.set_half_carry_flag((value & 0x0F) > (register.A & 0x0F))
+    register.set_carry_flag(value > register.A)
+
+    register.A = result
+    return 4
+
 
 def code_9a(register):
-    pass
+    """ SBC A,D - A=A-D-carry_flag (yes, '-carry_flag' is just -1 or -0) """
+    value = register.D + register.get_carry_flag()
+    result = (register.A - value) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
+
+    register.set_zero_flag((result & 0xFF) == 0)
+    register.set_subtract_flag(True)
+    register.set_half_carry_flag((value & 0x0F) > (register.A & 0x0F))
+    register.set_carry_flag(value > register.A)
+
+    register.A = result
+    return 4
+
 
 def code_9b(register):
-    pass
+    """ SBC A,E - A=A-E-carry_flag (yes, '-carry_flag' is just -1 or -0) """
+    value = register.E + register.get_carry_flag()
+    result = (register.A - value) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
+
+    register.set_zero_flag((result & 0xFF) == 0)
+    register.set_subtract_flag(True)
+    register.set_half_carry_flag((value & 0x0F) > (register.A & 0x0F))
+    register.set_carry_flag(value > register.A)
+
+    register.A = result
+    return 4
+
 
 def code_9c(register):
-    pass
+    """ SBC A,H - A=A-H-carry_flag (yes, '-carry_flag' is just -1 or -0) """
+    value = register.H + register.get_carry_flag()
+    result = (register.A - value) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
+
+    register.set_zero_flag((result & 0xFF) == 0)
+    register.set_subtract_flag(True)
+    register.set_half_carry_flag((value & 0x0F) > (register.A & 0x0F))
+    register.set_carry_flag(value > register.A)
+
+    register.A = result
+    return 4
+
 
 def code_9d(register):
-    pass
+    """ SBC A,L - A=A-L-carry_flag (yes, '-carry_flag' is just -1 or -0) """
+    value = register.L + register.get_carry_flag()
+    result = (register.A - value) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
+
+    register.set_zero_flag((result & 0xFF) == 0)
+    register.set_subtract_flag(True)
+    register.set_half_carry_flag((value & 0x0F) > (register.A & 0x0F))
+    register.set_carry_flag(value > register.A)
+
+    register.A = result
+    return 4
+
 
 def code_9e(register):
-    pass
+    """ SBC A,(HL) - A=A-(value at address HL)-carry_flag (yes, '-carry_flag' is just -1 or -0) """
+    # TODO after memory is implemented
+    # value = register.L + register.get_carry_flag()
+    result = (register.A - value) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
+
+    register.set_zero_flag((result & 0xFF) == 0)
+    register.set_subtract_flag(True)
+    register.set_half_carry_flag((value & 0x0F) > (register.A & 0x0F))
+    register.set_carry_flag(value > register.A)
+
+    register.A = result
+    return 8
+
 
 def code_9f(register):
-    pass
+    """ SBC A,A - A=A-A-carry_flag (yes, '-carry_flag' is just -1 or -0) """
+    carry_flag = register.get_carry_flag()
+    result = (-carry_flag) & 0xFF  # A-A-carry_flag, therefore result is -carry_flag, always
+
+    register.set_zero_flag((result & 0xFF) == 0)
+    register.set_subtract_flag(True)
+    register.set_half_carry_flag(carry_flag)
+    register.set_carry_flag(carry_flag)
+
+    register.A = result
+    return 4
 
 # OPCODES Ax
 def code_a0(register):
@@ -1170,8 +1337,18 @@ def code_d5(register):
     return 16
 
 
-def code_d6(register):
-    pass
+def code_d6(register, d8):
+    """ SUB A,d8 - A=A-d8 """
+    result = (register.A - d8) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
+
+    register.set_zero_flag((result & 0xFF) == 0)
+    register.set_subtract_flag(True)
+    register.set_half_carry_flag((d8 & 0x0F) > (register.A & 0x0F))
+    register.set_carry_flag(d8 > register.A)
+
+    register.A = result
+    return 8
+
 
 def code_d7(register):
     pass
@@ -1200,8 +1377,19 @@ def code_dd():
     pass
 
 
-def code_de(register):
-    pass
+def code_de(register, d8):
+    """ SBC A,d8 - A=A-d8-carry_flag (yes, '-carry_flag' is just -1 or -0) """
+    value = d8 + register.get_carry_flag()
+    result = (register.A - value) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
+
+    register.set_zero_flag((result & 0xFF) == 0)
+    register.set_subtract_flag(True)
+    register.set_half_carry_flag((value & 0x0F) > (register.A & 0x0F))
+    register.set_carry_flag(value > register.A)
+
+    register.A = result
+    return 8
+
 
 def code_df(register):
     pass
