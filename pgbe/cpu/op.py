@@ -1126,79 +1126,299 @@ def code_9f(register):
     register.A = result
     return 4
 
+
 # OPCODES Ax
 def code_a0(register):
-    pass
+    """ AND B - A=Logical AND A with B """
+    register.A = register.A & register.B
+
+    register.set_zero_flag(register.A == 0)
+    register.set_subtract_flag(False)
+    register.set_half_carry_flag(True)
+    register.set_carry_flag(False)
+
+    return 4
+
 
 def code_a1(register):
-    pass
+    """ AND C - A=Logical AND A with C """
+    register.A = register.A & register.C
+
+    register.set_zero_flag(register.A == 0)
+    register.set_subtract_flag(False)
+    register.set_half_carry_flag(True)
+    register.set_carry_flag(False)
+
+    return 4
+
 
 def code_a2(register):
-    pass
+    """ AND D - A=Logical AND A with D """
+    register.A = register.A & register.D
+
+    register.set_zero_flag(register.A == 0)
+    register.set_subtract_flag(False)
+    register.set_half_carry_flag(True)
+    register.set_carry_flag(False)
+
+    return 4
+
 
 def code_a3(register):
-    pass
+    """ AND E - A=Logical AND A with E """
+    register.A = register.A & register.E
+
+    register.set_zero_flag(register.A == 0)
+    register.set_subtract_flag(False)
+    register.set_half_carry_flag(True)
+    register.set_carry_flag(False)
+
+    return 4
+
 
 def code_a4(register):
-    pass
+    """ AND H - A=Logical AND A with H """
+    register.A = register.A & register.H
+
+    register.set_zero_flag(register.A == 0)
+    register.set_subtract_flag(False)
+    register.set_half_carry_flag(True)
+    register.set_carry_flag(False)
+
+    return 4
+
 
 def code_a5(register):
-    pass
+    """ AND L - A=Logical AND A with L """
+    register.A = register.A & register.L
+
+    register.set_zero_flag(register.A == 0)
+    register.set_subtract_flag(False)
+    register.set_half_carry_flag(True)
+    register.set_carry_flag(False)
+
+    return 4
+
 
 def code_a6(register):
-    pass
+    """ AND (HL) - A=Logical AND A with (value at address HL) """
+    # TODO after memory is implemented
+    # register.A = register.A & register.B
+
+    register.set_zero_flag(register.A == 0)
+    register.set_subtract_flag(False)
+    register.set_half_carry_flag(True)
+    register.set_carry_flag(False)
+
+    return 8
+
 
 def code_a7(register):
-    pass
+    """ AND A - A=Logical AND A with A (why?) """
+    # register.A = register.A & register.A -- result is A=A, therefore useless
+
+    register.set_zero_flag(register.A == 0)
+    register.set_subtract_flag(False)
+    register.set_half_carry_flag(True)
+    register.set_carry_flag(False)
+
+    return 4
+
 
 def code_a8(register):
-    pass
+    """ XOR B - A=Logical XOR A with B """
+    register.A = register.A ^ register.B
+
+    register.set_zero_flag(register.A == 0)
+    register.set_subtract_flag(False)
+    register.set_half_carry_flag(False)
+    register.set_carry_flag(False)
+
+    return 4
+
 
 def code_a9(register):
-    pass
+    """ XOR C - A=Logical XOR A with C """
+    register.A = register.A ^ register.C
+
+    register.set_zero_flag(register.A == 0)
+    register.set_subtract_flag(False)
+    register.set_half_carry_flag(False)
+    register.set_carry_flag(False)
+
+    return 4
+
 
 def code_aa(register):
-    pass
+    """ XOR D - A=Logical XOR A with D """
+    register.A = register.A ^ register.D
+
+    register.set_zero_flag(register.A == 0)
+    register.set_subtract_flag(False)
+    register.set_half_carry_flag(False)
+    register.set_carry_flag(False)
+
+    return 4
+
 
 def code_ab(register):
-    pass
+    """ XOR E - A=Logical XOR A with E """
+    register.A = register.A ^ register.E
+
+    register.set_zero_flag(register.A == 0)
+    register.set_subtract_flag(False)
+    register.set_half_carry_flag(False)
+    register.set_carry_flag(False)
+
+    return 4
+
 
 def code_ac(register):
-    pass
+    """ XOR H - A=Logical XOR A with H """
+    register.A = register.A ^ register.H
+
+    register.set_zero_flag(register.A == 0)
+    register.set_subtract_flag(False)
+    register.set_half_carry_flag(False)
+    register.set_carry_flag(False)
+
+    return 4
+
 
 def code_ad(register):
-    pass
+    """ XOR L - A=Logical XOR A with L """
+    register.A = register.A ^ register.L
+
+    register.set_zero_flag(register.A == 0)
+    register.set_subtract_flag(False)
+    register.set_half_carry_flag(False)
+    register.set_carry_flag(False)
+
+    return 4
+
 
 def code_ae(register):
-    pass
+    """ XOR (HL) - A=Logical XOR A with (value at address HL) """
+    # TODO after memory is implemented
+    # register.A = register.A ^ register.D
+
+    register.set_zero_flag(register.A == 0)
+    register.set_subtract_flag(False)
+    register.set_half_carry_flag(False)
+    register.set_carry_flag(False)
+
+    return 8
+
 
 def code_af(register):
-    pass
+    """ XOR A - A=Logical XOR A with A """
+    register.A = 0
+
+    register.set_zero_flag(True)
+    register.set_subtract_flag(False)
+    register.set_half_carry_flag(False)
+    register.set_carry_flag(False)
+
+    return 4
+
 
 # OPCODES Bx
 def code_b0(register):
-    pass
+    """ OR B - A=Logical OR A with B """
+    register.A = register.A | register.B
+
+    register.set_zero_flag(register.A == 0)
+    register.set_subtract_flag(False)
+    register.set_half_carry_flag(False)
+    register.set_carry_flag(False)
+
+    return 4
+
 
 def code_b1(register):
-    pass
+    """ OR C - A=Logical OR A with C """
+    register.A = register.A | register.C
+
+    register.set_zero_flag(register.A == 0)
+    register.set_subtract_flag(False)
+    register.set_half_carry_flag(False)
+    register.set_carry_flag(False)
+
+    return 4
+
 
 def code_b2(register):
-    pass
+    """ OR D - A=Logical OR A with D """
+    register.A = register.A | register.D
+
+    register.set_zero_flag(register.A == 0)
+    register.set_subtract_flag(False)
+    register.set_half_carry_flag(False)
+    register.set_carry_flag(False)
+
+    return 4
+
 
 def code_b3(register):
-    pass
+    """ OR E - A=Logical OR A with E """
+    register.A = register.A | register.E
+
+    register.set_zero_flag(register.A == 0)
+    register.set_subtract_flag(False)
+    register.set_half_carry_flag(False)
+    register.set_carry_flag(False)
+
+    return 4
+
 
 def code_b4(register):
-    pass
+    """ OR H - A=Logical OR A with H """
+    register.A = register.A | register.H
+
+    register.set_zero_flag(register.A == 0)
+    register.set_subtract_flag(False)
+    register.set_half_carry_flag(False)
+    register.set_carry_flag(False)
+
+    return 4
+
 
 def code_b5(register):
-    pass
+    """ OR L - A=Logical OR A with L """
+    register.A = register.A | register.L
+
+    register.set_zero_flag(register.A == 0)
+    register.set_subtract_flag(False)
+    register.set_half_carry_flag(False)
+    register.set_carry_flag(False)
+
+    return 4
+
 
 def code_b6(register):
-    pass
+    """ OR (HL) - A=Logical OR A with (value at address HL) """
+    # TODO after memory is implemented
+    # register.A = register.A | register.B
+
+    register.set_zero_flag(register.A == 0)
+    register.set_subtract_flag(False)
+    register.set_half_carry_flag(False)
+    register.set_carry_flag(False)
+
+    return 8
+
 
 def code_b7(register):
-    pass
+    """ OR L - A=Logical OR A with A (why?) """
+    # register.A = register.A | register.A -- result is A=A, therefore useless
+
+    register.set_zero_flag(register.A == 0)
+    register.set_subtract_flag(False)
+    register.set_half_carry_flag(False)
+    register.set_carry_flag(False)
+
+    return 4
+
 
 def code_b8(register):
     pass
@@ -1432,8 +1652,17 @@ def code_e5(register):
     return 16
 
 
-def code_e6(register):
-    pass
+def code_e6(register, d8):
+    """ AND d8 - A=Logical AND A with d8 """
+    register.A = register.A & d8
+
+    register.set_zero_flag(register.A == 0)
+    register.set_subtract_flag(False)
+    register.set_half_carry_flag(True)
+    register.set_carry_flag(False)
+
+    return 8
+
 
 def code_e7(register):
     pass
@@ -1467,8 +1696,17 @@ def code_ed():
     pass
 
 
-def code_ee(register):
-    pass
+def code_ee(register, d8):
+    """ XOR d8 - A=Logical XOR A with d8 """
+    register.A = register.A ^ d8
+
+    register.set_zero_flag(register.A == 0)
+    register.set_subtract_flag(False)
+    register.set_half_carry_flag(False)
+    register.set_carry_flag(False)
+
+    return 8
+
 
 def code_ef(register):
     pass
@@ -1510,8 +1748,17 @@ def code_f5(register):
     return 16
 
 
-def code_f6(register):
-    pass
+def code_f6(register, d8):
+    """ OR d8 - A=Logical OR A with d8 """
+    register.A = register.A | d8
+
+    register.set_zero_flag(register.A == 0)
+    register.set_subtract_flag(False)
+    register.set_half_carry_flag(False)
+    register.set_carry_flag(False)
+
+    return 8
+
 
 def code_f7(register):
     pass
