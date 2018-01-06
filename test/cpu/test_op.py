@@ -43,12 +43,15 @@ def assert_registers(reg, a=0x00, f=0x00, b=0x00, c=0x00, d=0x00, e=0x00, h=0x00
     assert reg.PC == pc
 
 
+def test_code_00():
+    """ NOP - Does nothing """
+    cycles = cpu.op.code_00()
+    assert cycles == 4
+
+
 # noinspection PyShadowingNames
 def test_code_01(register):
     """ LD BC,d16 - Stores given 16-bit value at BC """
-    cycles = cpu.op.code_01(register, 0x9933)  # Little-endian
-    assert cycles == 8
-    assert_registers(register,b=0x33, c=0x99)
 
 
 # noinspection PyShadowingNames
@@ -131,6 +134,20 @@ def test_code_06(register):
     cycles = cpu.op.code_06(register, 0x99)
     assert cycles == 8
     assert_registers(register,b=0x99)
+
+
+# noinspection PyShadowingNames
+def test_code_07(register):
+    """ RLCA - Copy register A bit 7 to Carry flag, then rotate register A left """
+    register.A = 0b11100010
+    cycles = cpu.op.code_07(register)
+    assert cycles == 4
+    assert_registers(register, a=0b11000101, f=0b00010000)
+
+    register.A = 0b00000000
+    cycles = cpu.op.code_07(register)
+    assert cycles == 4
+    assert_registers(register, a=0b00000000, f=0b10000000)
 
 
 # noinspection PyShadowingNames
@@ -258,6 +275,16 @@ def test_code_0e(register):
 
 
 # noinspection PyShadowingNames
+def test_code_10(register):
+    """
+    STOP - Switch Game Boy into VERY low power standby mode. Halt CPU and LCD display until a button is pressed
+    See: http://gbdev.gg8.se/wiki/articles/Reducing_Power_Consumption
+    """
+    # TODO after cpu and interrupts are implemented
+    pass
+
+
+# noinspection PyShadowingNames
 def test_code_11(register):
     """ LD DE,d16 - Stores given 16-bit value at DE """
     cycles = cpu.op.code_11(register, 0x9933)  # Little-endian
@@ -345,6 +372,22 @@ def test_code_16(register):
     cycles = cpu.op.code_16(register, 0x99)
     assert cycles == 8
     assert_registers(register,d=0x99)
+
+
+# noinspection PyShadowingNames
+def test_code_17(register):
+    """ RLA - Copy register A bit 7 to temp, replace A bit 7 with Carry flag, rotate A left, copy temp to Carry flag """
+    register.A = 0b11100010
+    register.F = 0b00010000
+    cycles = cpu.op.code_17(register)
+    assert cycles == 4
+    assert_registers(register, a=0b11000101, f=0b00010000)
+
+    register.A = 0b00000000
+    register.F = 0b00010000
+    cycles = cpu.op.code_17(register)
+    assert cycles == 4
+    assert_registers(register, a=0b00000001, f=0b00000000)
 
 
 # noinspection PyShadowingNames
@@ -555,6 +598,43 @@ def test_code_26(register):
 
 
 # noinspection PyShadowingNames
+def test_code_27(register):
+    """
+    DAA - Adjust value in register A for Binary Coded Decimal representation (i.e. one 0-9 value per nibble)
+    See:  http://gbdev.gg8.se/wiki/articles/DAA
+    """
+    register.A = 0b00111100  # 3|12 -> should be 4|2
+    register.F = 0b00000000
+    cycles = cpu.op.code_27(register)
+    assert cycles == 4
+    assert_registers(register, a=0b01000010, f=0b00000000)
+
+    register.A = 0b01100100  # 6|4 -> should stay 6|4
+    register.F = 0b00000000
+    cycles = cpu.op.code_27(register)
+    assert cycles == 4
+    assert_registers(register, a=0b01100100, f=0b00000000)
+
+    register.A = 0b10100000  # 10|0 -> should be 0|0 with Z flag
+    register.F = 0b00000000
+    cycles = cpu.op.code_27(register)
+    assert cycles == 4
+    assert_registers(register, a=0b00000000, f=0b10010000)
+
+    register.A = 0b11000010  # 12|2 -> should be 2|2 with C flag
+    register.F = 0b00000000
+    cycles = cpu.op.code_27(register)
+    assert cycles == 4
+    assert_registers(register, a=0b00100010, f=0b00010000)
+
+    register.A = 0b00001010  # 0|10 with N/H flag-> should be 0|4
+    register.F = 0b01100000
+    cycles = cpu.op.code_27(register)
+    assert cycles == 4
+    assert_registers(register, a=0b00000100, f=0b01000000)
+
+
+# noinspection PyShadowingNames
 def test_code_29(register):
     """ ADD HL,HL - HL=HL+HL """
     register.set_hl(0x0001)
@@ -666,6 +746,15 @@ def test_code_2e(register):
 
 
 # noinspection PyShadowingNames
+def test_code_2f(register):
+    """ CPL - Logical complement of register A (i.e. flip all bits) """
+    register.A = 0b00111100
+    cycles = cpu.op.code_2f(register)
+    assert cycles == 4
+    assert_registers(register, a=0b11000011, f=0b01100000)
+
+
+# noinspection PyShadowingNames
 def test_code_31(register):
     """ LD SP,d16 - Stores given 16-bit value at SP """
     cycles = cpu.op.code_31(register, 0x9933)
@@ -723,6 +812,20 @@ def test_code_36(register):
     """ LD (HL),d8 - Stores d8 at the address in HL """
     # TODO after memory is implemented
     pass
+
+
+# noinspection PyShadowingNames
+def test_code_37(register):
+    """ SCF - Set carry flag """
+    register.F = 0b00000000
+    cycles = cpu.op.code_37(register)
+    assert cycles == 4
+    assert_registers(register, f=0b00010000)
+
+    register.F = 0b11110000
+    cycles = cpu.op.code_37(register)
+    assert cycles == 4
+    assert_registers(register, f=0b10010000)
 
 
 # noinspection PyShadowingNames
@@ -821,6 +924,20 @@ def test_code_3e(register):
     cycles = cpu.op.code_3e(register, 0x99)
     assert cycles == 8
     assert_registers(register,a=0x99)
+
+
+# noinspection PyShadowingNames
+def test_code_3f(register):
+    """ CCF - Invert carry flag """
+    register.F = 0b00010000
+    cycles = cpu.op.code_3f(register)
+    assert cycles == 4
+    assert_registers(register, f=0b00000000)
+
+    register.F = 0b11100000
+    cycles = cpu.op.code_3f(register)
+    assert cycles == 4
+    assert_registers(register, f=0b10010000)
 
 
 # noinspection PyShadowingNames
@@ -1282,6 +1399,16 @@ def test_code_74(register):
 def test_code_75(register):
     """ LD (HL),L - Stores reg at the address in HL """
     # TODO after memory is implemented
+    pass
+
+
+# noinspection PyShadowingNames
+def test_code_76(register):
+    """
+    HALT - Power down CPU (by stopping the system clock) until an interrupt occurs
+    See: http://gbdev.gg8.se/wiki/articles/Reducing_Power_Consumption
+    """
+    # TODO after cpu and interrupts are implemented
     pass
 
 
@@ -3400,6 +3527,13 @@ def test_code_f2(register):
 
 
 # noinspection PyShadowingNames
+def test_code_f3(register):
+    """ DI - Disable interrupts AFTER THE NEXT INSTRUCTION IS EXECUTED """
+    # TODO after cpu and interrupts are implemented
+    pass
+
+
+# noinspection PyShadowingNames
 def test_code_f5(register):
     """ PUSH AF - Decrement SP by 2 then push AF value onto stack (i.e. SP address) """
     # TODO after memory is implemented
@@ -3463,6 +3597,13 @@ def test_code_fa(register):
 
 
 # noinspection PyShadowingNames
+def test_code_fb(register):
+    """ EI - Enable interrupts AFTER THE NEXT INSTRUCTION IS EXECUTED """
+    # TODO after cpu and interrupts are implemented
+    pass
+
+
+# noinspection PyShadowingNames
 def test_code_fe(register):
     """ CP A,d8 - same as SUB A,d8 but throw the result away, only set flags """
     register.A = 0x00
@@ -3500,3 +3641,143 @@ def test_code_fe(register):
     cycles = cpu.op.code_fe(register,d8)
     assert cycles == 8
     assert_registers(register, a=0xFF, f=0b01000000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_30(register):
+    """ SWAP B - Swap upper and lower nibbles (nibble = 4 bits) """
+    register.B = 0xAB
+    cycles = cpu.op.code_cb_30(register)
+    assert cycles == 8
+    assert_registers(register, b=0xBA, f=0b00000000)
+
+    register.B = 0x00
+    cycles = cpu.op.code_cb_30(register)
+    assert cycles == 8
+    assert_registers(register, b=0x00, f=0b10000000)
+
+    register.B = 0xF0
+    cycles = cpu.op.code_cb_30(register)
+    assert cycles == 8
+    assert_registers(register, b=0x0F, f=0b00000000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_31(register):
+    """ SWAP C - Swap upper and lower nibbles (nibble = 4 bits) """
+    register.C = 0xAB
+    cycles = cpu.op.code_cb_31(register)
+    assert cycles == 8
+    assert_registers(register, c=0xBA, f=0b00000000)
+
+    register.C = 0x00
+    cycles = cpu.op.code_cb_31(register)
+    assert cycles == 8
+    assert_registers(register, c=0x00, f=0b10000000)
+
+    register.C = 0xF0
+    cycles = cpu.op.code_cb_31(register)
+    assert cycles == 8
+    assert_registers(register, c=0x0F, f=0b00000000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_32(register):
+    """ SWAP D - Swap upper and lower nibbles (nibble = 4 bits) """
+    register.D = 0xAB
+    cycles = cpu.op.code_cb_32(register)
+    assert cycles == 8
+    assert_registers(register, d=0xBA, f=0b00000000)
+
+    register.D = 0x00
+    cycles = cpu.op.code_cb_32(register)
+    assert cycles == 8
+    assert_registers(register, d=0x00, f=0b10000000)
+
+    register.D = 0xF0
+    cycles = cpu.op.code_cb_32(register)
+    assert cycles == 8
+    assert_registers(register, d=0x0F, f=0b00000000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_33(register):
+    """ SWAP E - Swap upper and lower nibbles (nibble = 4 bits) """
+    register.E = 0xAB
+    cycles = cpu.op.code_cb_33(register)
+    assert cycles == 8
+    assert_registers(register, e=0xBA, f=0b00000000)
+
+    register.E = 0x00
+    cycles = cpu.op.code_cb_33(register)
+    assert cycles == 8
+    assert_registers(register, e=0x00, f=0b10000000)
+
+    register.E = 0xF0
+    cycles = cpu.op.code_cb_33(register)
+    assert cycles == 8
+    assert_registers(register, e=0x0F, f=0b00000000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_34(register):
+    """ SWAP H - Swap upper and lower nibbles (nibble = 4 bits) """
+    register.H = 0xAB
+    cycles = cpu.op.code_cb_34(register)
+    assert cycles == 8
+    assert_registers(register, h=0xBA, f=0b00000000)
+
+    register.H = 0x00
+    cycles = cpu.op.code_cb_34(register)
+    assert cycles == 8
+    assert_registers(register, h=0x00, f=0b10000000)
+
+    register.H = 0xF0
+    cycles = cpu.op.code_cb_34(register)
+    assert cycles == 8
+    assert_registers(register, h=0x0F, f=0b00000000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_35(register):
+    """ SWAP L - Swap upper and lower nibbles (nibble = 4 bits) """
+    register.L = 0xAB
+    cycles = cpu.op.code_cb_35(register)
+    assert cycles == 8
+    assert_registers(register, l=0xBA, f=0b00000000)
+
+    register.L = 0x00
+    cycles = cpu.op.code_cb_35(register)
+    assert cycles == 8
+    assert_registers(register, l=0x00, f=0b10000000)
+
+    register.L = 0xF0
+    cycles = cpu.op.code_cb_35(register)
+    assert cycles == 8
+    assert_registers(register, l=0x0F, f=0b00000000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_36(register):
+    """ SWAP (HL) - Swap upper and lower nibbles (nibble = 4 bits) """
+    # TODO after memory is implemented
+    pass
+
+
+# noinspection PyShadowingNames
+def test_code_cb_37(register):
+    """ SWAP A - Swap upper and lower nibbles (nibble = 4 bits) """
+    register.A = 0xAB
+    cycles = cpu.op.code_cb_37(register)
+    assert cycles == 8
+    assert_registers(register, a=0xBA, f=0b00000000)
+
+    register.A = 0x00
+    cycles = cpu.op.code_cb_37(register)
+    assert cycles == 8
+    assert_registers(register, a=0x00, f=0b10000000)
+
+    register.A = 0xF0
+    cycles = cpu.op.code_cb_37(register)
+    assert cycles == 8
+    assert_registers(register, a=0x0F, f=0b00000000)

@@ -19,8 +19,9 @@ import cpu.util
 
 
 # OPCODES 0x
-def code_00(register):
-    pass
+def code_00():
+    """ NOP - Does nothing """
+    return 4
 
 
 def code_01(register, d16):
@@ -67,7 +68,14 @@ def code_06(register, d8):
 
 
 def code_07(register):
-    pass
+    """ RLCA - Copy register A bit 7 to Carry flag, then rotate register A left """
+    bit_7 = register.A >> 7
+    register.A = ((register.A << 1) + bit_7) & 0xFF
+    register.set_z_flag(register.A == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(bit_7)
+    return 4
 
 
 def code_08(register, a16):
@@ -131,6 +139,11 @@ def code_0f(register):
 
 # OPCODES 1x
 def code_10(register):
+    """
+    STOP - Switch Game Boy into VERY low power standby mode. Halt CPU and LCD display until a button is pressed
+    See: http://gbdev.gg8.se/wiki/articles/Reducing_Power_Consumption
+    """
+    # TODO after cpu and interrupts are implemented
     pass
 
 
@@ -178,7 +191,15 @@ def code_16(register, d8):
 
 
 def code_17(register):
-    pass
+    """ RLA - Copy register A bit 7 to temp, replace A bit 7 with Carry flag, rotate A left, copy temp to Carry flag """
+    bit_7 = register.A >> 7
+    register.A = ((register.A << 1) + register.get_c_flag()) & 0xFF
+    register.set_z_flag(register.A == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(bit_7)
+    return 4
+
 
 def code_18(register):
     pass
@@ -284,7 +305,29 @@ def code_26(register, d8):
 
 
 def code_27(register):
-    pass
+    """
+    DAA - Adjust value in register A for Binary Coded Decimal representation
+    See:  http://gbdev.gg8.se/wiki/articles/DAA
+    """
+    n_flag = register.get_n_flag()
+    h_flag = register.get_h_flag()
+    c_flag = register.get_c_flag()
+    if n_flag:
+        if c_flag:
+            register.A = (register.A - 0x60) & 0xFF
+        if h_flag:
+            register.A = (register.A - 0x06) & 0xFF
+    else:
+        if c_flag or register.A > 0x99:
+            register.A = (register.A + 0x60) & 0xFF
+            register.set_c_flag(True)
+        if h_flag or (register.A & 0x0F) > 0x09:
+            register.A = (register.A + 0x06) & 0xFF
+
+    register.set_z_flag(register.A == 0)
+    register.set_h_flag(False)
+    return 4
+
 
 def code_28(register):
     pass
@@ -339,7 +382,12 @@ def code_2e(register, d8):
 
 
 def code_2f(register):
-    pass
+    """ CPL - Logical complement of register A (i.e. flip all bits) """
+    register.A = (~ register.A) & 0xFF
+    register.set_n_flag(True)
+    register.set_h_flag(True)
+    return 4
+
 
 # OPCODES 3x
 def code_30(register):
@@ -392,7 +440,12 @@ def code_36(register, d8):
 
 
 def code_37(register):
-    pass
+    """ SCF - Set carry flag """
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(True)
+    return 4
+
 
 def code_38(register):
     pass
@@ -442,7 +495,11 @@ def code_3e(register, d8):
 
 
 def code_3f(register):
-    pass
+    """ CCF - Invert carry flag """
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(not register.get_c_flag())
+    return 4
 
 
 # OPCODES 4x
@@ -774,6 +831,11 @@ def code_75(register):
 
 
 def code_76(register):
+    """
+    HALT - Power down CPU (by stopping the system clock) until an interrupt occurs
+    See: http://gbdev.gg8.se/wiki/articles/Reducing_Power_Consumption
+    """
+    # TODO after cpu and interrupts are implemented
     pass
 
 
@@ -1934,6 +1996,8 @@ def code_f2(register):
 
 
 def code_f3(register):
+    """ DI - Disable interrupts AFTER THE NEXT INSTRUCTION IS EXECUTED """
+    # TODO after cpu and interrupts are implemented
     pass
 
 
@@ -1993,6 +2057,8 @@ def code_fa(register, a16):
 
 
 def code_fb(register):
+    """ EI - Enable interrupts AFTER THE NEXT INSTRUCTION IS EXECUTED """
+    # TODO after cpu and interrupts are implemented
     pass
 
 
@@ -2016,4 +2082,863 @@ def code_fe(register, d8):
 
 
 def code_ff(register):
+    pass
+
+
+""" CB-Prefix operations """
+# OPCODES CB 0x
+def code_cb_00(register):
+    pass
+
+def code_cb_01(register):
+    pass
+
+def code_cb_02(register):
+    pass
+
+def code_cb_03(register):
+    pass
+
+def code_cb_04(register):
+    pass
+
+def code_cb_05(register):
+    pass
+
+def code_cb_06(register):
+    pass
+
+def code_cb_07(register):
+    pass
+
+def code_cb_08(register):
+    pass
+
+def code_cb_09(register):
+    pass
+
+def code_cb_0a(register):
+    pass
+
+def code_cb_0b(register):
+    pass
+
+def code_cb_0c(register):
+    pass
+
+def code_cb_0d(register):
+    pass
+
+def code_cb_0e(register):
+    pass
+
+def code_cb_0f(register):
+    pass
+
+# OPCODES CB 1x
+def code_cb_10(register):
+    pass
+
+def code_cb_11(register):
+    pass
+
+def code_cb_12(register):
+    pass
+
+def code_cb_13(register):
+    pass
+
+def code_cb_14(register):
+    pass
+
+def code_cb_15(register):
+    pass
+
+def code_cb_16(register):
+    pass
+
+def code_cb_17(register):
+    pass
+
+def code_cb_18(register):
+    pass
+
+def code_cb_19(register):
+    pass
+
+def code_cb_1a(register):
+    pass
+
+def code_cb_1b(register):
+    pass
+
+def code_cb_1c(register):
+    pass
+
+def code_cb_1d(register):
+    pass
+
+def code_cb_1e(register):
+    pass
+
+def code_cb_1f(register):
+    pass
+
+# OPCODES CB 2x
+def code_cb_20(register):
+    pass
+
+def code_cb_21(register):
+    pass
+
+def code_cb_22(register):
+    pass
+
+def code_cb_23(register):
+    pass
+
+def code_cb_24(register):
+    pass
+
+def code_cb_25(register):
+    pass
+
+def code_cb_26(register):
+    pass
+
+def code_cb_27(register):
+    pass
+
+def code_cb_28(register):
+    pass
+
+def code_cb_29(register):
+    pass
+
+def code_cb_2a(register):
+    pass
+
+def code_cb_2b(register):
+    pass
+
+def code_cb_2c(register):
+    pass
+
+def code_cb_2d(register):
+    pass
+
+def code_cb_2e(register):
+    pass
+
+def code_cb_2f(register):
+    pass
+
+
+# OPCODES CB 3x
+def code_cb_30(register):
+    """ SWAP B - Swap upper and lower nibbles (nibble = 4 bits) """
+    lower_nibble = register.B & 0x0F
+    upper_nibble = (register.B >> 4) & 0x0F
+    register.B = (lower_nibble << 4) | upper_nibble
+    register.set_z_flag(register.B == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(False)
+    return 8
+
+
+def code_cb_31(register):
+    """ SWAP C - Swap upper and lower nibbles (nibble = 4 bits) """
+    lower_nibble = register.C & 0x0F
+    upper_nibble = (register.C >> 4) & 0x0F
+    register.C = (lower_nibble << 4) | upper_nibble
+    register.set_z_flag(register.C == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(False)
+    return 8
+
+
+def code_cb_32(register):
+    """ SWAP D - Swap upper and lower nibbles (nibble = 4 bits) """
+    lower_nibble = register.D & 0x0F
+    upper_nibble = (register.D >> 4) & 0x0F
+    register.D = (lower_nibble << 4) | upper_nibble
+    register.set_z_flag(register.D == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(False)
+    return 8
+
+
+def code_cb_33(register):
+    """ SWAP E - Swap upper and lower nibbles (nibble = 4 bits) """
+    lower_nibble = register.E & 0x0F
+    upper_nibble = (register.E >> 4) & 0x0F
+    register.E = (lower_nibble << 4) | upper_nibble
+    register.set_z_flag(register.E == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(False)
+    return 8
+
+
+def code_cb_34(register):
+    """ SWAP H - Swap upper and lower nibbles (nibble = 4 bits) """
+    lower_nibble = register.H & 0x0F
+    upper_nibble = (register.H >> 4) & 0x0F
+    register.H = (lower_nibble << 4) | upper_nibble
+    register.set_z_flag(register.H == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(False)
+    return 8
+
+
+def code_cb_35(register):
+    """ SWAP L - Swap upper and lower nibbles (nibble = 4 bits) """
+    lower_nibble = register.L & 0x0F
+    upper_nibble = (register.L >> 4) & 0x0F
+    register.L = (lower_nibble << 4) | upper_nibble
+    register.set_z_flag(register.L == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(False)
+    return 8
+
+
+def code_cb_36(register):
+    """ SWAP (HL) - Swap upper and lower nibbles (nibble = 4 bits) """
+    # lower_nibble = register.C & 0x0F
+    # upper_nibble = (register.C >> 4) & 0x0F
+    # register.C = (lower_nibble << 4) | upper_nibble
+    # register.set_z_flag(register.C == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(False)
+    return 16
+
+
+def code_cb_37(register):
+    """ SWAP A - Swap upper and lower nibbles (nibble = 4 bits) """
+    lower_nibble = register.A & 0x0F
+    upper_nibble = (register.A >> 4) & 0x0F
+    register.A = (lower_nibble << 4) | upper_nibble
+    register.set_z_flag(register.A == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(False)
+    return 8
+
+
+def code_cb_38(register):
+    pass
+
+def code_cb_39(register):
+    pass
+
+def code_cb_3a(register):
+    pass
+
+def code_cb_3b(register):
+    pass
+
+def code_cb_3c(register):
+    pass
+
+def code_cb_3d(register):
+    pass
+
+def code_cb_3e(register):
+    pass
+
+def code_cb_3f(register):
+    pass
+
+# OPCODES CB 4x
+def code_cb_40(register):
+    pass
+
+def code_cb_41(register):
+    pass
+
+def code_cb_42(register):
+    pass
+
+def code_cb_43(register):
+    pass
+
+def code_cb_44(register):
+    pass
+
+def code_cb_45(register):
+    pass
+
+def code_cb_46(register):
+    pass
+
+def code_cb_47(register):
+    pass
+
+def code_cb_48(register):
+    pass
+
+def code_cb_49(register):
+    pass
+
+def code_cb_4a(register):
+    pass
+
+def code_cb_4b(register):
+    pass
+
+def code_cb_4c(register):
+    pass
+
+def code_cb_4d(register):
+    pass
+
+def code_cb_4e(register):
+    pass
+
+def code_cb_4f(register):
+    pass
+
+# OPCODES CB 5x
+def code_cb_50(register):
+    pass
+
+def code_cb_51(register):
+    pass
+
+def code_cb_52(register):
+    pass
+
+def code_cb_53(register):
+    pass
+
+def code_cb_54(register):
+    pass
+
+def code_cb_55(register):
+    pass
+
+def code_cb_56(register):
+    pass
+
+def code_cb_57(register):
+    pass
+
+def code_cb_58(register):
+    pass
+
+def code_cb_59(register):
+    pass
+
+def code_cb_5a(register):
+    pass
+
+def code_cb_5b(register):
+    pass
+
+def code_cb_5c(register):
+    pass
+
+def code_cb_5d(register):
+    pass
+
+def code_cb_5e(register):
+    pass
+
+def code_cb_5f(register):
+    pass
+
+# OPCODES CB 6x
+def code_cb_60(register):
+    pass
+
+def code_cb_61(register):
+    pass
+
+def code_cb_62(register):
+    pass
+
+def code_cb_63(register):
+    pass
+
+def code_cb_64(register):
+    pass
+
+def code_cb_65(register):
+    pass
+
+def code_cb_66(register):
+    pass
+
+def code_cb_67(register):
+    pass
+
+def code_cb_68(register):
+    pass
+
+def code_cb_69(register):
+    pass
+
+def code_cb_6a(register):
+    pass
+
+def code_cb_6b(register):
+    pass
+
+def code_cb_6c(register):
+    pass
+
+def code_cb_6d(register):
+    pass
+
+def code_cb_6e(register):
+    pass
+
+def code_cb_6f(register):
+    pass
+
+# OPCODES CB 7x
+def code_cb_70(register):
+    pass
+
+def code_cb_71(register):
+    pass
+
+def code_cb_72(register):
+    pass
+
+def code_cb_73(register):
+    pass
+
+def code_cb_74(register):
+    pass
+
+def code_cb_75(register):
+    pass
+
+def code_cb_76(register):
+    pass
+
+def code_cb_77(register):
+    pass
+
+def code_cb_78(register):
+    pass
+
+def code_cb_79(register):
+    pass
+
+def code_cb_7a(register):
+    pass
+
+def code_cb_7b(register):
+    pass
+
+def code_cb_7c(register):
+    pass
+
+def code_cb_7d(register):
+    pass
+
+def code_cb_7e(register):
+    pass
+
+def code_cb_7f(register):
+    pass
+
+# OPCODES CB 8x
+def code_cb_80(register):
+    pass
+
+def code_cb_81(register):
+    pass
+
+def code_cb_82(register):
+    pass
+
+def code_cb_83(register):
+    pass
+
+def code_cb_84(register):
+    pass
+
+def code_cb_85(register):
+    pass
+
+def code_cb_86(register):
+    pass
+
+def code_cb_87(register):
+    pass
+
+def code_cb_88(register):
+    pass
+
+def code_cb_89(register):
+    pass
+
+def code_cb_8a(register):
+    pass
+
+def code_cb_8b(register):
+    pass
+
+def code_cb_8c(register):
+    pass
+
+def code_cb_8d(register):
+    pass
+
+def code_cb_8e(register):
+    pass
+
+def code_cb_8f(register):
+    pass
+
+# OPCODES CB 9x
+def code_cb_90(register):
+    pass
+
+def code_cb_91(register):
+    pass
+
+def code_cb_92(register):
+    pass
+
+def code_cb_93(register):
+    pass
+
+def code_cb_94(register):
+    pass
+
+def code_cb_95(register):
+    pass
+
+def code_cb_96(register):
+    pass
+
+def code_cb_97(register):
+    pass
+
+def code_cb_98(register):
+    pass
+
+def code_cb_99(register):
+    pass
+
+def code_cb_9a(register):
+    pass
+
+def code_cb_9b(register):
+    pass
+
+def code_cb_9c(register):
+    pass
+
+def code_cb_9d(register):
+    pass
+
+def code_cb_9e(register):
+    pass
+
+def code_cb_9f(register):
+    pass
+
+# OPCODES CB Ax
+def code_cb_a0(register):
+    pass
+
+def code_cb_a1(register):
+    pass
+
+def code_cb_a2(register):
+    pass
+
+def code_cb_a3(register):
+    pass
+
+def code_cb_a4(register):
+    pass
+
+def code_cb_a5(register):
+    pass
+
+def code_cb_a6(register):
+    pass
+
+def code_cb_a7(register):
+    pass
+
+def code_cb_a8(register):
+    pass
+
+def code_cb_a9(register):
+    pass
+
+def code_cb_aa(register):
+    pass
+
+def code_cb_ab(register):
+    pass
+
+def code_cb_ac(register):
+    pass
+
+def code_cb_ad(register):
+    pass
+
+def code_cb_ae(register):
+    pass
+
+def code_cb_af(register):
+    pass
+
+# OPCODES CB Bx
+def code_cb_b0(register):
+    pass
+
+def code_cb_b1(register):
+    pass
+
+def code_cb_b2(register):
+    pass
+
+def code_cb_b3(register):
+    pass
+
+def code_cb_b4(register):
+    pass
+
+def code_cb_b5(register):
+    pass
+
+def code_cb_b6(register):
+    pass
+
+def code_cb_b7(register):
+    pass
+
+def code_cb_b8(register):
+    pass
+
+def code_cb_b9(register):
+    pass
+
+def code_cb_ba(register):
+    pass
+
+def code_cb_bb(register):
+    pass
+
+def code_cb_bc(register):
+    pass
+
+def code_cb_bd(register):
+    pass
+
+def code_cb_be(register):
+    pass
+
+def code_cb_bf(register):
+    pass
+
+# OPCODES CB Cx
+def code_cb_c0(register):
+    pass
+
+def code_cb_c1(register):
+    pass
+
+def code_cb_c2(register):
+    pass
+
+def code_cb_c3(register):
+    pass
+
+def code_cb_c4(register):
+    pass
+
+def code_cb_c5(register):
+    pass
+
+def code_cb_c6(register):
+    pass
+
+def code_cb_c7(register):
+    pass
+
+def code_cb_c8(register):
+    pass
+
+def code_cb_c9(register):
+    pass
+
+def code_cb_ca(register):
+    pass
+
+def code_cb_cb(register):
+    pass
+
+def code_cb_cc(register):
+    pass
+
+def code_cb_cd(register):
+    pass
+
+def code_cb_ce(register):
+    pass
+
+def code_cb_cf(register):
+    pass
+
+# OPCODES CB Dx
+def code_cb_d0(register):
+    pass
+
+def code_cb_d1(register):
+    pass
+
+def code_cb_d2(register):
+    pass
+
+def code_cb_d3(register):
+    pass
+
+def code_cb_d4(register):
+    pass
+
+def code_cb_d5(register):
+    pass
+
+def code_cb_d6(register):
+    pass
+
+def code_cb_d7(register):
+    pass
+
+def code_cb_d8(register):
+    pass
+
+def code_cb_d9(register):
+    pass
+
+def code_cb_da(register):
+    pass
+
+def code_cb_db(register):
+    pass
+
+def code_cb_dc(register):
+    pass
+
+def code_cb_dd(register):
+    pass
+
+def code_cb_de(register):
+    pass
+
+def code_cb_df(register):
+    pass
+
+# OPCODES CB Ex
+def code_cb_e0(register):
+    pass
+
+def code_cb_e1(register):
+    pass
+
+def code_cb_e2(register):
+    pass
+
+def code_cb_e3(register):
+    pass
+
+def code_cb_e4(register):
+    pass
+
+def code_cb_e5(register):
+    pass
+
+def code_cb_e6(register):
+    pass
+
+def code_cb_e7(register):
+    pass
+
+def code_cb_e8(register):
+    pass
+
+def code_cb_e9(register):
+    pass
+
+def code_cb_ea(register):
+    pass
+
+def code_cb_eb(register):
+    pass
+
+def code_cb_ec(register):
+    pass
+
+def code_cb_ed(register):
+    pass
+
+def code_cb_ee(register):
+    pass
+
+def code_cb_ef(register):
+    pass
+
+# OPCODES CB Fx
+def code_cb_f0(register):
+    pass
+
+def code_cb_f1(register):
+    pass
+
+def code_cb_f2(register):
+    pass
+
+def code_cb_f3(register):
+    pass
+
+def code_cb_f4(register):
+    pass
+
+def code_cb_f5(register):
+    pass
+
+def code_cb_f6(register):
+    pass
+
+def code_cb_f7(register):
+    pass
+
+def code_cb_f8(register):
+    pass
+
+def code_cb_f9(register):
+    pass
+
+def code_cb_fa(register):
+    pass
+
+def code_cb_fb(register):
+    pass
+
+def code_cb_fc(register):
+    pass
+
+def code_cb_fd(register):
+    pass
+
+def code_cb_fe(register):
+    pass
+
+def code_cb_ff(register):
     pass

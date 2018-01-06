@@ -5,6 +5,12 @@ import cpu.op
 class CPU:
     def __init__(self):
         self.prefix_cb = False
+
+        self.halted = False  # for 76 (HALT)
+        self.stopped = False  # for 10 (STOP)
+        self.interrupts_enabled = False  # for F3 (DI) and FB (EI)
+        self.disable_interrupts_requested = False  # for F3 (DI) and FB (EI)
+
         self.register = Register()
     
     def execute_operation(self, data):
@@ -18,7 +24,7 @@ class CPU:
         opcode = data.pop(0)
         if self.prefix_cb:
             op_cb_set[opcode](self, data)
-        else
+        else:
             op_set[opcode](self,data)
 
 op_set = {
