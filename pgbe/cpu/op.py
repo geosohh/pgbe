@@ -41,11 +41,21 @@ def code_03(register):
 
 
 def code_04(register):
-    pass
+    """ INC B - B=B+1 """
+    register.B = (register.B + 1) & 0xFF
+    register.set_zero_flag(register.B == 0)
+    register.set_subtract_flag(False)
+    register.set_half_carry_flag((register.B & 0x0F) == 0)
+    return 4
 
 
 def code_05(register):
-    pass
+    """ DEC B - B=B-1 """
+    register.B = (register.B - 1) & 0xFF
+    register.set_zero_flag(register.B == 0)
+    register.set_subtract_flag(True)
+    register.set_half_carry_flag((register.B & 0x0F) == 0x0F)
+    return 4
 
 
 def code_06(register, d8):
@@ -80,11 +90,21 @@ def code_0b(register):
 
 
 def code_0c(register):
-    pass
+    """ INC C - C=C+1 """
+    register.C = (register.C + 1) & 0xFF
+    register.set_zero_flag(register.C == 0)
+    register.set_subtract_flag(False)
+    register.set_half_carry_flag((register.C & 0x0F) == 0)
+    return 4
 
 
 def code_0d(register):
-    pass
+    """ DEC C - C=C-1 """
+    register.C = (register.C - 1) & 0xFF
+    register.set_zero_flag(register.C == 0)
+    register.set_subtract_flag(True)
+    register.set_half_carry_flag((register.C & 0x0F) == 0x0F)
+    return 4
 
 
 def code_0e(register, d8):
@@ -118,11 +138,23 @@ def code_12(register):
 def code_13(register):
     pass
 
+
 def code_14(register):
-    pass
+    """ INC D - D=D+1 """
+    register.D = (register.D + 1) & 0xFF
+    register.set_zero_flag(register.D == 0)
+    register.set_subtract_flag(False)
+    register.set_half_carry_flag((register.D & 0x0F) == 0)
+    return 4
+
 
 def code_15(register):
-    pass
+    """ DEC D - D=D-1 """
+    register.D = (register.D - 1) & 0xFF
+    register.set_zero_flag(register.D == 0)
+    register.set_subtract_flag(True)
+    register.set_half_carry_flag((register.D & 0x0F) == 0x0F)
+    return 4
 
 
 def code_16(register, d8):
@@ -150,11 +182,23 @@ def code_1a(register):
 def code_1b(register):
     pass
 
+
 def code_1c(register):
-    pass
+    """ INC E - E=E+1 """
+    register.E = (register.E + 1) & 0xFF
+    register.set_zero_flag(register.E == 0)
+    register.set_subtract_flag(False)
+    register.set_half_carry_flag((register.E & 0x0F) == 0)
+    return 4
+
 
 def code_1d(register):
-    pass
+    """ DEC E - E=E-1 """
+    register.E = (register.E - 1) & 0xFF
+    register.set_zero_flag(register.E == 0)
+    register.set_subtract_flag(True)
+    register.set_half_carry_flag((register.E & 0x0F) == 0x0F)
+    return 4
 
 
 def code_1e(register, d8):
@@ -187,11 +231,23 @@ def code_22(register):
 def code_23(register):
     pass
 
+
 def code_24(register):
-    pass
+    """ INC H - H=H+1 """
+    register.H = (register.H + 1) & 0xFF
+    register.set_zero_flag(register.H == 0)
+    register.set_subtract_flag(False)
+    register.set_half_carry_flag((register.H & 0x0F) == 0)
+    return 4
+
 
 def code_25(register):
-    pass
+    """ DEC H - H=H-1 """
+    register.H = (register.H - 1) & 0xFF
+    register.set_zero_flag(register.H == 0)
+    register.set_subtract_flag(True)
+    register.set_half_carry_flag((register.H & 0x0F) == 0x0F)
+    return 4
 
 
 def code_26(register, d8):
@@ -219,11 +275,23 @@ def code_2a(register):
 def code_2b(register):
     pass
 
+
 def code_2c(register):
-    pass
+    """ INC L - L=L+1 """
+    register.L = (register.L + 1) & 0xFF
+    register.set_zero_flag(register.L == 0)
+    register.set_subtract_flag(False)
+    register.set_half_carry_flag((register.L & 0x0F) == 0)
+    return 4
+
 
 def code_2d(register):
-    pass
+    """ DEC L - L=L-1 """
+    register.L = (register.L - 1) & 0xFF
+    register.set_zero_flag(register.L == 0)
+    register.set_subtract_flag(True)
+    register.set_half_carry_flag((register.L & 0x0F) == 0x0F)
+    return 4
 
 
 def code_2e(register, d8):
@@ -256,11 +324,25 @@ def code_32(register):
 def code_33(register):
     pass
 
+
 def code_34(register):
-    pass
+    """ INC (HL) - (value at address HL)=(value at address HL)+1 """
+    # TODO after memory is implemented
+    # register.L = (register.L + 1) & 0xFF
+    # register.set_zero_flag(register.L == 0)
+    register.set_subtract_flag(False)
+    # register.set_half_carry_flag((register.L & 0x0F) == 0)
+    return 12
+
 
 def code_35(register):
-    pass
+    """ DEC (HL) - (value at address HL)=(value at address HL)-1 """
+    # TODO after memory is implemented
+    # register.L = (register.L - 1) & 0xFF
+    # register.set_zero_flag(register.L == 0)
+    register.set_subtract_flag(True)
+    # register.set_half_carry_flag((register.L & 0x0F) == 0x0F)
+    return 12
 
 
 def code_36(register, d8):
@@ -288,8 +370,15 @@ def code_3a(register):
 def code_3b(register):
     pass
 
+
 def code_3c(register):
-    pass
+    """ INC A - A=A+1 """
+    register.A = (register.A + 1) & 0xFF
+    register.set_zero_flag(register.A == 0)
+    register.set_subtract_flag(False)
+    register.set_half_carry_flag((register.A & 0x0F) == 0)
+    return 4
+
 
 def code_3d(register):
     pass
@@ -1421,28 +1510,77 @@ def code_b7(register):
 
 
 def code_b8(register):
-    pass
+    """ CP A,B - same as SUB A,B but throw the result away, only set flags """
+    register.set_zero_flag(register.A == register.B)
+    register.set_subtract_flag(True)
+    register.set_half_carry_flag((register.B & 0x0F) > (register.A & 0x0F))
+    register.set_carry_flag(register.B > register.A)
+    return 4
+
 
 def code_b9(register):
-    pass
+    """ CP A,C - same as SUB A,C but throw the result away, only set flags """
+    register.set_zero_flag(register.A == register.C)
+    register.set_subtract_flag(True)
+    register.set_half_carry_flag((register.C & 0x0F) > (register.A & 0x0F))
+    register.set_carry_flag(register.C > register.A)
+    return 4
+
 
 def code_ba(register):
-    pass
+    """ CP A,D - same as SUB A,D but throw the result away, only set flags """
+    register.set_zero_flag(register.A == register.D)
+    register.set_subtract_flag(True)
+    register.set_half_carry_flag((register.D & 0x0F) > (register.A & 0x0F))
+    register.set_carry_flag(register.D > register.A)
+    return 4
+
 
 def code_bb(register):
-    pass
+    """ CP A,E - same as SUB A,E but throw the result away, only set flags """
+    register.set_zero_flag(register.A == register.E)
+    register.set_subtract_flag(True)
+    register.set_half_carry_flag((register.E & 0x0F) > (register.A & 0x0F))
+    register.set_carry_flag(register.E > register.A)
+    return 4
+
 
 def code_bc(register):
-    pass
+    """ CP A,H - same as SUB A,H but throw the result away, only set flags """
+    register.set_zero_flag(register.A == register.H)
+    register.set_subtract_flag(True)
+    register.set_half_carry_flag((register.H & 0x0F) > (register.A & 0x0F))
+    register.set_carry_flag(register.H > register.A)
+    return 4
+
 
 def code_bd(register):
-    pass
+    """ CP A,L - same as SUB A,L but throw the result away, only set flags """
+    register.set_zero_flag(register.A == register.L)
+    register.set_subtract_flag(True)
+    register.set_half_carry_flag((register.L & 0x0F) > (register.A & 0x0F))
+    register.set_carry_flag(register.L > register.A)
+    return 4
+
 
 def code_be(register):
-    pass
+    """ CP A,(HL) - same as SUB A,(HL) but throw the result away, only set flags """
+    # TODO after memory is implemented
+    # register.set_zero_flag(register.A == register.B)
+    register.set_subtract_flag(True)
+    # register.set_half_carry_flag((register.B & 0x0F) > (register.A & 0x0F))
+    # register.set_carry_flag(register.B > register.A)
+    return 8
+
 
 def code_bf(register):
-    pass
+    """ CP A,A - same as SUB A,A but throw the result away, only set flags """
+    register.set_zero_flag(True)
+    register.set_subtract_flag(True)
+    register.set_half_carry_flag(False)
+    register.set_carry_flag(False)
+    return 4
+
 
 # OPCODES Cx
 def code_c0(register):
@@ -1805,8 +1943,14 @@ def code_fd():
     pass
 
 
-def code_fe(register):
-    pass
+def code_fe(register, d8):
+    """ CP A,d8 - same as SUB A,d8 but throw the result away, only set flags """
+    register.set_zero_flag(register.A == d8)
+    register.set_subtract_flag(True)
+    register.set_half_carry_flag((d8 & 0x0F) > (register.A & 0x0F))
+    register.set_carry_flag(d8 > register.A)
+    return 8
+
 
 def code_ff(register):
     pass
