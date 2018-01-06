@@ -76,7 +76,15 @@ def code_08(register, a16):
 
 
 def code_09(register):
-    pass
+    """ ADD HL,BC - HL=HL+BC """
+    result = register.get_hl() + register.get_bc()
+
+    register.set_subtract_flag(False)
+    register.set_half_carry_flag(((register.get_hl() & 0x0FFF) + (register.get_bc() & 0x0FFF)) > 0x0FFF)
+    register.set_carry_flag(result > 0xFFFF)
+
+    register.set_hl(result & 0xFFFF)
+    return 8
 
 
 def code_0a(register):
@@ -169,8 +177,17 @@ def code_17(register):
 def code_18(register):
     pass
 
+
 def code_19(register):
-    pass
+    """ ADD HL,DE - HL=HL+DE """
+    result = register.get_hl() + register.get_de()
+
+    register.set_subtract_flag(False)
+    register.set_half_carry_flag(((register.get_hl() & 0x0FFF) + (register.get_de() & 0x0FFF)) > 0x0FFF)
+    register.set_carry_flag(result > 0xFFFF)
+
+    register.set_hl(result & 0xFFFF)
+    return 8
 
 
 def code_1a(register):
@@ -262,8 +279,17 @@ def code_27(register):
 def code_28(register):
     pass
 
+
 def code_29(register):
-    pass
+    """ ADD HL,HL - HL=HL+HL """
+    result = register.get_hl() * 2
+
+    register.set_subtract_flag(False)
+    register.set_half_carry_flag(((register.get_hl() & 0x0FFF) * 2) > 0x0FFF)
+    register.set_carry_flag(result > 0xFFFF)
+
+    register.set_hl(result & 0xFFFF)
+    return 8
 
 
 def code_2a(register):
@@ -357,8 +383,17 @@ def code_37(register):
 def code_38(register):
     pass
 
+
 def code_39(register):
-    pass
+    """ ADD HL,SP - HL=HL+SP """
+    result = register.get_hl() + register.SP
+
+    register.set_subtract_flag(False)
+    register.set_half_carry_flag(((register.get_hl() & 0x0FFF) + (register.SP & 0x0FFF)) > 0x0FFF)
+    register.set_carry_flag(result > 0xFFFF)
+
+    register.set_hl(result & 0xFFFF)
+    return 8
 
 
 def code_3a(register):
@@ -1805,8 +1840,20 @@ def code_e6(register, d8):
 def code_e7(register):
     pass
 
-def code_e8(register):
-    pass
+
+def code_e8(register, r8):
+    """ ADD SP,r8 - SP=SP+r8 (r8 is a signed value) """
+    r8 = cpu.util.convert_unsigned_integer_to_signed(r8)
+    result = register.SP + r8
+
+    register.set_zero_flag(False)
+    register.set_subtract_flag(False)
+    register.set_half_carry_flag(((register.SP & 0x0F) + (r8 & 0x0F)) > 0x0F)
+    register.set_carry_flag(result > 0xFFFF)
+
+    register.SP = result & 0xFFFF
+    return 16
+
 
 def code_e9(register):
     pass
