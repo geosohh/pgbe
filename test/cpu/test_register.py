@@ -1,3 +1,7 @@
+"""
+Tests for cpu/register.py
+"""
+
 import pytest
 
 """
@@ -46,152 +50,152 @@ def test_default_initial_values(register):
 # noinspection PyShadowingNames
 def test_get_zero_flag(register):
     register.F = 0b11110000
-    flag = register.get_zero_flag()
+    flag = register.get_z_flag()
     assert flag == 1
 
     register.F = 0b01110000
-    flag = register.get_zero_flag()
+    flag = register.get_z_flag()
     assert flag == 0
 
     register.F = 0b00000000
-    flag = register.get_zero_flag()
+    flag = register.get_z_flag()
     assert flag == 0
 
     register.F = 0b10000000
-    flag = register.get_zero_flag()
+    flag = register.get_z_flag()
     assert flag == 1
 
 
 # noinspection PyShadowingNames
 def test_get_subtract_flag(register):
     register.F = 0b11110000
-    flag = register.get_subtract_flag()
+    flag = register.get_n_flag()
     assert flag == 1
 
     register.F = 0b10110000
-    flag = register.get_subtract_flag()
+    flag = register.get_n_flag()
     assert flag == 0
 
     register.F = 0b00000000
-    flag = register.get_subtract_flag()
+    flag = register.get_n_flag()
     assert flag == 0
 
     register.F = 0b01000000
-    flag = register.get_subtract_flag()
+    flag = register.get_n_flag()
     assert flag == 1
 
 
 # noinspection PyShadowingNames
 def test_get_half_carry_flag(register):
     register.F = 0b11110000
-    flag = register.get_half_carry_flag()
+    flag = register.get_h_flag()
     assert flag == 1
 
     register.F = 0b11010000
-    flag = register.get_half_carry_flag()
+    flag = register.get_h_flag()
     assert flag == 0
 
     register.F = 0b00000000
-    flag = register.get_half_carry_flag()
+    flag = register.get_h_flag()
     assert flag == 0
 
     register.F = 0b00100000
-    flag = register.get_half_carry_flag()
+    flag = register.get_h_flag()
     assert flag == 1
 
 
 # noinspection PyShadowingNames
 def test_get_carry_flag(register):
     register.F = 0b11110000
-    flag = register.get_carry_flag()
+    flag = register.get_c_flag()
     assert flag == 1
 
     register.F = 0b11100000
-    flag = register.get_carry_flag()
+    flag = register.get_c_flag()
     assert flag == 0
 
     register.F = 0b00000000
-    flag = register.get_carry_flag()
+    flag = register.get_c_flag()
     assert flag == 0
 
     register.F = 0b00010000
-    flag = register.get_carry_flag()
+    flag = register.get_c_flag()
     assert flag == 1
 
 
 # noinspection PyShadowingNames
 def test_set_zero_flag(register):
     register.F = 0b11110000
-    register.set_zero_flag(True)
+    register.set_z_flag(True)
     assert_registers(register, f=0b11110000)
 
     register.F = 0b11110000
-    register.set_zero_flag(False)
+    register.set_z_flag(False)
     assert_registers(register, f=0b01110000)
 
     register.F = 0b00000000
-    register.set_zero_flag(True)
+    register.set_z_flag(True)
     assert_registers(register, f=0b10000000)
 
     register.F = 0b00000000
-    register.set_zero_flag(False)
+    register.set_z_flag(False)
     assert_registers(register, f=0b00000000)
 
 
 # noinspection PyShadowingNames
 def test_set_subtract_flag(register):
     register.F = 0b11110000
-    register.set_subtract_flag(True)
+    register.set_n_flag(True)
     assert_registers(register, f=0b11110000)
 
     register.F = 0b11110000
-    register.set_subtract_flag(False)
+    register.set_n_flag(False)
     assert_registers(register, f=0b10110000)
 
     register.F = 0b00000000
-    register.set_subtract_flag(True)
+    register.set_n_flag(True)
     assert_registers(register, f=0b01000000)
 
     register.F = 0b00000000
-    register.set_subtract_flag(False)
+    register.set_n_flag(False)
     assert_registers(register, f=0b00000000)
 
 
 # noinspection PyShadowingNames
 def test_set_half_carry_flag(register):
     register.F = 0b11110000
-    register.set_half_carry_flag(True)
+    register.set_h_flag(True)
     assert_registers(register, f=0b11110000)
 
     register.F = 0b11110000
-    register.set_half_carry_flag(False)
+    register.set_h_flag(False)
     assert_registers(register, f=0b11010000)
 
     register.F = 0b00000000
-    register.set_half_carry_flag(True)
+    register.set_h_flag(True)
     assert_registers(register, f=0b00100000)
 
     register.F = 0b00000000
-    register.set_half_carry_flag(False)
+    register.set_h_flag(False)
     assert_registers(register, f=0b00000000)
 
 
 # noinspection PyShadowingNames
 def test_set_carry_flag(register):
     register.F = 0b11110000
-    register.set_carry_flag(True)
+    register.set_c_flag(True)
     assert_registers(register, f=0b11110000)
 
     register.F = 0b11110000
-    register.set_carry_flag(False)
+    register.set_c_flag(False)
     assert_registers(register, f=0b11100000)
 
     register.F = 0b00000000
-    register.set_carry_flag(True)
+    register.set_c_flag(True)
     assert_registers(register, f=0b00010000)
 
     register.F = 0b00000000
-    register.set_carry_flag(False)
+    register.set_c_flag(False)
     assert_registers(register, f=0b00000000)
 
 
@@ -405,12 +409,12 @@ def test_sub_af_below_0000(register):
     register.A = 0x00
     register.F = 0x01
     register.sub_af(0x0100)
-    assert_registers(register, a=0x00, f=0xFF)
+    assert_registers(register, a=0xFF, f=0x01)
 
     register.A = 0x00
     register.F = 0x00
     register.sub_af(0xFFFF)
-    assert_registers(register, a=0xFF, f=0xFF)
+    assert_registers(register, a=0x00, f=0x01)
 
 
 # noinspection PyShadowingNames
@@ -431,12 +435,12 @@ def test_sub_bc_below_0000(register):
     register.B = 0x00
     register.C = 0x01
     register.sub_bc(0x0100)
-    assert_registers(register, b=0x00, c=0xFF)
+    assert_registers(register, b=0xFF, c=0x01)
 
     register.B = 0x00
     register.C = 0x00
     register.sub_bc(0xFFFF)
-    assert_registers(register, b=0xFF, c=0xFF)
+    assert_registers(register, b=0x00, c=0x01)
 
 
 # noinspection PyShadowingNames
@@ -457,12 +461,12 @@ def test_sub_de_below_0000(register):
     register.D = 0x00
     register.E = 0x01
     register.sub_de(0x0100)
-    assert_registers(register, d=0x00, e=0xFF)
+    assert_registers(register, d=0xFF, e=0x01)
 
     register.D = 0x00
     register.E = 0x00
     register.sub_de(0xFFFF)
-    assert_registers(register, d=0xFF, e=0xFF)
+    assert_registers(register, d=0x00, e=0x01)
 
 
 # noinspection PyShadowingNames
@@ -483,9 +487,9 @@ def test_sub_hl_below_0000(register):
     register.H = 0x00
     register.L = 0x01
     register.sub_hl(0x0100)
-    assert_registers(register, h=0x00, l=0xFF)
+    assert_registers(register, h=0xFF, l=0x01)
 
     register.H = 0x00
     register.L = 0x00
     register.sub_hl(0xFFFF)
-    assert_registers(register, h=0xFF, l=0xFF)
+    assert_registers(register, h=0x00, l=0x01)

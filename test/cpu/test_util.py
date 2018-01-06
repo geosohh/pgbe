@@ -1,3 +1,7 @@
+"""
+Tests for cpu/util.py
+"""
+
 import cpu.util
 
 """

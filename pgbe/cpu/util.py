@@ -1,5 +1,6 @@
-from register import Register
-import op
+"""
+Utility methods for the cpu code.
+"""
 
 
 def convert_little_endian_to_big_endian(little_endian_value):
@@ -37,19 +38,3 @@ def convert_unsigned_integer_to_signed(value, bit_length=8):
         return value | ~mask
     else:
         return value  # otherwise just treat it as positive, i.e. no need to do anything
-
-
-if __name__ == '__main__':
-    register = Register()
-
-    register.B = 0x00
-    register.C = 0x01
-    print("B=" + str(hex(register.B)) + "(" + str(register.B) + ")")
-    print("C=" + str(hex(register.C)) + "(" + str(register.C) + ")")
-
-    register.sub_bc(0x0100)
-
-    print("B=" + str(hex(register.B)) + "(" + str(register.B) + ")")
-    print("C=" + str(hex(register.C)) + "(" + str(register.C) + ")")
-
-    op.code_01(register,0x9933)

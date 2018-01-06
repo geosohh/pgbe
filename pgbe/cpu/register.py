@@ -1,3 +1,8 @@
+"""
+CPU Registers.
+"""
+
+
 class Register:
     """
     CPU Registers
@@ -16,7 +21,7 @@ class Register:
     |    H    |    L    |
 
         A - Accumulator
-            #TODO: Description
+            Where the result of 8-bit math operations are stored.
 
         F - Flags
             |7|6|5|4|3|2|1|0|
@@ -87,19 +92,19 @@ class Register:
         mask = 1 << bit_position
         return (self.F & mask) >> bit_position
 
-    def get_zero_flag(self):
+    def get_z_flag(self):
         """ Get Zero flag. """
         return self._get_flag(7)
 
-    def get_subtract_flag(self):
+    def get_n_flag(self):
         """ Get Subtract flag. """
         return self._get_flag(6)
 
-    def get_half_carry_flag(self):
+    def get_h_flag(self):
         """ Get Half Carry flag. """
         return self._get_flag(5)
 
-    def get_carry_flag(self):
+    def get_c_flag(self):
         """ Get Carry flag. """
         return self._get_flag(4)
 
@@ -115,28 +120,28 @@ class Register:
         if (self.F & mask) != (new_value << bit_position):  # If current value is != from new_value, flip current value
             self.F = self.F ^ mask
 
-    def set_zero_flag(self,new_value):
+    def set_z_flag(self, new_value):
         """
         Set Zero flag to given value.
         :param new_value:  New value for Zero flag.
         """
         self._set_flag(7,new_value)
 
-    def set_subtract_flag(self,new_value):
+    def set_n_flag(self, new_value):
         """
         Set Subtract flag to given value.
         :param new_value:  New value for Subtract flag.
         """
         self._set_flag(6,new_value)
 
-    def set_half_carry_flag(self,new_value):
+    def set_h_flag(self, new_value):
         """
         Set Half Carry flag to given value.
         :param new_value:  New value for Half Carry flag.
         """
         self._set_flag(5,new_value)
 
-    def set_carry_flag(self,new_value):
+    def set_c_flag(self, new_value):
         """
         Set Carry flag to given value.
         :param new_value:  New value for Carry flag.
@@ -211,40 +216,28 @@ class Register:
         Adds d16 to the current AF values.
         :param d16: Hex value to add (assumes it is in big endian format)
         """
-        af_inc = self.get_af() + d16  # TODO: what if the result goes above 0xFFFF?
-
-        self.F = af_inc & 0x00ff
-        self.A = (af_inc >> 8) & 0x00ff
+        self.set_af((self.get_af() + d16) & 0xFFFF)
 
     def add_bc(self, d16):
         """
         Adds d16 to the current BC values.
         :param d16: Hex value to add (assumes it is in big endian format)
         """
-        bc_inc = self.get_bc() + d16  # TODO: what if the result goes above 0xFFFF?
-
-        self.C = bc_inc & 0x00ff
-        self.B = (bc_inc >> 8) & 0x00ff
+        self.set_bc((self.get_bc() + d16) & 0xFFFF)
 
     def add_de(self, d16):
         """
         Adds d16 to the current DE values.
         :param d16: Hex value to add (assumes it is in big endian format)
         """
-        de_inc = self.get_de() + d16  # TODO: what if the result goes above 0xFFFF?
-
-        self.E = de_inc & 0x00ff
-        self.D = (de_inc >> 8) & 0x00ff
+        self.set_de((self.get_de() + d16) & 0xFFFF)
 
     def add_hl(self, d16):
         """
         Adds d16 to the current HL values.
         :param d16: Hex value to add (assumes it is in big endian format)
         """
-        hl_inc = self.get_hl() + d16  # TODO: what if the result goes above 0xFFFF?
-
-        self.L = hl_inc & 0x00ff
-        self.H = (hl_inc >> 8) & 0x00ff
+        self.set_hl((self.get_hl() + d16) & 0xFFFF)
 
     # SUB methods for 16-bit register combinations
     def sub_af(self, d16):
@@ -252,37 +245,25 @@ class Register:
         Subtracts d16 of the current AF values.
         :param d16: Hex value to subtract (assumes it is in big endian format)
         """
-        af_sub = abs(self.get_af() - d16)  # TODO: what if the result goes below 0x0000?
-
-        self.F = af_sub & 0x00ff
-        self.A = (af_sub >> 8) & 0x00ff
+        self.set_af((self.get_af() - d16) & 0xFFFF)
 
     def sub_bc(self, d16):
         """
         Subtracts d16 of the current BC values.
         :param d16: Hex value to subtract (assumes it is in big endian format)
         """
-        bc_sub = abs(self.get_bc() - d16)  # TODO: what if the result goes below 0x0000?
-
-        self.C = bc_sub & 0x00ff
-        self.B = (bc_sub >> 8) & 0x00ff
+        self.set_bc((self.get_bc() - d16) & 0xFFFF)
 
     def sub_de(self, d16):
         """
         Subtracts d16 of the current DE values.
         :param d16: Hex value to subtract (assumes it is in big endian format)
         """
-        de_sub = abs(self.get_de() - d16)  # TODO: what if the result goes below 0x0000?
-
-        self.E = de_sub & 0x00ff
-        self.D = (de_sub >> 8) & 0x00ff
+        self.set_de((self.get_de() - d16) & 0xFFFF)
 
     def sub_hl(self, d16):
         """
         Subtracts d16 of the current HL values.
         :param d16: Hex value to subtract (assumes it is in big endian format)
         """
-        hl_sub = abs(self.get_hl() - d16)  # TODO: what if the result goes below 0x0000?
-
-        self.L = hl_sub & 0x00ff
-        self.H = (hl_sub >> 8) & 0x00ff
+        self.set_hl((self.get_hl() - d16) & 0xFFFF)

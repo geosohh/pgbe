@@ -1,5 +1,3 @@
-import cpu.util
-
 """
 CPU Operations Codes
 
@@ -16,6 +14,8 @@ See:
 The Game Boy uses Little-endian, i.e. least significant byte first. Therefore, in order to properly execute opcodes
 values have to be converted to Big-endian first.
 """
+
+import cpu.util
 
 
 # OPCODES 0x
@@ -37,24 +37,26 @@ def code_02(register):
 
 
 def code_03(register):
-    pass
+    """ INC BC - BC=BC+1 """
+    register.set_bc((register.get_bc() + 1) & 0xFFFF)
+    return 8
 
 
 def code_04(register):
     """ INC B - B=B+1 """
     register.B = (register.B + 1) & 0xFF
-    register.set_zero_flag(register.B == 0)
-    register.set_subtract_flag(False)
-    register.set_half_carry_flag((register.B & 0x0F) == 0)
+    register.set_z_flag(register.B == 0)
+    register.set_n_flag(False)
+    register.set_h_flag((register.B & 0x0F) == 0)
     return 4
 
 
 def code_05(register):
     """ DEC B - B=B-1 """
     register.B = (register.B - 1) & 0xFF
-    register.set_zero_flag(register.B == 0)
-    register.set_subtract_flag(True)
-    register.set_half_carry_flag((register.B & 0x0F) == 0x0F)
+    register.set_z_flag(register.B == 0)
+    register.set_n_flag(True)
+    register.set_h_flag((register.B & 0x0F) == 0x0F)
     return 4
 
 
@@ -79,9 +81,9 @@ def code_09(register):
     """ ADD HL,BC - HL=HL+BC """
     result = register.get_hl() + register.get_bc()
 
-    register.set_subtract_flag(False)
-    register.set_half_carry_flag(((register.get_hl() & 0x0FFF) + (register.get_bc() & 0x0FFF)) > 0x0FFF)
-    register.set_carry_flag(result > 0xFFFF)
+    register.set_n_flag(False)
+    register.set_h_flag(((register.get_hl() & 0x0FFF) + (register.get_bc() & 0x0FFF)) > 0x0FFF)
+    register.set_c_flag(result > 0xFFFF)
 
     register.set_hl(result & 0xFFFF)
     return 8
@@ -94,24 +96,26 @@ def code_0a(register):
 
 
 def code_0b(register):
-    pass
+    """ DEC BC - BC=BC-1 """
+    register.set_bc((register.get_bc() - 1) & 0xFFFF)
+    return 8
 
 
 def code_0c(register):
     """ INC C - C=C+1 """
     register.C = (register.C + 1) & 0xFF
-    register.set_zero_flag(register.C == 0)
-    register.set_subtract_flag(False)
-    register.set_half_carry_flag((register.C & 0x0F) == 0)
+    register.set_z_flag(register.C == 0)
+    register.set_n_flag(False)
+    register.set_h_flag((register.C & 0x0F) == 0)
     return 4
 
 
 def code_0d(register):
     """ DEC C - C=C-1 """
     register.C = (register.C - 1) & 0xFF
-    register.set_zero_flag(register.C == 0)
-    register.set_subtract_flag(True)
-    register.set_half_carry_flag((register.C & 0x0F) == 0x0F)
+    register.set_z_flag(register.C == 0)
+    register.set_n_flag(True)
+    register.set_h_flag((register.C & 0x0F) == 0x0F)
     return 4
 
 
@@ -144,24 +148,26 @@ def code_12(register):
 
 
 def code_13(register):
-    pass
+    """ INC DE - DE=DE+1 """
+    register.set_de((register.get_de() + 1) & 0xFFFF)
+    return 8
 
 
 def code_14(register):
     """ INC D - D=D+1 """
     register.D = (register.D + 1) & 0xFF
-    register.set_zero_flag(register.D == 0)
-    register.set_subtract_flag(False)
-    register.set_half_carry_flag((register.D & 0x0F) == 0)
+    register.set_z_flag(register.D == 0)
+    register.set_n_flag(False)
+    register.set_h_flag((register.D & 0x0F) == 0)
     return 4
 
 
 def code_15(register):
     """ DEC D - D=D-1 """
     register.D = (register.D - 1) & 0xFF
-    register.set_zero_flag(register.D == 0)
-    register.set_subtract_flag(True)
-    register.set_half_carry_flag((register.D & 0x0F) == 0x0F)
+    register.set_z_flag(register.D == 0)
+    register.set_n_flag(True)
+    register.set_h_flag((register.D & 0x0F) == 0x0F)
     return 4
 
 
@@ -182,9 +188,9 @@ def code_19(register):
     """ ADD HL,DE - HL=HL+DE """
     result = register.get_hl() + register.get_de()
 
-    register.set_subtract_flag(False)
-    register.set_half_carry_flag(((register.get_hl() & 0x0FFF) + (register.get_de() & 0x0FFF)) > 0x0FFF)
-    register.set_carry_flag(result > 0xFFFF)
+    register.set_n_flag(False)
+    register.set_h_flag(((register.get_hl() & 0x0FFF) + (register.get_de() & 0x0FFF)) > 0x0FFF)
+    register.set_c_flag(result > 0xFFFF)
 
     register.set_hl(result & 0xFFFF)
     return 8
@@ -197,24 +203,26 @@ def code_1a(register):
 
 
 def code_1b(register):
-    pass
+    """ DEC DE - DE=DE-1 """
+    register.set_de((register.get_de() - 1) & 0xFFFF)
+    return 8
 
 
 def code_1c(register):
     """ INC E - E=E+1 """
     register.E = (register.E + 1) & 0xFF
-    register.set_zero_flag(register.E == 0)
-    register.set_subtract_flag(False)
-    register.set_half_carry_flag((register.E & 0x0F) == 0)
+    register.set_z_flag(register.E == 0)
+    register.set_n_flag(False)
+    register.set_h_flag((register.E & 0x0F) == 0)
     return 4
 
 
 def code_1d(register):
     """ DEC E - E=E-1 """
     register.E = (register.E - 1) & 0xFF
-    register.set_zero_flag(register.E == 0)
-    register.set_subtract_flag(True)
-    register.set_half_carry_flag((register.E & 0x0F) == 0x0F)
+    register.set_z_flag(register.E == 0)
+    register.set_n_flag(True)
+    register.set_h_flag((register.E & 0x0F) == 0x0F)
     return 4
 
 
@@ -246,24 +254,26 @@ def code_22(register):
 
 
 def code_23(register):
-    pass
+    """ INC HL - HL=HL+1 """
+    register.set_hl((register.get_hl() + 1) & 0xFFFF)
+    return 8
 
 
 def code_24(register):
     """ INC H - H=H+1 """
     register.H = (register.H + 1) & 0xFF
-    register.set_zero_flag(register.H == 0)
-    register.set_subtract_flag(False)
-    register.set_half_carry_flag((register.H & 0x0F) == 0)
+    register.set_z_flag(register.H == 0)
+    register.set_n_flag(False)
+    register.set_h_flag((register.H & 0x0F) == 0)
     return 4
 
 
 def code_25(register):
     """ DEC H - H=H-1 """
     register.H = (register.H - 1) & 0xFF
-    register.set_zero_flag(register.H == 0)
-    register.set_subtract_flag(True)
-    register.set_half_carry_flag((register.H & 0x0F) == 0x0F)
+    register.set_z_flag(register.H == 0)
+    register.set_n_flag(True)
+    register.set_h_flag((register.H & 0x0F) == 0x0F)
     return 4
 
 
@@ -284,9 +294,9 @@ def code_29(register):
     """ ADD HL,HL - HL=HL+HL """
     result = register.get_hl() * 2
 
-    register.set_subtract_flag(False)
-    register.set_half_carry_flag(((register.get_hl() & 0x0FFF) * 2) > 0x0FFF)
-    register.set_carry_flag(result > 0xFFFF)
+    register.set_n_flag(False)
+    register.set_h_flag(((register.get_hl() & 0x0FFF) * 2) > 0x0FFF)
+    register.set_c_flag(result > 0xFFFF)
 
     register.set_hl(result & 0xFFFF)
     return 8
@@ -299,24 +309,26 @@ def code_2a(register):
 
 
 def code_2b(register):
-    pass
+    """ DEC HL - HL=HL-1 """
+    register.set_hl((register.get_hl() - 1) & 0xFFFF)
+    return 8
 
 
 def code_2c(register):
     """ INC L - L=L+1 """
     register.L = (register.L + 1) & 0xFF
-    register.set_zero_flag(register.L == 0)
-    register.set_subtract_flag(False)
-    register.set_half_carry_flag((register.L & 0x0F) == 0)
+    register.set_z_flag(register.L == 0)
+    register.set_n_flag(False)
+    register.set_h_flag((register.L & 0x0F) == 0)
     return 4
 
 
 def code_2d(register):
     """ DEC L - L=L-1 """
     register.L = (register.L - 1) & 0xFF
-    register.set_zero_flag(register.L == 0)
-    register.set_subtract_flag(True)
-    register.set_half_carry_flag((register.L & 0x0F) == 0x0F)
+    register.set_z_flag(register.L == 0)
+    register.set_n_flag(True)
+    register.set_h_flag((register.L & 0x0F) == 0x0F)
     return 4
 
 
@@ -348,7 +360,9 @@ def code_32(register):
 
 
 def code_33(register):
-    pass
+    """ INC SP - SP=SP+1 """
+    register.SP = (register.SP + 1) & 0xFFFF
+    return 8
 
 
 def code_34(register):
@@ -356,7 +370,7 @@ def code_34(register):
     # TODO after memory is implemented
     # register.L = (register.L + 1) & 0xFF
     # register.set_zero_flag(register.L == 0)
-    register.set_subtract_flag(False)
+    register.set_n_flag(False)
     # register.set_half_carry_flag((register.L & 0x0F) == 0)
     return 12
 
@@ -366,7 +380,7 @@ def code_35(register):
     # TODO after memory is implemented
     # register.L = (register.L - 1) & 0xFF
     # register.set_zero_flag(register.L == 0)
-    register.set_subtract_flag(True)
+    register.set_n_flag(True)
     # register.set_half_carry_flag((register.L & 0x0F) == 0x0F)
     return 12
 
@@ -388,9 +402,9 @@ def code_39(register):
     """ ADD HL,SP - HL=HL+SP """
     result = register.get_hl() + register.SP
 
-    register.set_subtract_flag(False)
-    register.set_half_carry_flag(((register.get_hl() & 0x0FFF) + (register.SP & 0x0FFF)) > 0x0FFF)
-    register.set_carry_flag(result > 0xFFFF)
+    register.set_n_flag(False)
+    register.set_h_flag(((register.get_hl() & 0x0FFF) + (register.SP & 0x0FFF)) > 0x0FFF)
+    register.set_c_flag(result > 0xFFFF)
 
     register.set_hl(result & 0xFFFF)
     return 8
@@ -403,15 +417,17 @@ def code_3a(register):
 
 
 def code_3b(register):
-    pass
+    """ DEC SP - SP=SP-1 """
+    register.SP = (register.SP - 1) & 0xFFFF
+    return 8
 
 
 def code_3c(register):
     """ INC A - A=A+1 """
     register.A = (register.A + 1) & 0xFF
-    register.set_zero_flag(register.A == 0)
-    register.set_subtract_flag(False)
-    register.set_half_carry_flag((register.A & 0x0F) == 0)
+    register.set_z_flag(register.A == 0)
+    register.set_n_flag(False)
+    register.set_h_flag((register.A & 0x0F) == 0)
     return 4
 
 
@@ -820,10 +836,10 @@ def code_80(register):
     """ ADD A,B - A=A+B """
     result = register.A + register.B
 
-    register.set_zero_flag((result & 0xFF) == 0)
-    register.set_subtract_flag(False)
-    register.set_half_carry_flag(((register.A & 0x0F) + (register.B & 0x0F)) > 0x0F)
-    register.set_carry_flag(result > 0xFF)
+    register.set_z_flag((result & 0xFF) == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(((register.A & 0x0F) + (register.B & 0x0F)) > 0x0F)
+    register.set_c_flag(result > 0xFF)
 
     register.A = result & 0xFF
     return 4
@@ -833,10 +849,10 @@ def code_81(register):
     """ ADD A,C - A=A+C """
     result = register.A + register.C
 
-    register.set_zero_flag((result & 0xFF) == 0)
-    register.set_subtract_flag(False)
-    register.set_half_carry_flag(((register.A & 0x0F) + (register.C & 0x0F)) > 0x0F)
-    register.set_carry_flag(result > 0xFF)
+    register.set_z_flag((result & 0xFF) == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(((register.A & 0x0F) + (register.C & 0x0F)) > 0x0F)
+    register.set_c_flag(result > 0xFF)
 
     register.A = result & 0xFF
     return 4
@@ -846,10 +862,10 @@ def code_82(register):
     """ ADD A,D - A=A+D """
     result = register.A + register.D
 
-    register.set_zero_flag((result & 0xFF) == 0)
-    register.set_subtract_flag(False)
-    register.set_half_carry_flag(((register.A & 0x0F) + (register.D & 0x0F)) > 0x0F)
-    register.set_carry_flag(result > 0xFF)
+    register.set_z_flag((result & 0xFF) == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(((register.A & 0x0F) + (register.D & 0x0F)) > 0x0F)
+    register.set_c_flag(result > 0xFF)
 
     register.A = result & 0xFF
     return 4
@@ -859,10 +875,10 @@ def code_83(register):
     """ ADD A,E - A=A+E """
     result = register.A + register.E
 
-    register.set_zero_flag((result & 0xFF) == 0)
-    register.set_subtract_flag(False)
-    register.set_half_carry_flag(((register.A & 0x0F) + (register.E & 0x0F)) > 0x0F)
-    register.set_carry_flag(result > 0xFF)
+    register.set_z_flag((result & 0xFF) == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(((register.A & 0x0F) + (register.E & 0x0F)) > 0x0F)
+    register.set_c_flag(result > 0xFF)
 
     register.A = result & 0xFF
     return 4
@@ -872,10 +888,10 @@ def code_84(register):
     """ ADD A,H - A=A+H """
     result = register.A + register.H
 
-    register.set_zero_flag((result & 0xFF) == 0)
-    register.set_subtract_flag(False)
-    register.set_half_carry_flag(((register.A & 0x0F) + (register.H & 0x0F)) > 0x0F)
-    register.set_carry_flag(result > 0xFF)
+    register.set_z_flag((result & 0xFF) == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(((register.A & 0x0F) + (register.H & 0x0F)) > 0x0F)
+    register.set_c_flag(result > 0xFF)
 
     register.A = result & 0xFF
     return 4
@@ -885,10 +901,10 @@ def code_85(register):
     """ ADD A,L - A=A+L """
     result = register.A + register.L
 
-    register.set_zero_flag((result & 0xFF) == 0)
-    register.set_subtract_flag(False)
-    register.set_half_carry_flag(((register.A & 0x0F) + (register.L & 0x0F)) > 0x0F)
-    register.set_carry_flag(result > 0xFF)
+    register.set_z_flag((result & 0xFF) == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(((register.A & 0x0F) + (register.L & 0x0F)) > 0x0F)
+    register.set_c_flag(result > 0xFF)
 
     register.A = result & 0xFF
     return 4
@@ -899,10 +915,10 @@ def code_86(register):
     # TODO after memory is implemented
     # result = register.A + register.C
 
-    register.set_zero_flag((result & 0xFF) == 0)
-    register.set_subtract_flag(False)
+    register.set_z_flag((result & 0xFF) == 0)
+    register.set_n_flag(False)
     # register.set_half_carry_flag(((register.A & 0x0F) + (register.C & 0x0F)) > 0x0F)
-    register.set_carry_flag(result > 0xFF)
+    register.set_c_flag(result > 0xFF)
 
     register.A = result & 0xFF
     return 8
@@ -912,10 +928,10 @@ def code_87(register):
     """ ADD A,A - A=A+A """
     result = register.A + register.A
 
-    register.set_zero_flag((result & 0xFF) == 0)
-    register.set_subtract_flag(False)
-    register.set_half_carry_flag(((register.A & 0x0F) + (register.A & 0x0F)) > 0x0F)
-    register.set_carry_flag(result > 0xFF)
+    register.set_z_flag((result & 0xFF) == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(((register.A & 0x0F) + (register.A & 0x0F)) > 0x0F)
+    register.set_c_flag(result > 0xFF)
 
     register.A = result & 0xFF
     return 4
@@ -923,13 +939,13 @@ def code_87(register):
 
 def code_88(register):
     """ ADC A,B - A=A+B+carry_flag (yes, '+carry_flag' is just +1 or +0) """
-    carry_flag = register.get_carry_flag()
+    carry_flag = register.get_c_flag()
     result = register.A + register.B + carry_flag
 
-    register.set_zero_flag((result & 0xFF) == 0)
-    register.set_subtract_flag(False)
-    register.set_half_carry_flag(((register.A & 0x0F) + (register.B & 0x0F) + carry_flag) > 0x0F)
-    register.set_carry_flag(result > 0xFF)
+    register.set_z_flag((result & 0xFF) == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(((register.A & 0x0F) + (register.B & 0x0F) + carry_flag) > 0x0F)
+    register.set_c_flag(result > 0xFF)
 
     register.A = result & 0xFF
     return 4
@@ -937,13 +953,13 @@ def code_88(register):
 
 def code_89(register):
     """ ADC A,C - A=A+C+carry_flag (yes, '+carry_flag' is just +1 or +0) """
-    carry_flag = register.get_carry_flag()
+    carry_flag = register.get_c_flag()
     result = register.A + register.C + carry_flag
 
-    register.set_zero_flag((result & 0xFF) == 0)
-    register.set_subtract_flag(False)
-    register.set_half_carry_flag(((register.A & 0x0F) + (register.C & 0x0F) + carry_flag) > 0x0F)
-    register.set_carry_flag(result > 0xFF)
+    register.set_z_flag((result & 0xFF) == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(((register.A & 0x0F) + (register.C & 0x0F) + carry_flag) > 0x0F)
+    register.set_c_flag(result > 0xFF)
 
     register.A = result & 0xFF
     return 4
@@ -951,13 +967,13 @@ def code_89(register):
 
 def code_8a(register):
     """ ADC A,D - A=A+D+carry_flag (yes, '+carry_flag' is just +1 or +0) """
-    carry_flag = register.get_carry_flag()
+    carry_flag = register.get_c_flag()
     result = register.A + register.D + carry_flag
 
-    register.set_zero_flag((result & 0xFF) == 0)
-    register.set_subtract_flag(False)
-    register.set_half_carry_flag(((register.A & 0x0F) + (register.D & 0x0F) + carry_flag) > 0x0F)
-    register.set_carry_flag(result > 0xFF)
+    register.set_z_flag((result & 0xFF) == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(((register.A & 0x0F) + (register.D & 0x0F) + carry_flag) > 0x0F)
+    register.set_c_flag(result > 0xFF)
 
     register.A = result & 0xFF
     return 4
@@ -965,13 +981,13 @@ def code_8a(register):
 
 def code_8b(register):
     """ ADC A,E - A=A+E+carry_flag (yes, '+carry_flag' is just +1 or +0) """
-    carry_flag = register.get_carry_flag()
+    carry_flag = register.get_c_flag()
     result = register.A + register.E + carry_flag
 
-    register.set_zero_flag((result & 0xFF) == 0)
-    register.set_subtract_flag(False)
-    register.set_half_carry_flag(((register.A & 0x0F) + (register.E & 0x0F) + carry_flag) > 0x0F)
-    register.set_carry_flag(result > 0xFF)
+    register.set_z_flag((result & 0xFF) == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(((register.A & 0x0F) + (register.E & 0x0F) + carry_flag) > 0x0F)
+    register.set_c_flag(result > 0xFF)
 
     register.A = result & 0xFF
     return 4
@@ -979,13 +995,13 @@ def code_8b(register):
 
 def code_8c(register):
     """ ADC A,H - A=A+H+carry_flag (yes, '+carry_flag' is just +1 or +0) """
-    carry_flag = register.get_carry_flag()
+    carry_flag = register.get_c_flag()
     result = register.A + register.H + carry_flag
 
-    register.set_zero_flag((result & 0xFF) == 0)
-    register.set_subtract_flag(False)
-    register.set_half_carry_flag(((register.A & 0x0F) + (register.H & 0x0F) + carry_flag) > 0x0F)
-    register.set_carry_flag(result > 0xFF)
+    register.set_z_flag((result & 0xFF) == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(((register.A & 0x0F) + (register.H & 0x0F) + carry_flag) > 0x0F)
+    register.set_c_flag(result > 0xFF)
 
     register.A = result & 0xFF
     return 4
@@ -993,13 +1009,13 @@ def code_8c(register):
 
 def code_8d(register):
     """ ADC A,L - A=A+L+carry_flag (yes, '+carry_flag' is just +1 or +0) """
-    carry_flag = register.get_carry_flag()
+    carry_flag = register.get_c_flag()
     result = register.A + register.L + carry_flag
 
-    register.set_zero_flag((result & 0xFF) == 0)
-    register.set_subtract_flag(False)
-    register.set_half_carry_flag(((register.A & 0x0F) + (register.L & 0x0F) + carry_flag) > 0x0F)
-    register.set_carry_flag(result > 0xFF)
+    register.set_z_flag((result & 0xFF) == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(((register.A & 0x0F) + (register.L & 0x0F) + carry_flag) > 0x0F)
+    register.set_c_flag(result > 0xFF)
 
     register.A = result & 0xFF
     return 4
@@ -1007,14 +1023,14 @@ def code_8d(register):
 
 def code_8e(register):
     """ ADC A,(HL) - A=A+(value at address HL)+carry_flag (yes, '+carry_flag' is just +1 or +0) """
-    carry_flag = register.get_carry_flag()
+    carry_flag = register.get_c_flag()
     # TODO after memory is implemented
     # result = register.A + register.L + carry_flag
 
-    register.set_zero_flag((result & 0xFF) == 0)
-    register.set_subtract_flag(False)
+    register.set_z_flag((result & 0xFF) == 0)
+    register.set_n_flag(False)
     # register.set_half_carry_flag(((register.A & 0x0F) + (register.L & 0x0F) + carry_flag) > 0x0F)
-    register.set_carry_flag(result > 0xFF)
+    register.set_c_flag(result > 0xFF)
 
     register.A = result & 0xFF
     return 8
@@ -1022,13 +1038,13 @@ def code_8e(register):
 
 def code_8f(register):
     """ ADC A,A - A=A+A+carry_flag (yes, '+carry_flag' is just +1 or +0) """
-    carry_flag = register.get_carry_flag()
+    carry_flag = register.get_c_flag()
     result = register.A + register.A + carry_flag
 
-    register.set_zero_flag((result & 0xFF) == 0)
-    register.set_subtract_flag(False)
-    register.set_half_carry_flag(((register.A & 0x0F) + (register.A & 0x0F) + carry_flag) > 0x0F)
-    register.set_carry_flag(result > 0xFF)
+    register.set_z_flag((result & 0xFF) == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(((register.A & 0x0F) + (register.A & 0x0F) + carry_flag) > 0x0F)
+    register.set_c_flag(result > 0xFF)
 
     register.A = result & 0xFF
     return 4
@@ -1039,10 +1055,10 @@ def code_90(register):
     """ SUB A,B - A=A-B """
     result = (register.A - register.B) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
 
-    register.set_zero_flag((result & 0xFF) == 0)
-    register.set_subtract_flag(True)
-    register.set_half_carry_flag((register.B & 0x0F) > (register.A & 0x0F))
-    register.set_carry_flag(register.B > register.A)
+    register.set_z_flag((result & 0xFF) == 0)
+    register.set_n_flag(True)
+    register.set_h_flag((register.B & 0x0F) > (register.A & 0x0F))
+    register.set_c_flag(register.B > register.A)
 
     register.A = result
     return 4
@@ -1052,10 +1068,10 @@ def code_91(register):
     """ SUB A,C - A=A-C """
     result = (register.A - register.C) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
 
-    register.set_zero_flag((result & 0xFF) == 0)
-    register.set_subtract_flag(True)
-    register.set_half_carry_flag((register.C & 0x0F) > (register.A & 0x0F))
-    register.set_carry_flag(register.C > register.A)
+    register.set_z_flag((result & 0xFF) == 0)
+    register.set_n_flag(True)
+    register.set_h_flag((register.C & 0x0F) > (register.A & 0x0F))
+    register.set_c_flag(register.C > register.A)
 
     register.A = result
     return 4
@@ -1065,10 +1081,10 @@ def code_92(register):
     """ SUB A,D - A=A-D """
     result = (register.A - register.D) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
 
-    register.set_zero_flag((result & 0xFF) == 0)
-    register.set_subtract_flag(True)
-    register.set_half_carry_flag((register.D & 0x0F) > (register.A & 0x0F))
-    register.set_carry_flag(register.D > register.A)
+    register.set_z_flag((result & 0xFF) == 0)
+    register.set_n_flag(True)
+    register.set_h_flag((register.D & 0x0F) > (register.A & 0x0F))
+    register.set_c_flag(register.D > register.A)
 
     register.A = result
     return 4
@@ -1078,10 +1094,10 @@ def code_93(register):
     """ SUB A,E - A=A-E """
     result = (register.A - register.E) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
 
-    register.set_zero_flag((result & 0xFF) == 0)
-    register.set_subtract_flag(True)
-    register.set_half_carry_flag((register.E & 0x0F) > (register.A & 0x0F))
-    register.set_carry_flag(register.E > register.A)
+    register.set_z_flag((result & 0xFF) == 0)
+    register.set_n_flag(True)
+    register.set_h_flag((register.E & 0x0F) > (register.A & 0x0F))
+    register.set_c_flag(register.E > register.A)
 
     register.A = result
     return 4
@@ -1091,10 +1107,10 @@ def code_94(register):
     """ SUB A,H - A=A-H """
     result = (register.A - register.H) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
 
-    register.set_zero_flag((result & 0xFF) == 0)
-    register.set_subtract_flag(True)
-    register.set_half_carry_flag((register.H & 0x0F) > (register.A & 0x0F))
-    register.set_carry_flag(register.H > register.A)
+    register.set_z_flag((result & 0xFF) == 0)
+    register.set_n_flag(True)
+    register.set_h_flag((register.H & 0x0F) > (register.A & 0x0F))
+    register.set_c_flag(register.H > register.A)
 
     register.A = result
     return 4
@@ -1104,10 +1120,10 @@ def code_95(register):
     """ SUB A,L - A=A-L """
     result = (register.A - register.L) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
 
-    register.set_zero_flag((result & 0xFF) == 0)
-    register.set_subtract_flag(True)
-    register.set_half_carry_flag((register.L & 0x0F) > (register.A & 0x0F))
-    register.set_carry_flag(register.L > register.A)
+    register.set_z_flag((result & 0xFF) == 0)
+    register.set_n_flag(True)
+    register.set_h_flag((register.L & 0x0F) > (register.A & 0x0F))
+    register.set_c_flag(register.L > register.A)
 
     register.A = result
     return 4
@@ -1118,8 +1134,8 @@ def code_96(register):
     # TODO after memory is implemented
     # result = (register.A - register.B) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
 
-    register.set_zero_flag((result & 0xFF) == 0)
-    register.set_subtract_flag(True)
+    register.set_z_flag((result & 0xFF) == 0)
+    register.set_n_flag(True)
     # register.set_half_carry_flag((register.B & 0x0F) > (register.A & 0x0F))
     # register.set_carry_flag(register.B > register.A)
 
@@ -1129,10 +1145,10 @@ def code_96(register):
 
 def code_97(register):
     """ SUB A,A - A=A-A """
-    register.set_zero_flag(True)
-    register.set_subtract_flag(True)
-    register.set_half_carry_flag(False)
-    register.set_carry_flag(False)
+    register.set_z_flag(True)
+    register.set_n_flag(True)
+    register.set_h_flag(False)
+    register.set_c_flag(False)
 
     register.A = 0x00  # A-A, therefore result is zero, always
     return 4
@@ -1140,13 +1156,13 @@ def code_97(register):
 
 def code_98(register):
     """ SBC A,B - A=A-B-carry_flag (yes, '-carry_flag' is just -1 or -0) """
-    value = register.B + register.get_carry_flag()
+    value = register.B + register.get_c_flag()
     result = (register.A - value) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
 
-    register.set_zero_flag((result & 0xFF) == 0)
-    register.set_subtract_flag(True)
-    register.set_half_carry_flag((value & 0x0F) > (register.A & 0x0F))
-    register.set_carry_flag(value > register.A)
+    register.set_z_flag((result & 0xFF) == 0)
+    register.set_n_flag(True)
+    register.set_h_flag((value & 0x0F) > (register.A & 0x0F))
+    register.set_c_flag(value > register.A)
 
     register.A = result
     return 4
@@ -1154,13 +1170,13 @@ def code_98(register):
 
 def code_99(register):
     """ SBC A,C - A=A-C-carry_flag (yes, '-carry_flag' is just -1 or -0) """
-    value = register.C + register.get_carry_flag()
+    value = register.C + register.get_c_flag()
     result = (register.A - value) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
 
-    register.set_zero_flag((result & 0xFF) == 0)
-    register.set_subtract_flag(True)
-    register.set_half_carry_flag((value & 0x0F) > (register.A & 0x0F))
-    register.set_carry_flag(value > register.A)
+    register.set_z_flag((result & 0xFF) == 0)
+    register.set_n_flag(True)
+    register.set_h_flag((value & 0x0F) > (register.A & 0x0F))
+    register.set_c_flag(value > register.A)
 
     register.A = result
     return 4
@@ -1168,13 +1184,13 @@ def code_99(register):
 
 def code_9a(register):
     """ SBC A,D - A=A-D-carry_flag (yes, '-carry_flag' is just -1 or -0) """
-    value = register.D + register.get_carry_flag()
+    value = register.D + register.get_c_flag()
     result = (register.A - value) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
 
-    register.set_zero_flag((result & 0xFF) == 0)
-    register.set_subtract_flag(True)
-    register.set_half_carry_flag((value & 0x0F) > (register.A & 0x0F))
-    register.set_carry_flag(value > register.A)
+    register.set_z_flag((result & 0xFF) == 0)
+    register.set_n_flag(True)
+    register.set_h_flag((value & 0x0F) > (register.A & 0x0F))
+    register.set_c_flag(value > register.A)
 
     register.A = result
     return 4
@@ -1182,13 +1198,13 @@ def code_9a(register):
 
 def code_9b(register):
     """ SBC A,E - A=A-E-carry_flag (yes, '-carry_flag' is just -1 or -0) """
-    value = register.E + register.get_carry_flag()
+    value = register.E + register.get_c_flag()
     result = (register.A - value) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
 
-    register.set_zero_flag((result & 0xFF) == 0)
-    register.set_subtract_flag(True)
-    register.set_half_carry_flag((value & 0x0F) > (register.A & 0x0F))
-    register.set_carry_flag(value > register.A)
+    register.set_z_flag((result & 0xFF) == 0)
+    register.set_n_flag(True)
+    register.set_h_flag((value & 0x0F) > (register.A & 0x0F))
+    register.set_c_flag(value > register.A)
 
     register.A = result
     return 4
@@ -1196,13 +1212,13 @@ def code_9b(register):
 
 def code_9c(register):
     """ SBC A,H - A=A-H-carry_flag (yes, '-carry_flag' is just -1 or -0) """
-    value = register.H + register.get_carry_flag()
+    value = register.H + register.get_c_flag()
     result = (register.A - value) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
 
-    register.set_zero_flag((result & 0xFF) == 0)
-    register.set_subtract_flag(True)
-    register.set_half_carry_flag((value & 0x0F) > (register.A & 0x0F))
-    register.set_carry_flag(value > register.A)
+    register.set_z_flag((result & 0xFF) == 0)
+    register.set_n_flag(True)
+    register.set_h_flag((value & 0x0F) > (register.A & 0x0F))
+    register.set_c_flag(value > register.A)
 
     register.A = result
     return 4
@@ -1210,13 +1226,13 @@ def code_9c(register):
 
 def code_9d(register):
     """ SBC A,L - A=A-L-carry_flag (yes, '-carry_flag' is just -1 or -0) """
-    value = register.L + register.get_carry_flag()
+    value = register.L + register.get_c_flag()
     result = (register.A - value) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
 
-    register.set_zero_flag((result & 0xFF) == 0)
-    register.set_subtract_flag(True)
-    register.set_half_carry_flag((value & 0x0F) > (register.A & 0x0F))
-    register.set_carry_flag(value > register.A)
+    register.set_z_flag((result & 0xFF) == 0)
+    register.set_n_flag(True)
+    register.set_h_flag((value & 0x0F) > (register.A & 0x0F))
+    register.set_c_flag(value > register.A)
 
     register.A = result
     return 4
@@ -1228,10 +1244,10 @@ def code_9e(register):
     # value = register.L + register.get_carry_flag()
     result = (register.A - value) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
 
-    register.set_zero_flag((result & 0xFF) == 0)
-    register.set_subtract_flag(True)
-    register.set_half_carry_flag((value & 0x0F) > (register.A & 0x0F))
-    register.set_carry_flag(value > register.A)
+    register.set_z_flag((result & 0xFF) == 0)
+    register.set_n_flag(True)
+    register.set_h_flag((value & 0x0F) > (register.A & 0x0F))
+    register.set_c_flag(value > register.A)
 
     register.A = result
     return 8
@@ -1239,13 +1255,13 @@ def code_9e(register):
 
 def code_9f(register):
     """ SBC A,A - A=A-A-carry_flag (yes, '-carry_flag' is just -1 or -0) """
-    carry_flag = register.get_carry_flag()
+    carry_flag = register.get_c_flag()
     result = (-carry_flag) & 0xFF  # A-A-carry_flag, therefore result is -carry_flag, always
 
-    register.set_zero_flag((result & 0xFF) == 0)
-    register.set_subtract_flag(True)
-    register.set_half_carry_flag(carry_flag)
-    register.set_carry_flag(carry_flag)
+    register.set_z_flag((result & 0xFF) == 0)
+    register.set_n_flag(True)
+    register.set_h_flag(carry_flag)
+    register.set_c_flag(carry_flag)
 
     register.A = result
     return 4
@@ -1256,10 +1272,10 @@ def code_a0(register):
     """ AND B - A=Logical AND A with B """
     register.A = register.A & register.B
 
-    register.set_zero_flag(register.A == 0)
-    register.set_subtract_flag(False)
-    register.set_half_carry_flag(True)
-    register.set_carry_flag(False)
+    register.set_z_flag(register.A == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    register.set_c_flag(False)
 
     return 4
 
@@ -1268,10 +1284,10 @@ def code_a1(register):
     """ AND C - A=Logical AND A with C """
     register.A = register.A & register.C
 
-    register.set_zero_flag(register.A == 0)
-    register.set_subtract_flag(False)
-    register.set_half_carry_flag(True)
-    register.set_carry_flag(False)
+    register.set_z_flag(register.A == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    register.set_c_flag(False)
 
     return 4
 
@@ -1280,10 +1296,10 @@ def code_a2(register):
     """ AND D - A=Logical AND A with D """
     register.A = register.A & register.D
 
-    register.set_zero_flag(register.A == 0)
-    register.set_subtract_flag(False)
-    register.set_half_carry_flag(True)
-    register.set_carry_flag(False)
+    register.set_z_flag(register.A == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    register.set_c_flag(False)
 
     return 4
 
@@ -1292,10 +1308,10 @@ def code_a3(register):
     """ AND E - A=Logical AND A with E """
     register.A = register.A & register.E
 
-    register.set_zero_flag(register.A == 0)
-    register.set_subtract_flag(False)
-    register.set_half_carry_flag(True)
-    register.set_carry_flag(False)
+    register.set_z_flag(register.A == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    register.set_c_flag(False)
 
     return 4
 
@@ -1304,10 +1320,10 @@ def code_a4(register):
     """ AND H - A=Logical AND A with H """
     register.A = register.A & register.H
 
-    register.set_zero_flag(register.A == 0)
-    register.set_subtract_flag(False)
-    register.set_half_carry_flag(True)
-    register.set_carry_flag(False)
+    register.set_z_flag(register.A == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    register.set_c_flag(False)
 
     return 4
 
@@ -1316,10 +1332,10 @@ def code_a5(register):
     """ AND L - A=Logical AND A with L """
     register.A = register.A & register.L
 
-    register.set_zero_flag(register.A == 0)
-    register.set_subtract_flag(False)
-    register.set_half_carry_flag(True)
-    register.set_carry_flag(False)
+    register.set_z_flag(register.A == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    register.set_c_flag(False)
 
     return 4
 
@@ -1329,10 +1345,10 @@ def code_a6(register):
     # TODO after memory is implemented
     # register.A = register.A & register.B
 
-    register.set_zero_flag(register.A == 0)
-    register.set_subtract_flag(False)
-    register.set_half_carry_flag(True)
-    register.set_carry_flag(False)
+    register.set_z_flag(register.A == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    register.set_c_flag(False)
 
     return 8
 
@@ -1341,10 +1357,10 @@ def code_a7(register):
     """ AND A - A=Logical AND A with A (why?) """
     # register.A = register.A & register.A -- result is A=A, therefore useless
 
-    register.set_zero_flag(register.A == 0)
-    register.set_subtract_flag(False)
-    register.set_half_carry_flag(True)
-    register.set_carry_flag(False)
+    register.set_z_flag(register.A == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    register.set_c_flag(False)
 
     return 4
 
@@ -1353,10 +1369,10 @@ def code_a8(register):
     """ XOR B - A=Logical XOR A with B """
     register.A = register.A ^ register.B
 
-    register.set_zero_flag(register.A == 0)
-    register.set_subtract_flag(False)
-    register.set_half_carry_flag(False)
-    register.set_carry_flag(False)
+    register.set_z_flag(register.A == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(False)
 
     return 4
 
@@ -1365,10 +1381,10 @@ def code_a9(register):
     """ XOR C - A=Logical XOR A with C """
     register.A = register.A ^ register.C
 
-    register.set_zero_flag(register.A == 0)
-    register.set_subtract_flag(False)
-    register.set_half_carry_flag(False)
-    register.set_carry_flag(False)
+    register.set_z_flag(register.A == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(False)
 
     return 4
 
@@ -1377,10 +1393,10 @@ def code_aa(register):
     """ XOR D - A=Logical XOR A with D """
     register.A = register.A ^ register.D
 
-    register.set_zero_flag(register.A == 0)
-    register.set_subtract_flag(False)
-    register.set_half_carry_flag(False)
-    register.set_carry_flag(False)
+    register.set_z_flag(register.A == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(False)
 
     return 4
 
@@ -1389,10 +1405,10 @@ def code_ab(register):
     """ XOR E - A=Logical XOR A with E """
     register.A = register.A ^ register.E
 
-    register.set_zero_flag(register.A == 0)
-    register.set_subtract_flag(False)
-    register.set_half_carry_flag(False)
-    register.set_carry_flag(False)
+    register.set_z_flag(register.A == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(False)
 
     return 4
 
@@ -1401,10 +1417,10 @@ def code_ac(register):
     """ XOR H - A=Logical XOR A with H """
     register.A = register.A ^ register.H
 
-    register.set_zero_flag(register.A == 0)
-    register.set_subtract_flag(False)
-    register.set_half_carry_flag(False)
-    register.set_carry_flag(False)
+    register.set_z_flag(register.A == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(False)
 
     return 4
 
@@ -1413,10 +1429,10 @@ def code_ad(register):
     """ XOR L - A=Logical XOR A with L """
     register.A = register.A ^ register.L
 
-    register.set_zero_flag(register.A == 0)
-    register.set_subtract_flag(False)
-    register.set_half_carry_flag(False)
-    register.set_carry_flag(False)
+    register.set_z_flag(register.A == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(False)
 
     return 4
 
@@ -1426,10 +1442,10 @@ def code_ae(register):
     # TODO after memory is implemented
     # register.A = register.A ^ register.D
 
-    register.set_zero_flag(register.A == 0)
-    register.set_subtract_flag(False)
-    register.set_half_carry_flag(False)
-    register.set_carry_flag(False)
+    register.set_z_flag(register.A == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(False)
 
     return 8
 
@@ -1438,10 +1454,10 @@ def code_af(register):
     """ XOR A - A=Logical XOR A with A """
     register.A = 0
 
-    register.set_zero_flag(True)
-    register.set_subtract_flag(False)
-    register.set_half_carry_flag(False)
-    register.set_carry_flag(False)
+    register.set_z_flag(True)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(False)
 
     return 4
 
@@ -1451,10 +1467,10 @@ def code_b0(register):
     """ OR B - A=Logical OR A with B """
     register.A = register.A | register.B
 
-    register.set_zero_flag(register.A == 0)
-    register.set_subtract_flag(False)
-    register.set_half_carry_flag(False)
-    register.set_carry_flag(False)
+    register.set_z_flag(register.A == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(False)
 
     return 4
 
@@ -1463,10 +1479,10 @@ def code_b1(register):
     """ OR C - A=Logical OR A with C """
     register.A = register.A | register.C
 
-    register.set_zero_flag(register.A == 0)
-    register.set_subtract_flag(False)
-    register.set_half_carry_flag(False)
-    register.set_carry_flag(False)
+    register.set_z_flag(register.A == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(False)
 
     return 4
 
@@ -1475,10 +1491,10 @@ def code_b2(register):
     """ OR D - A=Logical OR A with D """
     register.A = register.A | register.D
 
-    register.set_zero_flag(register.A == 0)
-    register.set_subtract_flag(False)
-    register.set_half_carry_flag(False)
-    register.set_carry_flag(False)
+    register.set_z_flag(register.A == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(False)
 
     return 4
 
@@ -1487,10 +1503,10 @@ def code_b3(register):
     """ OR E - A=Logical OR A with E """
     register.A = register.A | register.E
 
-    register.set_zero_flag(register.A == 0)
-    register.set_subtract_flag(False)
-    register.set_half_carry_flag(False)
-    register.set_carry_flag(False)
+    register.set_z_flag(register.A == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(False)
 
     return 4
 
@@ -1499,10 +1515,10 @@ def code_b4(register):
     """ OR H - A=Logical OR A with H """
     register.A = register.A | register.H
 
-    register.set_zero_flag(register.A == 0)
-    register.set_subtract_flag(False)
-    register.set_half_carry_flag(False)
-    register.set_carry_flag(False)
+    register.set_z_flag(register.A == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(False)
 
     return 4
 
@@ -1511,10 +1527,10 @@ def code_b5(register):
     """ OR L - A=Logical OR A with L """
     register.A = register.A | register.L
 
-    register.set_zero_flag(register.A == 0)
-    register.set_subtract_flag(False)
-    register.set_half_carry_flag(False)
-    register.set_carry_flag(False)
+    register.set_z_flag(register.A == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(False)
 
     return 4
 
@@ -1524,10 +1540,10 @@ def code_b6(register):
     # TODO after memory is implemented
     # register.A = register.A | register.B
 
-    register.set_zero_flag(register.A == 0)
-    register.set_subtract_flag(False)
-    register.set_half_carry_flag(False)
-    register.set_carry_flag(False)
+    register.set_z_flag(register.A == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(False)
 
     return 8
 
@@ -1536,65 +1552,65 @@ def code_b7(register):
     """ OR L - A=Logical OR A with A (why?) """
     # register.A = register.A | register.A -- result is A=A, therefore useless
 
-    register.set_zero_flag(register.A == 0)
-    register.set_subtract_flag(False)
-    register.set_half_carry_flag(False)
-    register.set_carry_flag(False)
+    register.set_z_flag(register.A == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(False)
 
     return 4
 
 
 def code_b8(register):
     """ CP A,B - same as SUB A,B but throw the result away, only set flags """
-    register.set_zero_flag(register.A == register.B)
-    register.set_subtract_flag(True)
-    register.set_half_carry_flag((register.B & 0x0F) > (register.A & 0x0F))
-    register.set_carry_flag(register.B > register.A)
+    register.set_z_flag(register.A == register.B)
+    register.set_n_flag(True)
+    register.set_h_flag((register.B & 0x0F) > (register.A & 0x0F))
+    register.set_c_flag(register.B > register.A)
     return 4
 
 
 def code_b9(register):
     """ CP A,C - same as SUB A,C but throw the result away, only set flags """
-    register.set_zero_flag(register.A == register.C)
-    register.set_subtract_flag(True)
-    register.set_half_carry_flag((register.C & 0x0F) > (register.A & 0x0F))
-    register.set_carry_flag(register.C > register.A)
+    register.set_z_flag(register.A == register.C)
+    register.set_n_flag(True)
+    register.set_h_flag((register.C & 0x0F) > (register.A & 0x0F))
+    register.set_c_flag(register.C > register.A)
     return 4
 
 
 def code_ba(register):
     """ CP A,D - same as SUB A,D but throw the result away, only set flags """
-    register.set_zero_flag(register.A == register.D)
-    register.set_subtract_flag(True)
-    register.set_half_carry_flag((register.D & 0x0F) > (register.A & 0x0F))
-    register.set_carry_flag(register.D > register.A)
+    register.set_z_flag(register.A == register.D)
+    register.set_n_flag(True)
+    register.set_h_flag((register.D & 0x0F) > (register.A & 0x0F))
+    register.set_c_flag(register.D > register.A)
     return 4
 
 
 def code_bb(register):
     """ CP A,E - same as SUB A,E but throw the result away, only set flags """
-    register.set_zero_flag(register.A == register.E)
-    register.set_subtract_flag(True)
-    register.set_half_carry_flag((register.E & 0x0F) > (register.A & 0x0F))
-    register.set_carry_flag(register.E > register.A)
+    register.set_z_flag(register.A == register.E)
+    register.set_n_flag(True)
+    register.set_h_flag((register.E & 0x0F) > (register.A & 0x0F))
+    register.set_c_flag(register.E > register.A)
     return 4
 
 
 def code_bc(register):
     """ CP A,H - same as SUB A,H but throw the result away, only set flags """
-    register.set_zero_flag(register.A == register.H)
-    register.set_subtract_flag(True)
-    register.set_half_carry_flag((register.H & 0x0F) > (register.A & 0x0F))
-    register.set_carry_flag(register.H > register.A)
+    register.set_z_flag(register.A == register.H)
+    register.set_n_flag(True)
+    register.set_h_flag((register.H & 0x0F) > (register.A & 0x0F))
+    register.set_c_flag(register.H > register.A)
     return 4
 
 
 def code_bd(register):
     """ CP A,L - same as SUB A,L but throw the result away, only set flags """
-    register.set_zero_flag(register.A == register.L)
-    register.set_subtract_flag(True)
-    register.set_half_carry_flag((register.L & 0x0F) > (register.A & 0x0F))
-    register.set_carry_flag(register.L > register.A)
+    register.set_z_flag(register.A == register.L)
+    register.set_n_flag(True)
+    register.set_h_flag((register.L & 0x0F) > (register.A & 0x0F))
+    register.set_c_flag(register.L > register.A)
     return 4
 
 
@@ -1602,7 +1618,7 @@ def code_be(register):
     """ CP A,(HL) - same as SUB A,(HL) but throw the result away, only set flags """
     # TODO after memory is implemented
     # register.set_zero_flag(register.A == register.B)
-    register.set_subtract_flag(True)
+    register.set_n_flag(True)
     # register.set_half_carry_flag((register.B & 0x0F) > (register.A & 0x0F))
     # register.set_carry_flag(register.B > register.A)
     return 8
@@ -1610,10 +1626,10 @@ def code_be(register):
 
 def code_bf(register):
     """ CP A,A - same as SUB A,A but throw the result away, only set flags """
-    register.set_zero_flag(True)
-    register.set_subtract_flag(True)
-    register.set_half_carry_flag(False)
-    register.set_carry_flag(False)
+    register.set_z_flag(True)
+    register.set_n_flag(True)
+    register.set_h_flag(False)
+    register.set_c_flag(False)
     return 4
 
 
@@ -1650,10 +1666,10 @@ def code_c6(register, d8):
     """ ADD A,d8 - A=A+d8 """
     result = register.A + d8
 
-    register.set_zero_flag((result & 0xFF) == 0)
-    register.set_subtract_flag(False)
-    register.set_half_carry_flag(((register.A & 0x0F) + (d8 & 0x0F)) > 0x0F)
-    register.set_carry_flag(result > 0xFF)
+    register.set_z_flag((result & 0xFF) == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(((register.A & 0x0F) + (d8 & 0x0F)) > 0x0F)
+    register.set_c_flag(result > 0xFF)
 
     register.A = result & 0xFF
     return 8
@@ -1683,13 +1699,13 @@ def code_cd(register):
 
 def code_ce(register, d8):
     """ ADC A,d8 - A=A+d8+carry_flag (yes, '+carry_flag' is just +1 or +0) """
-    carry_flag = register.get_carry_flag()
+    carry_flag = register.get_c_flag()
     result = register.A + d8 + carry_flag
 
-    register.set_zero_flag((result & 0xFF) == 0)
-    register.set_subtract_flag(False)
-    register.set_half_carry_flag(((register.A & 0x0F) + (d8 & 0x0F) + carry_flag) > 0x0F)
-    register.set_carry_flag(result > 0xFF)
+    register.set_z_flag((result & 0xFF) == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(((register.A & 0x0F) + (d8 & 0x0F) + carry_flag) > 0x0F)
+    register.set_c_flag(result > 0xFF)
 
     register.A = result & 0xFF
     return 8
@@ -1734,10 +1750,10 @@ def code_d6(register, d8):
     """ SUB A,d8 - A=A-d8 """
     result = (register.A - d8) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
 
-    register.set_zero_flag((result & 0xFF) == 0)
-    register.set_subtract_flag(True)
-    register.set_half_carry_flag((d8 & 0x0F) > (register.A & 0x0F))
-    register.set_carry_flag(d8 > register.A)
+    register.set_z_flag((result & 0xFF) == 0)
+    register.set_n_flag(True)
+    register.set_h_flag((d8 & 0x0F) > (register.A & 0x0F))
+    register.set_c_flag(d8 > register.A)
 
     register.A = result
     return 8
@@ -1772,13 +1788,13 @@ def code_dd():
 
 def code_de(register, d8):
     """ SBC A,d8 - A=A-d8-carry_flag (yes, '-carry_flag' is just -1 or -0) """
-    value = d8 + register.get_carry_flag()
+    value = d8 + register.get_c_flag()
     result = (register.A - value) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
 
-    register.set_zero_flag((result & 0xFF) == 0)
-    register.set_subtract_flag(True)
-    register.set_half_carry_flag((value & 0x0F) > (register.A & 0x0F))
-    register.set_carry_flag(value > register.A)
+    register.set_z_flag((result & 0xFF) == 0)
+    register.set_n_flag(True)
+    register.set_h_flag((value & 0x0F) > (register.A & 0x0F))
+    register.set_c_flag(value > register.A)
 
     register.A = result
     return 8
@@ -1829,10 +1845,10 @@ def code_e6(register, d8):
     """ AND d8 - A=Logical AND A with d8 """
     register.A = register.A & d8
 
-    register.set_zero_flag(register.A == 0)
-    register.set_subtract_flag(False)
-    register.set_half_carry_flag(True)
-    register.set_carry_flag(False)
+    register.set_z_flag(register.A == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    register.set_c_flag(False)
 
     return 8
 
@@ -1846,10 +1862,10 @@ def code_e8(register, r8):
     r8 = cpu.util.convert_unsigned_integer_to_signed(r8)
     result = register.SP + r8
 
-    register.set_zero_flag(False)
-    register.set_subtract_flag(False)
-    register.set_half_carry_flag(((register.SP & 0x0F) + (r8 & 0x0F)) > 0x0F)
-    register.set_carry_flag(result > 0xFFFF)
+    register.set_z_flag(False)
+    register.set_n_flag(False)
+    register.set_h_flag(((register.SP & 0x0F) + (r8 & 0x0F)) > 0x0F)
+    register.set_c_flag(result > 0xFFFF)
 
     register.SP = result & 0xFFFF
     return 16
@@ -1885,10 +1901,10 @@ def code_ee(register, d8):
     """ XOR d8 - A=Logical XOR A with d8 """
     register.A = register.A ^ d8
 
-    register.set_zero_flag(register.A == 0)
-    register.set_subtract_flag(False)
-    register.set_half_carry_flag(False)
-    register.set_carry_flag(False)
+    register.set_z_flag(register.A == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(False)
 
     return 8
 
@@ -1937,10 +1953,10 @@ def code_f6(register, d8):
     """ OR d8 - A=Logical OR A with d8 """
     register.A = register.A | d8
 
-    register.set_zero_flag(register.A == 0)
-    register.set_subtract_flag(False)
-    register.set_half_carry_flag(False)
-    register.set_carry_flag(False)
+    register.set_z_flag(register.A == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(False)
 
     return 8
 
@@ -1954,10 +1970,10 @@ def code_f8(register, r8):
     r8 = cpu.util.convert_unsigned_integer_to_signed(r8)
     result = register.SP + r8
 
-    register.set_zero_flag(False)
-    register.set_subtract_flag(False)
-    register.set_half_carry_flag(((register.SP & 0x0F) + (r8 & 0x0F)) > 0x0F)
-    register.set_carry_flag(result > 0xFFFF)
+    register.set_z_flag(False)
+    register.set_n_flag(False)
+    register.set_h_flag(((register.SP & 0x0F) + (r8 & 0x0F)) > 0x0F)
+    register.set_c_flag(result > 0xFFFF)
 
     register.set_hl(result & 0xFFFF)
     return 12
@@ -1992,10 +2008,10 @@ def code_fd():
 
 def code_fe(register, d8):
     """ CP A,d8 - same as SUB A,d8 but throw the result away, only set flags """
-    register.set_zero_flag(register.A == d8)
-    register.set_subtract_flag(True)
-    register.set_half_carry_flag((d8 & 0x0F) > (register.A & 0x0F))
-    register.set_carry_flag(d8 > register.A)
+    register.set_z_flag(register.A == d8)
+    register.set_n_flag(True)
+    register.set_h_flag((d8 & 0x0F) > (register.A & 0x0F))
+    register.set_c_flag(d8 > register.A)
     return 8
 
 

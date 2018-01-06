@@ -1,3 +1,7 @@
+"""
+Tests for cpu/op.py
+"""
+
 import pytest
 import cpu.op
 
@@ -54,6 +58,30 @@ def test_code_02(register):
     pass
 
 
+# noinspection PyShadowingNames
+def test_code_03(register):
+    """ INC BC - BC=BC+1 """
+    register.set_bc(0x0000)
+    cycles = cpu.op.code_03(register)
+    assert cycles == 8
+    assert_registers(register, b=0x00, c=0x01)
+
+    register.set_bc(0x00FF)
+    cycles = cpu.op.code_03(register)
+    assert cycles == 8
+    assert_registers(register, b=0x01, c=0x00)
+
+    register.set_bc(0x0FFF)
+    cycles = cpu.op.code_03(register)
+    assert cycles == 8
+    assert_registers(register, b=0x10, c=0x00)
+
+    register.set_bc(0xFFFF)
+    cycles = cpu.op.code_03(register)
+    assert cycles == 8
+    assert_registers(register, b=0x00, c=0x00)
+
+    
 # noinspection PyShadowingNames
 def test_code_04(register):
     """ INC B - B=B+1 """
@@ -160,6 +188,25 @@ def test_code_0a(register):
 
 
 # noinspection PyShadowingNames
+def test_code_0b(register):
+    """ DEC BC - BC=BC-1 """
+    register.set_bc(0x0000)
+    cycles = cpu.op.code_0b(register)
+    assert cycles == 8
+    assert_registers(register, b=0xFF, c=0xFF)
+
+    register.set_bc(0x0100)
+    cycles = cpu.op.code_0b(register)
+    assert cycles == 8
+    assert_registers(register, b=0x00, c=0xFF)
+
+    register.set_bc(0x1000)
+    cycles = cpu.op.code_0b(register)
+    assert cycles == 8
+    assert_registers(register, b=0x0F, c=0xFF)
+
+
+# noinspection PyShadowingNames
 def test_code_0c(register):
     """ INC C - C=C+1 """
     register.C = 0x00
@@ -223,6 +270,30 @@ def test_code_12(register):
     """ LD (DE),A - Stores reg at the address in DE """
     # TODO after memory is implemented
     pass
+
+
+# noinspection PyShadowingNames
+def test_code_13(register):
+    """ INC DE - DE=DE+1 """
+    register.set_de(0x0000)
+    cycles = cpu.op.code_13(register)
+    assert cycles == 8
+    assert_registers(register, d=0x00, e=0x01)
+
+    register.set_de(0x00FF)
+    cycles = cpu.op.code_13(register)
+    assert cycles == 8
+    assert_registers(register, d=0x01, e=0x00)
+
+    register.set_de(0x0FFF)
+    cycles = cpu.op.code_13(register)
+    assert cycles == 8
+    assert_registers(register, d=0x10, e=0x00)
+
+    register.set_de(0xFFFF)
+    cycles = cpu.op.code_13(register)
+    assert cycles == 8
+    assert_registers(register, d=0x00, e=0x00)
 
 
 # noinspection PyShadowingNames
@@ -324,6 +395,25 @@ def test_code_1a(register):
 
 
 # noinspection PyShadowingNames
+def test_code_1b(register):
+    """ DEC DE - DE=DE-1 """
+    register.set_de(0x0000)
+    cycles = cpu.op.code_1b(register)
+    assert cycles == 8
+    assert_registers(register, d=0xFF, e=0xFF)
+
+    register.set_de(0x0100)
+    cycles = cpu.op.code_1b(register)
+    assert cycles == 8
+    assert_registers(register, d=0x00, e=0xFF)
+
+    register.set_de(0x1000)
+    cycles = cpu.op.code_1b(register)
+    assert cycles == 8
+    assert_registers(register, d=0x0F, e=0xFF)
+
+
+# noinspection PyShadowingNames
 def test_code_1c(register):
     """ INC E - E=E+1 """
     register.E = 0x00
@@ -387,6 +477,30 @@ def test_code_22(register):
     """ LD (HL+),A or LD (HLI),A or LDI (HL),A - Put value at A into address HL. Increment HL """
     # TODO after memory is implemented
     pass
+
+
+# noinspection PyShadowingNames
+def test_code_23(register):
+    """ INC HL - HL=HL+1 """
+    register.set_hl(0x0000)
+    cycles = cpu.op.code_23(register)
+    assert cycles == 8
+    assert_registers(register, h=0x00, l=0x01)
+
+    register.set_hl(0x00FF)
+    cycles = cpu.op.code_23(register)
+    assert cycles == 8
+    assert_registers(register, h=0x01, l=0x00)
+
+    register.set_hl(0x0FFF)
+    cycles = cpu.op.code_23(register)
+    assert cycles == 8
+    assert_registers(register, h=0x10, l=0x00)
+
+    register.set_hl(0xFFFF)
+    cycles = cpu.op.code_23(register)
+    assert cycles == 8
+    assert_registers(register, h=0x00, l=0x00)
 
 
 # noinspection PyShadowingNames
@@ -482,6 +596,25 @@ def test_code_2a(register):
 
 
 # noinspection PyShadowingNames
+def test_code_2b(register):
+    """ DEC HL - HL=HL-1 """
+    register.set_hl(0x0000)
+    cycles = cpu.op.code_2b(register)
+    assert cycles == 8
+    assert_registers(register, h=0xFF, l=0xFF)
+
+    register.set_hl(0x0100)
+    cycles = cpu.op.code_2b(register)
+    assert cycles == 8
+    assert_registers(register, h=0x00, l=0xFF)
+
+    register.set_hl(0x1000)
+    cycles = cpu.op.code_2b(register)
+    assert cycles == 8
+    assert_registers(register, h=0x0F, l=0xFF)
+
+
+# noinspection PyShadowingNames
 def test_code_2c(register):
     """ INC L - L=L+1 """
     register.L = 0x00
@@ -545,6 +678,30 @@ def test_code_32(register):
     """ LD (HL-),A or LD (HLD),A or LDD (HL),A - Put value at A into address HL. Decrement HL """
     # TODO after memory is implemented
     pass
+
+
+# noinspection PyShadowingNames
+def test_code_33(register):
+    """ INC SP - SP=SP+1 """
+    register.SP = 0x0000
+    cycles = cpu.op.code_33(register)
+    assert cycles == 8
+    assert_registers(register, sp=0x0001)
+
+    register.SP = 0x00FF
+    cycles = cpu.op.code_33(register)
+    assert cycles == 8
+    assert_registers(register, sp=0x0100)
+
+    register.SP = 0x0FFF
+    cycles = cpu.op.code_33(register)
+    assert cycles == 8
+    assert_registers(register, sp=0x1000)
+
+    register.SP = 0xFFFF
+    cycles = cpu.op.code_33(register)
+    assert cycles == 8
+    assert_registers(register, sp=0x0000)
 
 
 # noinspection PyShadowingNames
@@ -613,6 +770,25 @@ def test_code_3a(register):
     """ LD A,(HL-) or LD A,(HLD) or LDD A,(HL) - Put value at address HL into A. Decrement HL """
     # TODO after memory is implemented
     pass
+
+
+# noinspection PyShadowingNames
+def test_code_3b(register):
+    """ DEC SP - SP=SP-1 """
+    register.SP = 0x0000
+    cycles = cpu.op.code_3b(register)
+    assert cycles == 8
+    assert_registers(register, sp=0xFFFF)
+
+    register.SP = 0x0100
+    cycles = cpu.op.code_3b(register)
+    assert cycles == 8
+    assert_registers(register, sp=0x00FF)
+
+    register.SP = 0x1000
+    cycles = cpu.op.code_3b(register)
+    assert cycles == 8
+    assert_registers(register, sp=0x0FFF)
 
 
 # noinspection PyShadowingNames
