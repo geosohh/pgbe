@@ -275,6 +275,20 @@ def test_code_0e(register):
 
 
 # noinspection PyShadowingNames
+def test_code_0f(register):
+    """ RRCA - Copy register A bit 0 to Carry flag, then rotate register A right """
+    register.A = 0b11100011
+    cycles = cpu.op.code_0f(register)
+    assert cycles == 4
+    assert_registers(register, a=0b11110001, f=0b00010000)
+
+    register.A = 0b00000000
+    cycles = cpu.op.code_0f(register)
+    assert cycles == 4
+    assert_registers(register, a=0b00000000, f=0b10000000)
+
+
+# noinspection PyShadowingNames
 def test_code_10(register):
     """
     STOP - Switch Game Boy into VERY low power standby mode. Halt CPU and LCD display until a button is pressed
@@ -505,6 +519,22 @@ def test_code_1e(register):
     cycles = cpu.op.code_1e(register, 0x99)
     assert cycles == 8
     assert_registers(register,e=0x99)
+
+
+# noinspection PyShadowingNames
+def test_code_1f(register):
+    """ RRA - Copy register A bit 0 to temp, replace A bit 0 w/ Carry flag, rotate A right, copy temp to Carry flag """
+    register.A = 0b11100011
+    register.F = 0b00010000
+    cycles = cpu.op.code_1f(register)
+    assert cycles == 4
+    assert_registers(register, a=0b11110001, f=0b00010000)
+
+    register.A = 0b00000000
+    register.F = 0b00010000
+    cycles = cpu.op.code_1f(register)
+    assert cycles == 4
+    assert_registers(register, a=0b10000000, f=0b00000000)
 
 
 # noinspection PyShadowingNames
@@ -3644,6 +3674,671 @@ def test_code_fe(register):
 
 
 # noinspection PyShadowingNames
+def test_code_cb_00(register):
+    """ RLC B - Copy register B bit 7 to Carry flag, then rotate register B left """
+    register.B = 0b11100010
+    cycles = cpu.op.code_cb_00(register)
+    assert cycles == 8
+    assert_registers(register, b=0b11000101, f=0b00010000)
+
+    register.B = 0b00000000
+    cycles = cpu.op.code_cb_00(register)
+    assert cycles == 8
+    assert_registers(register, b=0b00000000, f=0b10000000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_01(register):
+    """ RLC C - Copy register C bit 7 to Carry flag, then rotate register C left """
+    register.C = 0b11100010
+    cycles = cpu.op.code_cb_01(register)
+    assert cycles == 8
+    assert_registers(register, c=0b11000101, f=0b00010000)
+
+    register.C = 0b00000000
+    cycles = cpu.op.code_cb_01(register)
+    assert cycles == 8
+    assert_registers(register, c=0b00000000, f=0b10000000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_02(register):
+    """ RLC D - Copy register D bit 7 to Carry flag, then rotate register D left """
+    register.D = 0b11100010
+    cycles = cpu.op.code_cb_02(register)
+    assert cycles == 8
+    assert_registers(register, d=0b11000101, f=0b00010000)
+
+    register.D = 0b00000000
+    cycles = cpu.op.code_cb_02(register)
+    assert cycles == 8
+    assert_registers(register, d=0b00000000, f=0b10000000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_03(register):
+    """ RLC E - Copy register E bit 7 to Carry flag, then rotate register E left """
+    register.E = 0b11100010
+    cycles = cpu.op.code_cb_03(register)
+    assert cycles == 8
+    assert_registers(register, e=0b11000101, f=0b00010000)
+
+    register.E = 0b00000000
+    cycles = cpu.op.code_cb_03(register)
+    assert cycles == 8
+    assert_registers(register, e=0b00000000, f=0b10000000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_04(register):
+    """ RLC H - Copy register H bit 7 to Carry flag, then rotate register H left """
+    register.H = 0b11100010
+    cycles = cpu.op.code_cb_04(register)
+    assert cycles == 8
+    assert_registers(register, h=0b11000101, f=0b00010000)
+
+    register.H = 0b00000000
+    cycles = cpu.op.code_cb_04(register)
+    assert cycles == 8
+    assert_registers(register, h=0b00000000, f=0b10000000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_05(register):
+    """ RLC L - Copy register L bit 7 to Carry flag, then rotate register L left """
+    register.L = 0b11100010
+    cycles = cpu.op.code_cb_05(register)
+    assert cycles == 8
+    assert_registers(register, l=0b11000101, f=0b00010000)
+
+    register.L = 0b00000000
+    cycles = cpu.op.code_cb_05(register)
+    assert cycles == 8
+    assert_registers(register, l=0b00000000, f=0b10000000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_06(register):
+    """ RLC (HL) - Copy (value at address HL) bit 7 to Carry flag, then rotate (value at address HL) left """
+    # TODO after memory is implemented
+    pass
+
+
+# noinspection PyShadowingNames
+def test_code_cb_07(register):
+    """ RLC A - Copy register A bit 7 to Carry flag, then rotate register A left """
+    register.A = 0b11100010
+    cycles = cpu.op.code_cb_07(register)
+    assert cycles == 8
+    assert_registers(register, a=0b11000101, f=0b00010000)
+
+    register.A = 0b00000000
+    cycles = cpu.op.code_cb_07(register)
+    assert cycles == 8
+    assert_registers(register, a=0b00000000, f=0b10000000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_08(register):
+    """ RRC B - Copy register B bit 0 to Carry flag, then rotate register B right """
+    register.B = 0b11100011
+    cycles = cpu.op.code_cb_08(register)
+    assert cycles == 8
+    assert_registers(register, b=0b11110001, f=0b00010000)
+
+    register.B = 0b00000000
+    cycles = cpu.op.code_cb_08(register)
+    assert cycles == 8
+    assert_registers(register, b=0b00000000, f=0b10000000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_09(register):
+    """ RRC C - Copy register C bit 0 to Carry flag, then rotate register C right """
+    register.C = 0b11100011
+    cycles = cpu.op.code_cb_09(register)
+    assert cycles == 8
+    assert_registers(register, c=0b11110001, f=0b00010000)
+
+    register.C = 0b00000000
+    cycles = cpu.op.code_cb_09(register)
+    assert cycles == 8
+    assert_registers(register, c=0b00000000, f=0b10000000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_0a(register):
+    """ RRC D - Copy register D bit 0 to Carry flag, then rotate register D right """
+    register.D = 0b11100011
+    cycles = cpu.op.code_cb_0a(register)
+    assert cycles == 8
+    assert_registers(register, d=0b11110001, f=0b00010000)
+
+    register.D = 0b00000000
+    cycles = cpu.op.code_cb_0a(register)
+    assert cycles == 8
+    assert_registers(register, d=0b00000000, f=0b10000000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_0b(register):
+    """ RRC E - Copy register E bit 0 to Carry flag, then rotate register E right """
+    register.E = 0b11100011
+    cycles = cpu.op.code_cb_0b(register)
+    assert cycles == 8
+    assert_registers(register, e=0b11110001, f=0b00010000)
+
+    register.E = 0b00000000
+    cycles = cpu.op.code_cb_0b(register)
+    assert cycles == 8
+    assert_registers(register, e=0b00000000, f=0b10000000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_0c(register):
+    """ RRC H - Copy register H bit 0 to Carry flag, then rotate register H right """
+    register.H = 0b11100011
+    cycles = cpu.op.code_cb_0c(register)
+    assert cycles == 8
+    assert_registers(register, h=0b11110001, f=0b00010000)
+
+    register.H = 0b00000000
+    cycles = cpu.op.code_cb_0c(register)
+    assert cycles == 8
+    assert_registers(register, h=0b00000000, f=0b10000000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_0d(register):
+    """ RRC L - Copy register L bit 0 to Carry flag, then rotate register L right """
+    register.L = 0b11100011
+    cycles = cpu.op.code_cb_0d(register)
+    assert cycles == 8
+    assert_registers(register, l=0b11110001, f=0b00010000)
+
+    register.L = 0b00000000
+    cycles = cpu.op.code_cb_0d(register)
+    assert cycles == 8
+    assert_registers(register, l=0b00000000, f=0b10000000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_0e(register):
+    """ RRC (HL) - Copy bit 0 to Carry flag, then rotate right """
+    # TODO after memory is implemented
+    pass
+
+
+# noinspection PyShadowingNames
+def test_code_cb_0f(register):
+    """ RRC A - Copy register A bit 0 to Carry flag, then rotate register A right """
+    register.A = 0b11100011
+    cycles = cpu.op.code_cb_0f(register)
+    assert cycles == 8
+    assert_registers(register, a=0b11110001, f=0b00010000)
+
+    register.A = 0b00000000
+    cycles = cpu.op.code_cb_0f(register)
+    assert cycles == 8
+    assert_registers(register, a=0b00000000, f=0b10000000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_10(register):
+    """ RL B - Copy register B bit 7 to temp, replace B bit 7 w/ Carry flag, rotate B left, copy temp to Carry flag """
+    register.B = 0b11100010
+    register.F = 0b00010000
+    cycles = cpu.op.code_cb_10(register)
+    assert cycles == 8
+    assert_registers(register, b=0b11000101, f=0b00010000)
+
+    register.B = 0b00000000
+    register.F = 0b00010000
+    cycles = cpu.op.code_cb_10(register)
+    assert cycles == 8
+    assert_registers(register, b=0b00000001, f=0b00000000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_11(register):
+    """ RL C - Copy register C bit 7 to temp, replace C bit 7 w/ Carry flag, rotate C left, copy temp to Carry flag """
+    register.C = 0b11100010
+    register.F = 0b00010000
+    cycles = cpu.op.code_cb_11(register)
+    assert cycles == 8
+    assert_registers(register, c=0b11000101, f=0b00010000)
+
+    register.C = 0b00000000
+    register.F = 0b00010000
+    cycles = cpu.op.code_cb_11(register)
+    assert cycles == 8
+    assert_registers(register, c=0b00000001, f=0b00000000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_12(register):
+    """ RL D - Copy register D bit 7 to temp, replace D bit 7 w/ Carry flag, rotate D left, copy temp to Carry flag """
+    register.D = 0b11100010
+    register.F = 0b00010000
+    cycles = cpu.op.code_cb_12(register)
+    assert cycles == 8
+    assert_registers(register, d=0b11000101, f=0b00010000)
+
+    register.D = 0b00000000
+    register.F = 0b00010000
+    cycles = cpu.op.code_cb_12(register)
+    assert cycles == 8
+    assert_registers(register, d=0b00000001, f=0b00000000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_13(register):
+    """ RL E - Copy register E bit 7 to temp, replace E bit 7 w/ Carry flag, rotate E left, copy temp to Carry flag """
+    register.E = 0b11100010
+    register.F = 0b00010000
+    cycles = cpu.op.code_cb_13(register)
+    assert cycles == 8
+    assert_registers(register, e=0b11000101, f=0b00010000)
+
+    register.E = 0b00000000
+    register.F = 0b00010000
+    cycles = cpu.op.code_cb_13(register)
+    assert cycles == 8
+    assert_registers(register, e=0b00000001, f=0b00000000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_14(register):
+    """ RL H - Copy register H bit 7 to temp, replace H bit 7 w/ Carry flag, rotate H left, copy temp to Carry flag """
+    register.H = 0b11100010
+    register.F = 0b00010000
+    cycles = cpu.op.code_cb_14(register)
+    assert cycles == 8
+    assert_registers(register, h=0b11000101, f=0b00010000)
+
+    register.H = 0b00000000
+    register.F = 0b00010000
+    cycles = cpu.op.code_cb_14(register)
+    assert cycles == 8
+    assert_registers(register, h=0b00000001, f=0b00000000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_15(register):
+    """ RL L - Copy register L bit 7 to temp, replace L bit 7 w/ Carry flag, rotate L left, copy temp to Carry flag """
+    register.L = 0b11100010
+    register.F = 0b00010000
+    cycles = cpu.op.code_cb_15(register)
+    assert cycles == 8
+    assert_registers(register, l=0b11000101, f=0b00010000)
+
+    register.L = 0b00000000
+    register.F = 0b00010000
+    cycles = cpu.op.code_cb_15(register)
+    assert cycles == 8
+    assert_registers(register, l=0b00000001, f=0b00000000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_16(register):
+    """ RL (HL) - Copy bit 7 to temp, replace bit 7 w/ Carry flag, rotate left, copy temp to Carry flag """
+    # TODO after memory is implemented
+    pass
+
+
+# noinspection PyShadowingNames
+def test_code_cb_17(register):
+    """ RL A - Copy register A bit 7 to temp, replace A bit 7 w/ Carry flag, rotate A left, copy temp to Carry flag """
+    register.A = 0b11100010
+    register.F = 0b00010000
+    cycles = cpu.op.code_cb_17(register)
+    assert cycles == 8
+    assert_registers(register, a=0b11000101, f=0b00010000)
+
+    register.A = 0b00000000
+    register.F = 0b00010000
+    cycles = cpu.op.code_cb_17(register)
+    assert cycles == 8
+    assert_registers(register, a=0b00000001, f=0b00000000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_18(register):
+    """ RR B - Copy register B bit 0 to temp, replace B bit 0 w/ Carry flag, rotate B right, copy temp to Carry flag """
+    register.B = 0b11100011
+    register.F = 0b00010000
+    cycles = cpu.op.code_cb_18(register)
+    assert cycles == 8
+    assert_registers(register, b=0b11110001, f=0b00010000)
+
+    register.B = 0b00000000
+    register.F = 0b00010000
+    cycles = cpu.op.code_cb_18(register)
+    assert cycles == 8
+    assert_registers(register, b=0b10000000, f=0b00000000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_19(register):
+    """ RR C - Copy register C bit 0 to temp, replace C bit 0 w/ Carry flag, rotate C right, copy temp to Carry flag """
+    register.C = 0b11100011
+    register.F = 0b00010000
+    cycles = cpu.op.code_cb_19(register)
+    assert cycles == 8
+    assert_registers(register, c=0b11110001, f=0b00010000)
+
+    register.C = 0b00000000
+    register.F = 0b00010000
+    cycles = cpu.op.code_cb_19(register)
+    assert cycles == 8
+    assert_registers(register, c=0b10000000, f=0b00000000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_1a(register):
+    """ RR D - Copy register D bit 0 to temp, replace D bit 0 w/ Carry flag, rotate D right, copy temp to Carry flag """
+    register.D = 0b11100011
+    register.F = 0b00010000
+    cycles = cpu.op.code_cb_1a(register)
+    assert cycles == 8
+    assert_registers(register, d=0b11110001, f=0b00010000)
+
+    register.D = 0b00000000
+    register.F = 0b00010000
+    cycles = cpu.op.code_cb_1a(register)
+    assert cycles == 8
+    assert_registers(register, d=0b10000000, f=0b00000000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_1b(register):
+    """ RR E - Copy register E bit 0 to temp, replace E bit 0 w/ Carry flag, rotate E right, copy temp to Carry flag """
+    register.E = 0b11100011
+    register.F = 0b00010000
+    cycles = cpu.op.code_cb_1b(register)
+    assert cycles == 8
+    assert_registers(register, e=0b11110001, f=0b00010000)
+
+    register.E = 0b00000000
+    register.F = 0b00010000
+    cycles = cpu.op.code_cb_1b(register)
+    assert cycles == 8
+    assert_registers(register, e=0b10000000, f=0b00000000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_1c(register):
+    """ RR H - Copy register H bit 0 to temp, replace H bit 0 w/ Carry flag, rotate H right, copy temp to Carry flag """
+    register.H = 0b11100011
+    register.F = 0b00010000
+    cycles = cpu.op.code_cb_1c(register)
+    assert cycles == 8
+    assert_registers(register, h=0b11110001, f=0b00010000)
+
+    register.H = 0b00000000
+    register.F = 0b00010000
+    cycles = cpu.op.code_cb_1c(register)
+    assert cycles == 8
+    assert_registers(register, h=0b10000000, f=0b00000000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_1d(register):
+    """ RR L - Copy register L bit 0 to temp, replace L bit 0 w/ Carry flag, rotate L right, copy temp to Carry flag """
+    register.L = 0b11100011
+    register.F = 0b00010000
+    cycles = cpu.op.code_cb_1d(register)
+    assert cycles == 8
+    assert_registers(register, l=0b11110001, f=0b00010000)
+
+    register.L = 0b00000000
+    register.F = 0b00010000
+    cycles = cpu.op.code_cb_1d(register)
+    assert cycles == 8
+    assert_registers(register, l=0b10000000, f=0b00000000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_1e(register):
+    """ RR (HL) - Copy (HL) bit 0 to temp, replace bit 0 w/ Carry flag, rotate right, copy temp to Carry flag """
+    # TODO after memory is implemented
+    pass
+
+
+# noinspection PyShadowingNames
+def test_code_cb_1f(register):
+    """ RR A - Copy register A bit 0 to temp, replace A bit 0 w/ Carry flag, rotate A right, copy temp to Carry flag """
+    register.A = 0b11100011
+    register.F = 0b00010000
+    cycles = cpu.op.code_cb_1f(register)
+    assert cycles == 8
+    assert_registers(register, a=0b11110001, f=0b00010000)
+
+    register.A = 0b00000000
+    register.F = 0b00010000
+    cycles = cpu.op.code_cb_1f(register)
+    assert cycles == 8
+    assert_registers(register, a=0b10000000, f=0b00000000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_20(register):
+    """ SLA B - Copy B bit 7 to temp, replace B bit 7 w/ zero, rotate B left, copy temp to Carry flag """
+    register.B = 0b11100010
+    cycles = cpu.op.code_cb_20(register)
+    assert cycles == 8
+    assert_registers(register, b=0b11000100, f=0b00010000)
+
+    register.B = 0b00000000
+    cycles = cpu.op.code_cb_20(register)
+    assert cycles == 8
+    assert_registers(register, b=0b00000000, f=0b10000000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_21(register):
+    """ SLA C - Copy C bit 7 to temp, replace C bit 7 w/ zero, rotate C left, copy temp to Carry flag """
+    register.C = 0b11100010
+    cycles = cpu.op.code_cb_21(register)
+    assert cycles == 8
+    assert_registers(register, c=0b11000100, f=0b00010000)
+
+    register.C = 0b00000000
+    cycles = cpu.op.code_cb_21(register)
+    assert cycles == 8
+    assert_registers(register, c=0b00000000, f=0b10000000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_22(register):
+    """ SLA D - Copy D bit 7 to temp, replace D bit 7 w/ zero, rotate D left, copy temp to Carry flag """
+    register.D = 0b11100010
+    cycles = cpu.op.code_cb_22(register)
+    assert cycles == 8
+    assert_registers(register, d=0b11000100, f=0b00010000)
+
+    register.D = 0b00000000
+    cycles = cpu.op.code_cb_22(register)
+    assert cycles == 8
+    assert_registers(register, d=0b00000000, f=0b10000000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_23(register):
+    """ SLA E - Copy E bit 7 to temp, replace E bit 7 w/ zero, rotate E left, copy temp to Carry flag """
+    register.E = 0b11100010
+    cycles = cpu.op.code_cb_23(register)
+    assert cycles == 8
+    assert_registers(register, e=0b11000100, f=0b00010000)
+
+    register.E = 0b00000000
+    cycles = cpu.op.code_cb_23(register)
+    assert cycles == 8
+    assert_registers(register, e=0b00000000, f=0b10000000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_24(register):
+    """ SLA H - Copy H bit 7 to temp, replace H bit 7 w/ zero, rotate H left, copy temp to Carry flag """
+    register.H = 0b11100010
+    cycles = cpu.op.code_cb_24(register)
+    assert cycles == 8
+    assert_registers(register, h=0b11000100, f=0b00010000)
+
+    register.H = 0b00000000
+    cycles = cpu.op.code_cb_24(register)
+    assert cycles == 8
+    assert_registers(register, h=0b00000000, f=0b10000000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_25(register):
+    """ SLA L - Copy L bit 7 to temp, replace L bit 7 w/ zero, rotate L left, copy temp to Carry flag """
+    register.L = 0b11100010
+    cycles = cpu.op.code_cb_25(register)
+    assert cycles == 8
+    assert_registers(register, l=0b11000100, f=0b00010000)
+
+    register.L = 0b00000000
+    cycles = cpu.op.code_cb_25(register)
+    assert cycles == 8
+    assert_registers(register, l=0b00000000, f=0b10000000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_26(register):
+    """ SLA (HL) - Copy (HL) bit 7 to temp, replace bit 7 w/ zero, rotate left, copy temp to Carry flag """
+    # TODO after memory is implemented
+    pass
+
+
+# noinspection PyShadowingNames
+def test_code_cb_27(register):
+    """ SLA A - Copy A bit 7 to temp, replace A bit 7 w/ zero, rotate A left, copy temp to Carry flag """
+    register.A = 0b11100010
+    cycles = cpu.op.code_cb_27(register)
+    assert cycles == 8
+    assert_registers(register, a=0b11000100, f=0b00010000)
+
+    register.A = 0b00000000
+    cycles = cpu.op.code_cb_27(register)
+    assert cycles == 8
+    assert_registers(register, a=0b00000000, f=0b10000000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_28(register):
+    """ SRA B - Copy bit 7 to temp, copy bit 0 to Carry flag, shift right, replace new bit 7 with temp """
+    register.B = 0b10000001
+    cycles = cpu.op.code_cb_28(register)
+    assert cycles == 8
+    assert_registers(register, b=0b11000000, f=0b00010000)
+
+    register.B = 0b00000001
+    register.F = 0b00000000
+    cycles = cpu.op.code_cb_28(register)
+    assert cycles == 8
+    assert_registers(register, b=0b00000000, f=0b10010000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_29(register):
+    """ SRA C - Copy bit 7 to temp, copy bit 0 to Carry flag, shift right, replace new bit 7 with temp """
+    register.C = 0b10000001
+    cycles = cpu.op.code_cb_29(register)
+    assert cycles == 8
+    assert_registers(register, c=0b11000000, f=0b00010000)
+
+    register.C = 0b00000001
+    register.F = 0b00000000
+    cycles = cpu.op.code_cb_29(register)
+    assert cycles == 8
+    assert_registers(register, c=0b00000000, f=0b10010000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_2a(register):
+    """ SRA D - Copy bit 7 to temp, copy bit 0 to Carry flag, shift right, replace new bit 7 with temp """
+    register.D = 0b10000001
+    cycles = cpu.op.code_cb_2a(register)
+    assert cycles == 8
+    assert_registers(register, d=0b11000000, f=0b00010000)
+
+    register.D = 0b00000001
+    register.F = 0b00000000
+    cycles = cpu.op.code_cb_2a(register)
+    assert cycles == 8
+    assert_registers(register, d=0b00000000, f=0b10010000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_2b(register):
+    """ SRA E - Copy bit 7 to temp, copy bit 0 to Carry flag, shift right, replace new bit 7 with temp """
+    register.E = 0b10000001
+    cycles = cpu.op.code_cb_2b(register)
+    assert cycles == 8
+    assert_registers(register, e=0b11000000, f=0b00010000)
+
+    register.E = 0b00000001
+    register.F = 0b00000000
+    cycles = cpu.op.code_cb_2b(register)
+    assert cycles == 8
+    assert_registers(register, e=0b00000000, f=0b10010000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_2c(register):
+    """ SRA H - Copy bit 7 to temp, copy bit 0 to Carry flag, shift right, replace new bit 7 with temp """
+    register.H = 0b10000001
+    cycles = cpu.op.code_cb_2c(register)
+    assert cycles == 8
+    assert_registers(register, h=0b11000000, f=0b00010000)
+
+    register.H = 0b00000001
+    register.F = 0b00000000
+    cycles = cpu.op.code_cb_2c(register)
+    assert cycles == 8
+    assert_registers(register, h=0b00000000, f=0b10010000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_2d(register):
+    """ SRA L - Copy bit 7 to temp, copy bit 0 to Carry flag, shift right, replace new bit 7 with temp """
+    register.L = 0b10000001
+    cycles = cpu.op.code_cb_2d(register)
+    assert cycles == 8
+    assert_registers(register, l=0b11000000, f=0b00010000)
+
+    register.L = 0b00000001
+    register.F = 0b00000000
+    cycles = cpu.op.code_cb_2d(register)
+    assert cycles == 8
+    assert_registers(register, l=0b00000000, f=0b10010000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_2e(register):
+    """ SRA (HL) - Copy bit 7 to temp, copy bit 0 to Carry flag, shift right, replace new bit 7 with temp """
+    # TODO after memory is implemented
+    pass
+
+
+# noinspection PyShadowingNames
+def test_code_cb_2f(register):
+    """ SRA A - Copy bit 7 to temp, copy bit 0 to Carry flag, shift right, replace new bit 7 with temp """
+    register.A = 0b10000001
+    cycles = cpu.op.code_cb_2f(register)
+    assert cycles == 8
+    assert_registers(register, a=0b11000000, f=0b00010000)
+
+    register.A = 0b00000001
+    register.F = 0b00000000
+    cycles = cpu.op.code_cb_2f(register)
+    assert cycles == 8
+    assert_registers(register, a=0b00000000, f=0b10010000)
+
+
+# noinspection PyShadowingNames
 def test_code_cb_30(register):
     """ SWAP B - Swap upper and lower nibbles (nibble = 4 bits) """
     register.B = 0xAB
@@ -3781,3 +4476,115 @@ def test_code_cb_37(register):
     cycles = cpu.op.code_cb_37(register)
     assert cycles == 8
     assert_registers(register, a=0x0F, f=0b00000000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_38(register):
+    """ SRL B - Copy bit 7 to temp, copy bit 0 to Carry flag, shift right, replace new bit 7 with temp """
+    register.B = 0b10000001
+    cycles = cpu.op.code_cb_38(register)
+    assert cycles == 8
+    assert_registers(register, b=0b01000000, f=0b00010000)
+
+    register.B = 0b00000001
+    register.F = 0b00000000
+    cycles = cpu.op.code_cb_38(register)
+    assert cycles == 8
+    assert_registers(register, b=0b00000000, f=0b10010000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_39(register):
+    """ SRL C - Copy bit 7 to temp, copy bit 0 to Carry flag, shift right, replace new bit 7 with temp """
+    register.C = 0b10000001
+    cycles = cpu.op.code_cb_39(register)
+    assert cycles == 8
+    assert_registers(register, c=0b01000000, f=0b00010000)
+
+    register.C = 0b00000001
+    register.F = 0b00000000
+    cycles = cpu.op.code_cb_39(register)
+    assert cycles == 8
+    assert_registers(register, c=0b00000000, f=0b10010000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_3a(register):
+    """ SRL D - Copy bit 7 to temp, copy bit 0 to Carry flag, shift right, replace new bit 7 with temp """
+    register.D = 0b10000001
+    cycles = cpu.op.code_cb_3a(register)
+    assert cycles == 8
+    assert_registers(register, d=0b01000000, f=0b00010000)
+
+    register.D = 0b00000001
+    register.F = 0b00000000
+    cycles = cpu.op.code_cb_3a(register)
+    assert cycles == 8
+    assert_registers(register, d=0b00000000, f=0b10010000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_3b(register):
+    """ SRL E - Copy bit 7 to temp, copy bit 0 to Carry flag, shift right, replace new bit 7 with temp """
+    register.E = 0b10000001
+    cycles = cpu.op.code_cb_3b(register)
+    assert cycles == 8
+    assert_registers(register, e=0b01000000, f=0b00010000)
+
+    register.E = 0b00000001
+    register.F = 0b00000000
+    cycles = cpu.op.code_cb_3b(register)
+    assert cycles == 8
+    assert_registers(register, e=0b00000000, f=0b10010000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_3c(register):
+    """ SRL H - Copy bit 7 to temp, copy bit 0 to Carry flag, shift right, replace new bit 7 with temp """
+    register.H = 0b10000001
+    cycles = cpu.op.code_cb_3c(register)
+    assert cycles == 8
+    assert_registers(register, h=0b01000000, f=0b00010000)
+
+    register.H = 0b00000001
+    register.F = 0b00000000
+    cycles = cpu.op.code_cb_3c(register)
+    assert cycles == 8
+    assert_registers(register, h=0b00000000, f=0b10010000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_3d(register):
+    """ SRL L - Copy bit 7 to temp, copy bit 0 to Carry flag, shift right, replace new bit 7 with temp """
+    register.L = 0b10000001
+    cycles = cpu.op.code_cb_3d(register)
+    assert cycles == 8
+    assert_registers(register, l=0b01000000, f=0b00010000)
+
+    register.L = 0b00000001
+    register.F = 0b00000000
+    cycles = cpu.op.code_cb_3d(register)
+    assert cycles == 8
+    assert_registers(register, l=0b00000000, f=0b10010000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_3e(register):
+    """ SRL (HL) - Copy bit 7 to temp, copy bit 0 to Carry flag, shift right, replace new bit 7 with temp """
+    # TODO after memory is implemented
+    pass
+
+
+# noinspection PyShadowingNames
+def test_code_cb_3f(register):
+    """ SRL A - Copy bit 7 to temp, copy bit 0 to Carry flag, shift right, replace new bit 7 with temp """
+    register.A = 0b10000001
+    cycles = cpu.op.code_cb_3f(register)
+    assert cycles == 8
+    assert_registers(register, a=0b01000000, f=0b00010000)
+
+    register.A = 0b00000001
+    register.F = 0b00000000
+    cycles = cpu.op.code_cb_3f(register)
+    assert cycles == 8
+    assert_registers(register, a=0b00000000, f=0b10010000)

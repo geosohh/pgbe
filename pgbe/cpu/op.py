@@ -134,7 +134,14 @@ def code_0e(register, d8):
 
 
 def code_0f(register):
-    pass
+    """ RRCA - Copy register A bit 0 to Carry flag, then rotate register A right """
+    bit_0 = register.A & 0b00000001
+    register.A = ((bit_0 << 7) + (register.A >> 1)) & 0xFF
+    register.set_z_flag(register.A == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(bit_0)
+    return 4
 
 
 # OPCODES 1x
@@ -254,7 +261,15 @@ def code_1e(register, d8):
 
 
 def code_1f(register):
-    pass
+    """ RRA - Copy register A bit 0 to temp, replace A bit 0 w/ Carry flag, rotate A right, copy temp to Carry flag """
+    bit_0 = register.A & 0b00000001
+    register.A = ((register.get_c_flag() << 7) + (register.A >> 1)) & 0xFF
+    register.set_z_flag(register.A == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(bit_0)
+    return 4
+
 
 # OPCODES 2x
 def code_20(register):
@@ -2086,152 +2101,531 @@ def code_ff(register):
 
 
 """ CB-Prefix operations """
+
+
 # OPCODES CB 0x
 def code_cb_00(register):
-    pass
+    """ RLC B - Copy register B bit 7 to Carry flag, then rotate register B left """
+    bit_7 = register.B >> 7
+    register.B = ((register.B << 1) + bit_7) & 0xFF
+    register.set_z_flag(register.B == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(bit_7)
+    return 8
+
 
 def code_cb_01(register):
-    pass
+    """ RLC C - Copy register C bit 7 to Carry flag, then rotate register C left """
+    bit_7 = register.C >> 7
+    register.C = ((register.C << 1) + bit_7) & 0xFF
+    register.set_z_flag(register.C == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(bit_7)
+    return 8
+
 
 def code_cb_02(register):
-    pass
+    """ RLC D - Copy register D bit 7 to Carry flag, then rotate register D left """
+    bit_7 = register.D >> 7
+    register.D = ((register.D << 1) + bit_7) & 0xFF
+    register.set_z_flag(register.D == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(bit_7)
+    return 8
+
 
 def code_cb_03(register):
-    pass
+    """ RLC E - Copy register E bit 7 to Carry flag, then rotate register E left """
+    bit_7 = register.E >> 7
+    register.E = ((register.E << 1) + bit_7) & 0xFF
+    register.set_z_flag(register.E == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(bit_7)
+    return 8
+
 
 def code_cb_04(register):
-    pass
+    """ RLC H - Copy register H bit 7 to Carry flag, then rotate register H left """
+    bit_7 = register.H >> 7
+    register.H = ((register.H << 1) + bit_7) & 0xFF
+    register.set_z_flag(register.H == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(bit_7)
+    return 8
+
 
 def code_cb_05(register):
-    pass
+    """ RLC L - Copy register L bit 7 to Carry flag, then rotate register L left """
+    bit_7 = register.L >> 7
+    register.L = ((register.L << 1) + bit_7) & 0xFF
+    register.set_z_flag(register.L == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(bit_7)
+    return 8
+
 
 def code_cb_06(register):
-    pass
+    """ RLC (HL) - Copy (value at address HL) bit 7 to Carry flag, then rotate (value at address HL) left """
+    # TODO after memory is implemented
+    # bit_7 = register.B >> 7
+    # register.B = ((register.B << 1) + bit_7) & 0xFF
+    # register.set_z_flag(register.B == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(bit_7)
+    return 16
+
 
 def code_cb_07(register):
-    pass
+    """ RLC A - Copy register A bit 7 to Carry flag, then rotate register A left """
+    code_07(register)  # Does exactly the same thing...
+    return 8
+
 
 def code_cb_08(register):
-    pass
+    """ RRC B - Copy register B bit 0 to Carry flag, then rotate register B right """
+    bit_0 = register.B & 0b00000001
+    register.B = ((bit_0 << 7) + (register.B >> 1)) & 0xFF
+    register.set_z_flag(register.B == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(bit_0)
+    return 8
+
 
 def code_cb_09(register):
-    pass
+    """ RRC C - Copy register C bit 0 to Carry flag, then rotate register C right """
+    bit_0 = register.C & 0b00000001
+    register.C = ((bit_0 << 7) + (register.C >> 1)) & 0xFF
+    register.set_z_flag(register.C == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(bit_0)
+    return 8
+
 
 def code_cb_0a(register):
-    pass
+    """ RRC D - Copy register D bit 0 to Carry flag, then rotate register D right """
+    bit_0 = register.D & 0b00000001
+    register.D = ((bit_0 << 7) + (register.D >> 1)) & 0xFF
+    register.set_z_flag(register.D == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(bit_0)
+    return 8
+
 
 def code_cb_0b(register):
-    pass
+    """ RRC E - Copy register E bit 0 to Carry flag, then rotate register E right """
+    bit_0 = register.E & 0b00000001
+    register.E = ((bit_0 << 7) + (register.E >> 1)) & 0xFF
+    register.set_z_flag(register.E == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(bit_0)
+    return 8
+
 
 def code_cb_0c(register):
-    pass
+    """ RRC H - Copy register H bit 0 to Carry flag, then rotate register H right """
+    bit_0 = register.H & 0b00000001
+    register.H = ((bit_0 << 7) + (register.H >> 1)) & 0xFF
+    register.set_z_flag(register.H == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(bit_0)
+    return 8
+
 
 def code_cb_0d(register):
-    pass
+    """ RRC L - Copy register L bit 0 to Carry flag, then rotate register L right """
+    bit_0 = register.L & 0b00000001
+    register.L = ((bit_0 << 7) + (register.L >> 1)) & 0xFF
+    register.set_z_flag(register.L == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(bit_0)
+    return 8
+
 
 def code_cb_0e(register):
-    pass
+    """ RRC (HL) - Copy bit 0 to Carry flag, then rotate right """
+    # TODO after memory is implemented
+    # bit_0 = register.B & 0b00000001
+    # register.B = ((bit_0 << 7) + (register.B >> 1)) & 0xFF
+    # register.set_z_flag(register.B == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(bit_0)
+    return 16
+
 
 def code_cb_0f(register):
-    pass
+    """ RRCA - Copy register A bit 0 to Carry flag, then rotate register A right """
+    code_0f(register)  # Does exactly the same thing...
+    return 8
+
 
 # OPCODES CB 1x
 def code_cb_10(register):
-    pass
+    """ RL B - Copy register B bit 7 to temp, replace B bit 7 w/ Carry flag, rotate B left, copy temp to Carry flag """
+    bit_7 = register.B >> 7
+    register.B = ((register.B << 1) + register.get_c_flag()) & 0xFF
+    register.set_z_flag(register.B == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(bit_7)
+    return 8
+
 
 def code_cb_11(register):
-    pass
+    """ RL C - Copy register C bit 7 to temp, replace C bit 7 w/ Carry flag, rotate C left, copy temp to Carry flag """
+    bit_7 = register.C >> 7
+    register.C = ((register.C << 1) + register.get_c_flag()) & 0xFF
+    register.set_z_flag(register.C == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(bit_7)
+    return 8
+
 
 def code_cb_12(register):
-    pass
+    """ RL D - Copy register D bit 7 to temp, replace D bit 7 w/ Carry flag, rotate D left, copy temp to Carry flag """
+    bit_7 = register.D >> 7
+    register.D = ((register.D << 1) + register.get_c_flag()) & 0xFF
+    register.set_z_flag(register.D == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(bit_7)
+    return 8
+
 
 def code_cb_13(register):
-    pass
+    """ RL E - Copy register E bit 7 to temp, replace E bit 7 w/ Carry flag, rotate E left, copy temp to Carry flag """
+    bit_7 = register.E >> 7
+    register.E = ((register.E << 1) + register.get_c_flag()) & 0xFF
+    register.set_z_flag(register.E == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(bit_7)
+    return 8
+
 
 def code_cb_14(register):
-    pass
+    """ RL H - Copy register H bit 7 to temp, replace H bit 7 w/ Carry flag, rotate H left, copy temp to Carry flag """
+    bit_7 = register.H >> 7
+    register.H = ((register.H << 1) + register.get_c_flag()) & 0xFF
+    register.set_z_flag(register.H == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(bit_7)
+    return 8
+
 
 def code_cb_15(register):
-    pass
+    """ RL L - Copy register L bit 7 to temp, replace L bit 7 w/ Carry flag, rotate L left, copy temp to Carry flag """
+    bit_7 = register.L >> 7
+    register.L = ((register.L << 1) + register.get_c_flag()) & 0xFF
+    register.set_z_flag(register.L == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(bit_7)
+    return 8
+
 
 def code_cb_16(register):
-    pass
+    """ RL (HL) - Copy bit 7 to temp, replace bit 7 w/ Carry flag, rotate left, copy temp to Carry flag """
+    # TODO after memory is implemented
+    # bit_7 = register.B >> 7
+    # register.B = ((register.B << 1) + register.get_c_flag()) & 0xFF
+    # register.set_z_flag(register.B == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(bit_7)
+    return 16
+
 
 def code_cb_17(register):
-    pass
+    """ RL A - Copy register A bit 7 to temp, replace A bit 7 w/ Carry flag, rotate A left, copy temp to Carry flag """
+    code_17(register)  # Does exactly the same thing...
+    return 8
+
 
 def code_cb_18(register):
-    pass
+    """ RR B - Copy register B bit 0 to temp, replace bit 0 w/ Carry flag, rotate right, copy temp to Carry flag """
+    bit_0 = register.B & 0b00000001
+    register.B = ((register.get_c_flag() << 7) + (register.B >> 1)) & 0xFF
+    register.set_z_flag(register.B == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(bit_0)
+    return 8
+
 
 def code_cb_19(register):
-    pass
+    """ RR C - Copy register C bit 0 to temp, replace bit 0 w/ Carry flag, rotate right, copy temp to Carry flag """
+    bit_0 = register.C & 0b00000001
+    register.C = ((register.get_c_flag() << 7) + (register.C >> 1)) & 0xFF
+    register.set_z_flag(register.C == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(bit_0)
+    return 8
+
 
 def code_cb_1a(register):
-    pass
+    """ RR D - Copy register D bit 0 to temp, replace bit 0 w/ Carry flag, rotate right, copy temp to Carry flag """
+    bit_0 = register.D & 0b00000001
+    register.D = ((register.get_c_flag() << 7) + (register.D >> 1)) & 0xFF
+    register.set_z_flag(register.D == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(bit_0)
+    return 8
+
 
 def code_cb_1b(register):
-    pass
+    """ RR E - Copy register E bit 0 to temp, replace bit 0 w/ Carry flag, rotate right, copy temp to Carry flag """
+    bit_0 = register.E & 0b00000001
+    register.E = ((register.get_c_flag() << 7) + (register.E >> 1)) & 0xFF
+    register.set_z_flag(register.E == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(bit_0)
+    return 8
+
 
 def code_cb_1c(register):
-    pass
+    """ RR H - Copy register H bit 0 to temp, replace bit 0 w/ Carry flag, rotate right, copy temp to Carry flag """
+    bit_0 = register.H & 0b00000001
+    register.H = ((register.get_c_flag() << 7) + (register.H >> 1)) & 0xFF
+    register.set_z_flag(register.H == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(bit_0)
+    return 8
+
 
 def code_cb_1d(register):
-    pass
+    """ RR L - Copy register L bit 0 to temp, replace bit 0 w/ Carry flag, rotate right, copy temp to Carry flag """
+    bit_0 = register.L & 0b00000001
+    register.L = ((register.get_c_flag() << 7) + (register.L >> 1)) & 0xFF
+    register.set_z_flag(register.L == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(bit_0)
+    return 8
+
 
 def code_cb_1e(register):
-    pass
+    """ RR (HL) - Copy (HL) bit 0 to temp, replace bit 0 w/ Carry flag, rotate right, copy temp to Carry flag """
+    # TODO after memory is implemented
+    # bit_0 = register.B & 0b00000001
+    # register.B = ((register.get_c_flag() << 7) + (register.B >> 1)) & 0xFF
+    # register.set_z_flag(register.B == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(bit_0)
+    return 16
+
 
 def code_cb_1f(register):
-    pass
+    """ RRA - Copy register A bit 0 to temp, replace A bit 0 w/ Carry flag, rotate A right, copy temp to Carry flag """
+    code_1f(register)  # Does exactly the same thing...
+    return 8
+
 
 # OPCODES CB 2x
 def code_cb_20(register):
-    pass
+    """ SLA B - Copy register B bit 7 to temp, replace B bit 7 w/ zero, rotate B left, copy temp to Carry flag """
+    bit_7 = register.B >> 7
+    register.B = (register.B << 1) & 0xFF
+    register.set_z_flag(register.B == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(bit_7)
+    return 8
+
 
 def code_cb_21(register):
-    pass
+    """ SLA C - Copy register C bit 7 to temp, replace C bit 7 w/ zero, rotate C left, copy temp to Carry flag """
+    bit_7 = register.C >> 7
+    register.C = (register.C << 1) & 0xFF
+    register.set_z_flag(register.C == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(bit_7)
+    return 8
+
 
 def code_cb_22(register):
-    pass
+    """ SLA D - Copy register D bit 7 to temp, replace D bit 7 w/ zero, rotate D left, copy temp to Carry flag """
+    bit_7 = register.D >> 7
+    register.D = (register.D << 1) & 0xFF
+    register.set_z_flag(register.D == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(bit_7)
+    return 8
+
 
 def code_cb_23(register):
-    pass
+    """ SLA E - Copy register E bit 7 to temp, replace E bit 7 w/ zero, rotate E left, copy temp to Carry flag """
+    bit_7 = register.E >> 7
+    register.E = (register.E << 1) & 0xFF
+    register.set_z_flag(register.E == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(bit_7)
+    return 8
+
 
 def code_cb_24(register):
-    pass
+    """ SLA H - Copy register H bit 7 to temp, replace H bit 7 w/ zero, rotate H left, copy temp to Carry flag """
+    bit_7 = register.H >> 7
+    register.H = (register.H << 1) & 0xFF
+    register.set_z_flag(register.H == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(bit_7)
+    return 8
+
 
 def code_cb_25(register):
-    pass
+    """ SLA L - Copy register L bit 7 to temp, replace L bit 7 w/ zero, rotate L left, copy temp to Carry flag """
+    bit_7 = register.L >> 7
+    register.L = (register.L << 1) & 0xFF
+    register.set_z_flag(register.L == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(bit_7)
+    return 8
+
 
 def code_cb_26(register):
-    pass
+    """ SLA (HL) - Copy bit 7 to temp, replace bit 7 w/ zero, rotate left, copy temp to Carry flag """
+    # TODO after memory is implemented
+    # bit_7 = register.B >> 7
+    # register.B = (register.B << 1) & 0xFF
+    # register.set_z_flag(register.B == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(bit_7)
+    return 16
+
 
 def code_cb_27(register):
-    pass
+    """ SLA A - Copy register A bit 7 to temp, replace A bit 7 w/ zero, rotate A left, copy temp to Carry flag """
+    bit_7 = register.A >> 7
+    register.A = (register.A << 1) & 0xFF
+    register.set_z_flag(register.A == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(bit_7)
+    return 8
+
 
 def code_cb_28(register):
-    pass
+    """ SRA B - Copy bit 7 to temp, copy bit 0 to Carry flag, shift right, replace new bit 7 with temp """
+    bit_7 = register.B >> 7
+    bit_0 = register.B & 0b00000001
+    register.B = ((bit_7 << 7) + (register.B >> 1)) & 0xFF
+    register.set_z_flag(register.B == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(bit_0)
+    return 8
+
 
 def code_cb_29(register):
-    pass
+    """ SRA C - Copy bit 7 to temp, copy bit 0 to Carry flag, shift right, replace new bit 7 with temp """
+    bit_7 = register.C >> 7
+    bit_0 = register.C & 0b00000001
+    register.C = ((bit_7 << 7) + (register.C >> 1)) & 0xFF
+    register.set_z_flag(register.C == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(bit_0)
+    return 8
+
 
 def code_cb_2a(register):
-    pass
+    """ SRA D - Copy bit 7 to temp, copy bit 0 to Carry flag, shift right, replace new bit 7 with temp """
+    bit_7 = register.D >> 7
+    bit_0 = register.D & 0b00000001
+    register.D = ((bit_7 << 7) + (register.D >> 1)) & 0xFF
+    register.set_z_flag(register.D == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(bit_0)
+    return 8
+
 
 def code_cb_2b(register):
-    pass
+    """ SRA E - Copy bit 7 to temp, copy bit 0 to Carry flag, shift right, replace new bit 7 with temp """
+    bit_7 = register.E >> 7
+    bit_0 = register.E & 0b00000001
+    register.E = ((bit_7 << 7) + (register.E >> 1)) & 0xFF
+    register.set_z_flag(register.E == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(bit_0)
+    return 8
+
 
 def code_cb_2c(register):
-    pass
+    """ SRA H - Copy bit 7 to temp, copy bit 0 to Carry flag, shift right, replace new bit 7 with temp """
+    bit_7 = register.H >> 7
+    bit_0 = register.H & 0b00000001
+    register.H = ((bit_7 << 7) + (register.H >> 1)) & 0xFF
+    register.set_z_flag(register.H == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(bit_0)
+    return 8
+
 
 def code_cb_2d(register):
-    pass
+    """ SRA L - Copy bit 7 to temp, copy bit 0 to Carry flag, shift right, replace new bit 7 with temp """
+    bit_7 = register.L >> 7
+    bit_0 = register.L & 0b00000001
+    register.L = ((bit_7 << 7) + (register.L >> 1)) & 0xFF
+    register.set_z_flag(register.L == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(bit_0)
+    return 8
+
 
 def code_cb_2e(register):
-    pass
+    """ SRA (HL) - Copy bit 7 to temp, copy bit 0 to Carry flag, shift right, replace new bit 7 with temp """
+    # TODO after memory is implemented
+    # bit_7 = register.B >> 7
+    # bit_0 = register.B & 0b00000001
+    # register.B = ((bit_7 << 7) + (register.B >> 1)) & 0xFF
+    # register.set_z_flag(register.B == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(bit_0)
+    return 16
+
 
 def code_cb_2f(register):
-    pass
+    """ SRA A - Copy bit 7 to temp, copy bit 0 to Carry flag, shift right, replace new bit 7 with temp """
+    bit_7 = register.A >> 7
+    bit_0 = register.A & 0b00000001
+    register.A = ((bit_7 << 7) + (register.A >> 1)) & 0xFF
+    register.set_z_flag(register.A == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(bit_0)
+    return 8
 
 
 # OPCODES CB 3x
@@ -2332,28 +2726,92 @@ def code_cb_37(register):
 
 
 def code_cb_38(register):
-    pass
+    """ SRL B - Copy bit 7 to temp, copy bit 0 to Carry flag, shift right, replace new bit 7 with temp """
+    bit_0 = register.B & 0b00000001
+    register.B = (register.B >> 1) & 0xFF
+    register.set_z_flag(register.B == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(bit_0)
+    return 8
+
 
 def code_cb_39(register):
-    pass
+    """ SRL C - Copy bit 7 to temp, copy bit 0 to Carry flag, shift right, replace new bit 7 with temp """
+    bit_0 = register.C & 0b00000001
+    register.C = (register.C >> 1) & 0xFF
+    register.set_z_flag(register.C == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(bit_0)
+    return 8
+
 
 def code_cb_3a(register):
-    pass
+    """ SRL D - Copy bit 7 to temp, copy bit 0 to Carry flag, shift right, replace new bit 7 with temp """
+    bit_0 = register.D & 0b00000001
+    register.D = (register.D >> 1) & 0xFF
+    register.set_z_flag(register.D == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(bit_0)
+    return 8
+
 
 def code_cb_3b(register):
-    pass
+    """ SRL E - Copy bit 7 to temp, copy bit 0 to Carry flag, shift right, replace new bit 7 with temp """
+    bit_0 = register.E & 0b00000001
+    register.E = (register.E >> 1) & 0xFF
+    register.set_z_flag(register.E == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(bit_0)
+    return 8
+
 
 def code_cb_3c(register):
-    pass
+    """ SRL H - Copy bit 7 to temp, copy bit 0 to Carry flag, shift right, replace new bit 7 with temp """
+    bit_0 = register.H & 0b00000001
+    register.H = (register.H >> 1) & 0xFF
+    register.set_z_flag(register.H == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(bit_0)
+    return 8
+
 
 def code_cb_3d(register):
-    pass
+    """ SRL L - Copy bit 7 to temp, copy bit 0 to Carry flag, shift right, replace new bit 7 with temp """
+    bit_0 = register.L & 0b00000001
+    register.L = (register.L >> 1) & 0xFF
+    register.set_z_flag(register.L == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(bit_0)
+    return 8
+
 
 def code_cb_3e(register):
-    pass
+    """ SRL (HL) - Copy bit 7 to temp, copy bit 0 to Carry flag, shift right, replace new bit 7 with temp """
+    # TODO after memory is implemented
+    # bit_0 = register.B & 0b00000001
+    # register.B = (register.B >> 1) & 0xFF
+    # register.set_z_flag(register.B == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(bit_0)
+    return 16
+
 
 def code_cb_3f(register):
-    pass
+    """ SRL A - Copy bit 7 to temp, copy bit 0 to Carry flag, shift right, replace new bit 7 with temp """
+    bit_0 = register.A & 0b00000001
+    register.A = (register.A >> 1) & 0xFF
+    register.set_z_flag(register.A == 0)
+    register.set_n_flag(False)
+    register.set_h_flag(False)
+    register.set_c_flag(bit_0)
+    return 8
 
 # OPCODES CB 4x
 def code_cb_40(register):
