@@ -208,8 +208,11 @@ def code_17(register):
     return 4
 
 
-def code_18(register):
-    pass
+def code_18(register, r8):
+    """ JP r8 - Add r8 to the current address and jump to it """
+    r8 = cpu.util.convert_unsigned_integer_to_signed(r8)
+    # TODO after cpu is implemented
+    return 8
 
 
 def code_19(register):
@@ -272,8 +275,13 @@ def code_1f(register):
 
 
 # OPCODES 2x
-def code_20(register):
-    pass
+def code_20(register, r8):
+    """ JR NZ,r8 - If flag Z is reset, add r8 to current address and jump to it """
+    if not register.get_z_flag():
+        r8 = cpu.util.convert_unsigned_integer_to_signed(r8)
+        # TODO after cpu is implemented
+        pass
+    return 8
 
 
 def code_21(register, d16):
@@ -344,8 +352,13 @@ def code_27(register):
     return 4
 
 
-def code_28(register):
-    pass
+def code_28(register, r8):
+    """ JR Z,r8 - If flag Z is set, add r8 to current address and jump to it """
+    if register.get_z_flag():
+        r8 = cpu.util.convert_unsigned_integer_to_signed(r8)
+        # TODO after cpu is implemented
+        pass
+    return 8
 
 
 def code_29(register):
@@ -405,8 +418,13 @@ def code_2f(register):
 
 
 # OPCODES 3x
-def code_30(register):
-    pass
+def code_30(register, r8):
+    """ JR NC,r8 - If flag C is reset, add r8 to current address and jump to it """
+    if not register.get_c_flag():
+        r8 = cpu.util.convert_unsigned_integer_to_signed(r8)
+        # TODO after cpu is implemented
+        pass
+    return 8
 
 
 def code_31(register, d16):
@@ -462,8 +480,13 @@ def code_37(register):
     return 4
 
 
-def code_38(register):
-    pass
+def code_38(register, r8):
+    """ JR C,r8 - If flag C is set, add r8 to current address and jump to it """
+    if register.get_c_flag():
+        r8 = cpu.util.convert_unsigned_integer_to_signed(r8)
+        # TODO after cpu is implemented
+        pass
+    return 8
 
 
 def code_39(register):
@@ -1712,7 +1735,11 @@ def code_bf(register):
 
 # OPCODES Cx
 def code_c0(register):
-    pass
+    """ RET NZ - Return if flag Z is reset """
+    if not register.get_z_flag():
+        # TODO: after cpu is implemented
+        pass
+    return 8
 
 
 def code_c1(register):
@@ -1722,14 +1749,28 @@ def code_c1(register):
     return 12
 
 
-def code_c2(register):
-    pass
+def code_c2(register, a16):
+    """ JP NZ,a16 - Jump to address a16 if Z flag is reset """
+    a16 = cpu.util.convert_little_endian_to_big_endian(a16)
+    if not register.get_z_flag():
+        # TODO: after memory and cpu are implemented
+        pass
+    return 12
+
 
 def code_c3(register):
-    pass
+    """ JP a16 - Jump to address a16 """
+    # TODO: after memory and cpu are implemented
+    return 12
 
-def code_c4(register):
-    pass
+
+def code_c4(register, a16):
+    """ CALL NZ,a16 - Call address a16 if flag Z is reset """
+    if not register.get_z_flag():
+        a16 = cpu.util.convert_little_endian_to_big_endian(a16)
+        # TODO after cpu is implemented
+        pass
+    return 12
 
 
 def code_c5(register):
@@ -1753,25 +1794,52 @@ def code_c6(register, d8):
 
 
 def code_c7(register):
-    pass
+    """ RST 00H - Push present address onto stack, jump to address $0000 + 00H """
+    # TODO: after memory and cpu are implemented
+    return 32
+
 
 def code_c8(register):
-    pass
+    """ RET Z - Return if flag Z is set """
+    if register.get_z_flag():
+        # TODO: after cpu is implemented
+        pass
+    return 8
+
 
 def code_c9(register):
-    pass
+    """ RET - Pop two bytes from stask and jump to that address """
+    # TODO: after cpu is implemented
+    return 8
 
-def code_ca(register):
-    pass
+
+def code_ca(register, a16):
+    """ JP Z,a16 - Jump to address a16 if Z flag is set """
+    a16 = cpu.util.convert_little_endian_to_big_endian(a16)
+    if register.get_z_flag():
+        # TODO: after memory and cpu are implemented
+        pass
+    return 12
+
 
 def code_cb(register):
     pass
 
-def code_cc(register):
-    pass
 
-def code_cd(register):
-    pass
+def code_cc(register, a16):
+    """ CALL Z,a16 - Call address a16 if flag Z is set """
+    if register.get_z_flag():
+        a16 = cpu.util.convert_little_endian_to_big_endian(a16)
+        # TODO after cpu is implemented
+        pass
+    return 12
+
+
+def code_cd(register, a16):
+    """ CALL a16 - Push address of next instruction onto stack then jump to address a16 """
+    a16 = cpu.util.convert_little_endian_to_big_endian(a16)
+    # TODO: after cpu are implemented
+    return 12
 
 
 def code_ce(register, d8):
@@ -1789,11 +1857,18 @@ def code_ce(register, d8):
 
 
 def code_cf(register):
-    pass
+    """ RST 08H - Push present address onto stack, jump to address $0000 + 08H """
+    # TODO: after memory and cpu are implemented
+    return 32
+
 
 # OPCODES Dx
 def code_d0(register):
-    pass
+    """ RET NC - Return if flag C is reset """
+    if not register.get_c_flag():
+        # TODO: after cpu is implemented
+        pass
+    return 8
 
 
 def code_d1(register):
@@ -1803,8 +1878,13 @@ def code_d1(register):
     return 12
 
 
-def code_d2(register):
-    pass
+def code_d2(register, a16):
+    """ JP NC,a16 - Jump to address a16 if C flag is reset """
+    a16 = cpu.util.convert_little_endian_to_big_endian(a16)
+    if not register.get_c_flag():
+        # TODO: after memory and cpu are implemented
+        pass
+    return 12
 
 
 def code_d3():
@@ -1812,8 +1892,13 @@ def code_d3():
     pass
 
 
-def code_d4(register):
-    pass
+def code_d4(register, a16):
+    """ CALL NC,a16 - Call address a16 if flag C is reset """
+    if not register.get_c_flag():
+        a16 = cpu.util.convert_little_endian_to_big_endian(a16)
+        # TODO after cpu is implemented
+        pass
+    return 12
 
 
 def code_d5(register):
@@ -1837,16 +1922,32 @@ def code_d6(register, d8):
 
 
 def code_d7(register):
-    pass
+    """ RST 10H - Push present address onto stack, jump to address $0000 + 10H """
+    # TODO: after memory and cpu are implemented
+    return 32
+
 
 def code_d8(register):
-    pass
+    """ RET C - Return if flag C is set """
+    if register.get_c_flag():
+        # TODO: after cpu is implemented
+        pass
+    return 8
+
 
 def code_d9(register):
-    pass
+    """ RETI - Pop two bytes from stask and jump to that address then enable interrupts """
+    # TODO: after memory, cpu and interrupts are implemented
+    return 8
+
 
 def code_da(register):
-    pass
+    """ JP C,a16 - Jump to address a16 if C flag is set """
+    a16 = cpu.util.convert_little_endian_to_big_endian(a16)
+    if register.get_c_flag():
+        # TODO: after memory and cpu are implemented
+        pass
+    return 12
 
 
 def code_db():
@@ -1854,8 +1955,13 @@ def code_db():
     pass
 
 
-def code_dc(register):
-    pass
+def code_dc(register, a16):
+    """ CALL C,a16 - Call address a16 if flag C is set """
+    if register.get_c_flag():
+        a16 = cpu.util.convert_little_endian_to_big_endian(a16)
+        # TODO after cpu is implemented
+        pass
+    return 12
 
 
 def code_dd():
@@ -1878,7 +1984,9 @@ def code_de(register, d8):
 
 
 def code_df(register):
-    pass
+    """ RST 18H - Push present address onto stack, jump to address $0000 + 18H """
+    # TODO: after memory and cpu are implemented
+    return 32
 
 
 # OPCODES Ex
@@ -1931,7 +2039,9 @@ def code_e6(register, d8):
 
 
 def code_e7(register):
-    pass
+    """ RST 20H - Push present address onto stack, jump to address $0000 + 20H """
+    # TODO: after memory and cpu are implemented
+    return 32
 
 
 def code_e8(register, r8):
@@ -1949,7 +2059,9 @@ def code_e8(register, r8):
 
 
 def code_e9(register):
-    pass
+    """ JP (HL) - Jump to address contained in HL """
+    # TODO after memory and cpu is implemented
+    return 4
 
 
 def code_ea(register, a16):
@@ -1987,7 +2099,9 @@ def code_ee(register, d8):
 
 
 def code_ef(register):
-    pass
+    """ RST 28H - Push present address onto stack, jump to address $0000 + 28H """
+    # TODO: after memory and cpu are implemented
+    return 32
 
 
 # OPCODES Fx
@@ -2041,7 +2155,9 @@ def code_f6(register, d8):
 
 
 def code_f7(register):
-    pass
+    """ RST 30H - Push present address onto stack, jump to address $0000 + 30H """
+    # TODO: after memory and cpu are implemented
+    return 32
 
 
 def code_f8(register, r8):
@@ -2097,7 +2213,9 @@ def code_fe(register, d8):
 
 
 def code_ff(register):
-    pass
+    """ RST 38H - Push present address onto stack, jump to address $0000 + 38H """
+    # TODO: after memory and cpu are implemented
+    return 32
 
 
 """ CB-Prefix operations """

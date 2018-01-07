@@ -405,6 +405,13 @@ def test_code_17(register):
 
 
 # noinspection PyShadowingNames
+def test_code_18(register):
+    """ JP r8 - Add r8 to the current address and jump to it """
+    # TODO after cpu is implemented
+    pass
+
+
+# noinspection PyShadowingNames
 def test_code_19(register):
     """ ADD HL,DE - HL=HL+DE """
     register.set_hl(0x0000)
@@ -538,6 +545,13 @@ def test_code_1f(register):
 
 
 # noinspection PyShadowingNames
+def test_code_20(register):
+    """ JR NZ,r8 - If flag Z is reset, add r8 to current address and jump to it """
+    # TODO after cpu is implemented
+    pass
+
+
+# noinspection PyShadowingNames
 def test_code_21(register):
     """ LD HL,d16 - Stores given 16-bit value at HL """
     cycles = cpu.op.code_21(register, 0x9933)  # Little-endian
@@ -665,6 +679,13 @@ def test_code_27(register):
 
 
 # noinspection PyShadowingNames
+def test_code_28(register):
+    """ JR Z,r8 - If flag Z is set, add r8 to current address and jump to it """
+    # TODO after cpu is implemented
+    pass
+
+
+# noinspection PyShadowingNames
 def test_code_29(register):
     """ ADD HL,HL - HL=HL+HL """
     register.set_hl(0x0001)
@@ -785,6 +806,13 @@ def test_code_2f(register):
 
 
 # noinspection PyShadowingNames
+def test_code_30(register):
+    """ JR NC,r8 - If flag C is reset, add r8 to current address and jump to it """
+    # TODO after cpu is implemented
+    pass
+
+
+# noinspection PyShadowingNames
 def test_code_31(register):
     """ LD SP,d16 - Stores given 16-bit value at SP """
     cycles = cpu.op.code_31(register, 0x9933)
@@ -856,6 +884,13 @@ def test_code_37(register):
     cycles = cpu.op.code_37(register)
     assert cycles == 4
     assert_registers(register, f=0b10010000)
+
+
+# noinspection PyShadowingNames
+def test_code_38(register):
+    """ JR C,r8 - If flag C is set, add r8 to current address and jump to it """
+    # TODO after cpu is implemented
+    pass
 
 
 # noinspection PyShadowingNames
@@ -3252,9 +3287,37 @@ def test_code_be(register):
 
 
 # noinspection PyShadowingNames
+def test_code_c0(register):
+    """ RET NZ - Return if flag Z is reset """
+    # TODO: after cpu is implemented
+    pass
+
+
+# noinspection PyShadowingNames
 def test_code_c1(register):
     """ POP BC - Copy 16-bit value from stack (i.e. SP address) into BC, then increment SP by 2 """
     # TODO after memory is implemented
+    pass
+
+
+# noinspection PyShadowingNames
+def test_code_c2(register):
+    """ JP NZ,a16 - Jump to address a16 if Z flag is reset """
+    # TODO: after memory and cpu are implemented
+    pass
+
+
+# noinspection PyShadowingNames
+def test_code_c3(register):
+    """ JP a16 - Jump to address a16 """
+    # TODO: after memory and cpu are implemented
+    pass
+
+
+# noinspection PyShadowingNames
+def test_code_c4(register):
+    """ CALL NZ,a16 - Call address a16 if flag Z is reset """
+    # TODO: after cpu is implemented
     pass
 
 
@@ -3303,6 +3366,48 @@ def test_code_c6(register):
     cycles = cpu.op.code_c6(register, d8)
     assert cycles == 8
     assert_registers(register, a=0x01, f=0b00110000)
+
+
+# noinspection PyShadowingNames
+def test_code_c7(register):
+    """ RST 00H - Push present address onto stack, jump to address $0000 + 00H """
+    # TODO: after memory and cpu are implemented
+    pass
+
+
+# noinspection PyShadowingNames
+def test_code_c8(register):
+    """ RET Z - Return if flag Z is set """
+    # TODO: after cpu is implemented
+    pass
+
+
+# noinspection PyShadowingNames
+def test_code_c9(register):
+    """ RET - Pop two bytes from stask and jump to that address """
+    # TODO: after cpu is implemented
+    pass
+
+
+# noinspection PyShadowingNames
+def test_code_ca(register):
+    """ JP Z,a16 - Jump to address a16 if Z flag is set """
+    # TODO: after memory and cpu are implemented
+    pass
+
+
+# noinspection PyShadowingNames
+def test_code_cc(register):
+    """ CALL Z,a16 - Call address a16 if flag Z is set """
+    # TODO: after cpu is implemented
+    pass
+
+
+# noinspection PyShadowingNames
+def test_code_cd(register):
+    """ CALL a16 - Push address of next instruction onto stack then jump to address a16 """
+    # TODO: after cpu are implemented
+    pass
 
 
 # noinspection PyShadowingNames
@@ -3359,9 +3464,37 @@ def test_code_ce(register):
 
 
 # noinspection PyShadowingNames
+def test_code_cf(register):
+    """ RST 08H - Push present address onto stack, jump to address $0000 + 08H """
+    # TODO: after memory and cpu are implemented
+    pass
+
+
+# noinspection PyShadowingNames
+def test_code_d0(register):
+    """ RET NC - Return if flag C is reset """
+    # TODO: after cpu is implemented
+    pass
+
+
+# noinspection PyShadowingNames
 def test_code_d1(register):
     """ POP DE - Copy 16-bit value from stack (i.e. SP address) into DE, then increment SP by 2 """
     # TODO after memory is implemented
+    pass
+
+
+# noinspection PyShadowingNames
+def test_code_d2(register):
+    """ JP NC,a16 - Jump to address a16 if C flag is reset """
+    # TODO: after memory and cpu are implemented
+    pass
+
+
+# noinspection PyShadowingNames
+def test_code_d4(register):
+    """ CALL NC,a16 - Call address a16 if flag C is reset """
+    # TODO: after cpu is implemented
     pass
 
 
@@ -3413,6 +3546,41 @@ def test_code_d6(register):
 
 
 # noinspection PyShadowingNames
+def test_code_d7(register):
+    """ RST 10H - Push present address onto stack, jump to address $0000 + 10H """
+    # TODO: after memory and cpu are implemented
+    pass
+
+
+# noinspection PyShadowingNames
+def test_code_d8(register):
+    """ RET C - Return if flag C is set """
+    # TODO: after cpu is implemented
+    pass
+
+
+# noinspection PyShadowingNames
+def test_code_d9(register):
+    """ RETI - Pop two bytes from stask and jump to that address then enable interrupts """
+    # TODO: after memory, cpu and interrupts are implemented
+    pass
+
+
+# noinspection PyShadowingNames
+def test_code_da(register):
+    """ JP C,a16 - Jump to address a16 if C flag is set """
+    # TODO: after memory and cpu are implemented
+    pass
+
+
+# noinspection PyShadowingNames
+def test_code_dc(register):
+    """ CALL C,a16 - Call address a16 if flag C is set """
+    # TODO: after cpu is implemented
+    pass
+
+
+# noinspection PyShadowingNames
 def test_code_de(register):
     """ SBC A,d8 - A=A-d8-carry_flag (yes, '-carry_flag' is just -1 or -0) """
     register.A = 0x00
@@ -3442,6 +3610,13 @@ def test_code_de(register):
     cycles = cpu.op.code_de(register,d8)
     assert cycles == 8
     assert_registers(register, a=0x0E, f=0b01100000)
+
+
+# noinspection PyShadowingNames
+def test_code_df(register):
+    """ RST 18H - Push present address onto stack, jump to address $0000 + 18H """
+    # TODO: after memory and cpu are implemented
+    pass
 
 
 # noinspection PyShadowingNames
@@ -3489,6 +3664,13 @@ def test_code_e6(register):
 
 
 # noinspection PyShadowingNames
+def test_code_e7(register):
+    """ RST 20H - Push present address onto stack, jump to address $0000 + 20H """
+    # TODO: after memory and cpu are implemented
+    pass
+
+
+# noinspection PyShadowingNames
 def test_code_e8(register):
     """ LD HL,SP+d8 or LDHL SP,r8 - Put result of SP+r8 into HL (r8 is a signed value) """
     register.SP = 0x0000
@@ -3513,6 +3695,13 @@ def test_code_e8(register):
 
 
 # noinspection PyShadowingNames
+def test_code_e9(register):
+    """ JP (HL) - Jump to address contained in HL """
+    # TODO after memory and cpu is implemented
+    pass
+
+
+# noinspection PyShadowingNames
 def test_code_ea(register):
     """ LD (a16),A - Stores reg at the address in a16 (least significant byte first) """
     # TODO after memory is implemented
@@ -3533,6 +3722,13 @@ def test_code_ee(register):
     cycles = cpu.op.code_ee(register,d8)
     assert cycles == 8
     assert_registers(register, a=0b11000101, f=0b00000000)
+
+
+# noinspection PyShadowingNames
+def test_code_ef(register):
+    """ RST 28H - Push present address onto stack, jump to address $0000 + 28H """
+    # TODO: after memory and cpu are implemented
+    pass
 
 
 # noinspection PyShadowingNames
@@ -3584,6 +3780,13 @@ def test_code_f6(register):
     cycles = cpu.op.code_f6(register,d8)
     assert cycles == 8
     assert_registers(register, a=0b11100111, f=0b00000000)
+
+
+# noinspection PyShadowingNames
+def test_code_f7(register):
+    """ RST 30H - Push present address onto stack, jump to address $0000 + 30H """
+    # TODO: after memory and cpu are implemented
+    pass
 
 
 # noinspection PyShadowingNames
@@ -3671,6 +3874,13 @@ def test_code_fe(register):
     cycles = cpu.op.code_fe(register,d8)
     assert cycles == 8
     assert_registers(register, a=0xFF, f=0b01000000)
+
+
+# noinspection PyShadowingNames
+def test_code_ff(register):
+    """ RST 38H - Push present address onto stack, jump to address $0000 + 38H """
+    # TODO: after memory and cpu are implemented
+    pass
 
 
 # noinspection PyShadowingNames
