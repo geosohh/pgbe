@@ -1,3 +1,8 @@
+"""
+CPU
+"""
+
+
 from cpu.register import Register
 import cpu.op
 
@@ -26,6 +31,7 @@ class CPU:
             op_cb_set[opcode](self, data)
         else:
             op_set[opcode](self,data)
+
 
 op_set = {
     "00": cpu.op.code_00,    "01": cpu.op.code_01,    "02": cpu.op.code_02,    "03": cpu.op.code_03,
@@ -190,5 +196,6 @@ op_cb_set = {
     "f8": cpu.op.code_cb_f8,    "f9": cpu.op.code_cb_f9,    "fa": cpu.op.code_cb_fa,    "fb": cpu.op.code_cb_fb,
     "fc": cpu.op.code_cb_fc,    "fd": cpu.op.code_cb_fd,    "fe": cpu.op.code_cb_fe,    "ff": cpu.op.code_cb_ff
 }
+
 if __name__ == '__main__':
     cpu = CPU()
