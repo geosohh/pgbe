@@ -3491,6 +3491,9 @@ def test_code_d2(register):
     pass
 
 
+# OPCODE D3 is unused
+
+
 # noinspection PyShadowingNames
 def test_code_d4(register):
     """ CALL NC,a16 - Call address a16 if flag C is reset """
@@ -3573,11 +3576,17 @@ def test_code_da(register):
     pass
 
 
+# OPCODE DB is unused
+
+
 # noinspection PyShadowingNames
 def test_code_dc(register):
     """ CALL C,a16 - Call address a16 if flag C is set """
     # TODO: after cpu is implemented
     pass
+
+
+# OPCODE DD is unused
 
 
 # noinspection PyShadowingNames
@@ -3638,6 +3647,12 @@ def test_code_e2(register):
     """ LD (C),A or LD ($FF00+C),A - Put A into address ($FF00 + register C) """
     # TODO after memory is implemented
     pass
+
+
+# OPCODE E3 is unused
+
+
+# OPCODE E4 is unused
 
 
 # noinspection PyShadowingNames
@@ -3708,6 +3723,15 @@ def test_code_ea(register):
     pass
 
 
+# OPCODE EB is unused
+
+
+# OPCODE EC is unused
+
+
+# OPCODE ED is unused
+
+
 # noinspection PyShadowingNames
 def test_code_ee(register):
     """ XOR d8 - A=Logical XOR A with d8 """
@@ -3757,6 +3781,9 @@ def test_code_f3(register):
     """ DI - Disable interrupts AFTER THE NEXT INSTRUCTION IS EXECUTED """
     # TODO after cpu and interrupts are implemented
     pass
+
+
+# OPCODE F4 is unused
 
 
 # noinspection PyShadowingNames
@@ -3834,6 +3861,12 @@ def test_code_fb(register):
     """ EI - Enable interrupts AFTER THE NEXT INSTRUCTION IS EXECUTED """
     # TODO after cpu and interrupts are implemented
     pass
+
+
+# OPCODE FC is unused
+
+
+# OPCODE FD is unused
 
 
 # noinspection PyShadowingNames
