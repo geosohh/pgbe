@@ -2813,201 +2813,594 @@ def code_cb_3f(register):
     register.set_c_flag(bit_0)
     return 8
 
+
 # OPCODES CB 4x
 def code_cb_40(register):
-    pass
+    """ BIT 0,B - Test what is the value of bit 0 """
+    bit_to_check = register.B & 0b00000001
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 8
+
 
 def code_cb_41(register):
-    pass
+    """ BIT 0,C - Test what is the value of bit 0 """
+    bit_to_check = register.C & 0b00000001
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 8
+
 
 def code_cb_42(register):
-    pass
+    """ BIT 0,D - Test what is the value of bit 0 """
+    bit_to_check = register.D & 0b00000001
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 8
+
 
 def code_cb_43(register):
-    pass
+    """ BIT 0,E - Test what is the value of bit 0 """
+    bit_to_check = register.E & 0b00000001
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 8
+
 
 def code_cb_44(register):
-    pass
+    """ BIT 0,H - Test what is the value of bit 0 """
+    bit_to_check = register.H & 0b00000001
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 8
+
 
 def code_cb_45(register):
-    pass
+    """ BIT 0,L - Test what is the value of bit 0 """
+    bit_to_check = register.L & 0b00000001
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 8
+
 
 def code_cb_46(register):
-    pass
+    """ BIT 0,(HL) - Test what is the value of bit 0 """
+    # TODO after memory is implemented
+    # bit_to_check = register.B & 0b00000001
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 16
+
 
 def code_cb_47(register):
-    pass
+    """ BIT 0,A - Test what is the value of bit 0 """
+    bit_to_check = register.A & 0b00000001
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 8
+
 
 def code_cb_48(register):
-    pass
+    """ BIT 1,B - Test what is the value of bit 1 """
+    bit_to_check = (register.B & 0b00000010) >> 1
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 8
+
 
 def code_cb_49(register):
-    pass
+    """ BIT 1,C - Test what is the value of bit 1 """
+    bit_to_check = (register.C & 0b00000010) >> 1
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 8
+
 
 def code_cb_4a(register):
-    pass
+    """ BIT 1,D - Test what is the value of bit 1 """
+    bit_to_check = (register.D & 0b00000010) >> 1
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 8
+
 
 def code_cb_4b(register):
-    pass
+    """ BIT 1,E - Test what is the value of bit 1 """
+    bit_to_check = (register.E & 0b00000010) >> 1
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 8
+
 
 def code_cb_4c(register):
-    pass
+    """ BIT 1,H - Test what is the value of bit 1 """
+    bit_to_check = (register.H & 0b00000010) >> 1
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 8
+
 
 def code_cb_4d(register):
-    pass
+    """ BIT 1,L - Test what is the value of bit 1 """
+    bit_to_check = (register.L & 0b00000010) >> 1
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 8
+
 
 def code_cb_4e(register):
-    pass
+    """ BIT 1,(HL) - Test what is the value of bit 1 """
+    # TODO after memory is implemented
+    # bit_to_check = (register.B & 0b00000010) >> 1
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 16
+
 
 def code_cb_4f(register):
-    pass
+    """ BIT 1,A - Test what is the value of bit 1 """
+    bit_to_check = (register.A & 0b00000010) >> 1
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 8
+
 
 # OPCODES CB 5x
 def code_cb_50(register):
-    pass
+    """ BIT 2,B - Test what is the value of bit 2 """
+    bit_to_check = (register.B & 0b00000100) >> 2
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 8
+
 
 def code_cb_51(register):
-    pass
+    """ BIT 2,C - Test what is the value of bit 2 """
+    bit_to_check = (register.C & 0b00000100) >> 2
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 8
+
 
 def code_cb_52(register):
-    pass
+    """ BIT 2,D - Test what is the value of bit 2 """
+    bit_to_check = (register.D & 0b00000100) >> 2
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 8
+
 
 def code_cb_53(register):
-    pass
+    """ BIT 2,E - Test what is the value of bit 2 """
+    bit_to_check = (register.E & 0b00000100) >> 2
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 8
+
 
 def code_cb_54(register):
-    pass
+    """ BIT 2,H - Test what is the value of bit 2 """
+    bit_to_check = (register.H & 0b00000100) >> 2
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 8
+
 
 def code_cb_55(register):
-    pass
+    """ BIT 2,L - Test what is the value of bit 2 """
+    bit_to_check = (register.L & 0b00000100) >> 2
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 8
+
 
 def code_cb_56(register):
-    pass
+    """ BIT 2,(HL) - Test what is the value of bit 2 """
+    # TODO after memory is implemented
+    # bit_to_check = (register.B & 0b00000100) >> 2
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 16
+
 
 def code_cb_57(register):
-    pass
+    """ BIT 2,A - Test what is the value of bit 2 """
+    bit_to_check = (register.A & 0b00000100) >> 2
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 8
+
 
 def code_cb_58(register):
-    pass
+    """ BIT 3,B - Test what is the value of bit 3 """
+    bit_to_check = (register.B & 0b00001000) >> 3
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 8
+
 
 def code_cb_59(register):
-    pass
+    """ BIT 3,C - Test what is the value of bit 3 """
+    bit_to_check = (register.C & 0b00001000) >> 3
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 8
+
 
 def code_cb_5a(register):
-    pass
+    """ BIT 3,D - Test what is the value of bit 3 """
+    bit_to_check = (register.D & 0b00001000) >> 3
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 8
+
 
 def code_cb_5b(register):
-    pass
+    """ BIT 3,E - Test what is the value of bit 3 """
+    bit_to_check = (register.E & 0b00001000) >> 3
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 8
+
 
 def code_cb_5c(register):
-    pass
+    """ BIT 3,H - Test what is the value of bit 3 """
+    bit_to_check = (register.H & 0b00001000) >> 3
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 8
+
 
 def code_cb_5d(register):
-    pass
+    """ BIT 3,L - Test what is the value of bit 3 """
+    bit_to_check = (register.L & 0b00001000) >> 3
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 8
+
 
 def code_cb_5e(register):
-    pass
+    """ BIT 3,(HL) - Test what is the value of bit 3 """
+    # TODO after memory is implemented
+    # bit_to_check = (register.B & 0b00001000) >> 3
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 16
+
 
 def code_cb_5f(register):
-    pass
+    """ BIT 3,A - Test what is the value of bit 3 """
+    bit_to_check = (register.A & 0b00001000) >> 3
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 8
+
 
 # OPCODES CB 6x
 def code_cb_60(register):
-    pass
+    """ BIT 4,B - Test what is the value of bit 4 """
+    bit_to_check = (register.B & 0b00010000) >> 4
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 8
+
 
 def code_cb_61(register):
-    pass
+    """ BIT 4,C - Test what is the value of bit 4 """
+    bit_to_check = (register.C & 0b00010000) >> 4
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 8
+
 
 def code_cb_62(register):
-    pass
+    """ BIT 4,D - Test what is the value of bit 4 """
+    bit_to_check = (register.D & 0b00010000) >> 4
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 8
+
 
 def code_cb_63(register):
-    pass
+    """ BIT 4,E - Test what is the value of bit 4 """
+    bit_to_check = (register.E & 0b00010000) >> 4
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 8
+
 
 def code_cb_64(register):
-    pass
+    """ BIT 4,H - Test what is the value of bit 4 """
+    bit_to_check = (register.H & 0b00010000) >> 4
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 8
+
 
 def code_cb_65(register):
-    pass
+    """ BIT 4,L - Test what is the value of bit 4 """
+    bit_to_check = (register.L & 0b00010000) >> 4
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 8
+
 
 def code_cb_66(register):
-    pass
+    """ BIT 4,(HL) - Test what is the value of bit 4 """
+    # TODO after memory is implemented
+    # bit_to_check = (register.B & 0b00010000) >> 4
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 16
+
 
 def code_cb_67(register):
-    pass
+    """ BIT 4,A - Test what is the value of bit 4 """
+    bit_to_check = (register.A & 0b00010000) >> 4
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 8
+
 
 def code_cb_68(register):
-    pass
+    """ BIT 5,B - Test what is the value of bit 5 """
+    bit_to_check = (register.B & 0b00100000) >> 5
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 8
+
 
 def code_cb_69(register):
-    pass
+    """ BIT 5,C - Test what is the value of bit 5 """
+    bit_to_check = (register.C & 0b00100000) >> 5
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 8
+
 
 def code_cb_6a(register):
-    pass
+    """ BIT 5,D - Test what is the value of bit 5 """
+    bit_to_check = (register.D & 0b00100000) >> 5
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 8
+
 
 def code_cb_6b(register):
-    pass
+    """ BIT 5,E - Test what is the value of bit 5 """
+    bit_to_check = (register.E & 0b00100000) >> 5
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 8
+
 
 def code_cb_6c(register):
-    pass
+    """ BIT 5,H - Test what is the value of bit 5 """
+    bit_to_check = (register.H & 0b00100000) >> 5
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 8
+
 
 def code_cb_6d(register):
-    pass
+    """ BIT 5,L - Test what is the value of bit 5 """
+    bit_to_check = (register.L & 0b00100000) >> 5
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 8
+
 
 def code_cb_6e(register):
-    pass
+    """ BIT 5,(HL) - Test what is the value of bit 5 """
+    # TODO after memory is implemented
+    # bit_to_check = (register.A & 0b00100000) >> 5
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 16
+
 
 def code_cb_6f(register):
-    pass
+    """ BIT 5,A - Test what is the value of bit 5 """
+    bit_to_check = (register.A & 0b00100000) >> 5
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 8
+
 
 # OPCODES CB 7x
 def code_cb_70(register):
-    pass
+    """ BIT 6,B - Test what is the value of bit 6 """
+    bit_to_check = (register.B & 0b01000000) >> 6
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 8
+
 
 def code_cb_71(register):
-    pass
+    """ BIT 6,C - Test what is the value of bit 6 """
+    bit_to_check = (register.C & 0b01000000) >> 6
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 8
+
 
 def code_cb_72(register):
-    pass
+    """ BIT 6,D - Test what is the value of bit 6 """
+    bit_to_check = (register.D & 0b01000000) >> 6
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 8
+
 
 def code_cb_73(register):
-    pass
+    """ BIT 6,E - Test what is the value of bit 6 """
+    bit_to_check = (register.E & 0b01000000) >> 6
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 8
+
 
 def code_cb_74(register):
-    pass
+    """ BIT 6,H - Test what is the value of bit 6 """
+    bit_to_check = (register.H & 0b01000000) >> 6
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 8
+
 
 def code_cb_75(register):
-    pass
+    """ BIT 6,L - Test what is the value of bit 6 """
+    bit_to_check = (register.L & 0b01000000) >> 6
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 8
+
 
 def code_cb_76(register):
-    pass
+    """ BIT 6,(HL) - Test what is the value of bit 6 """
+    # TODO after memory is implemented
+    # bit_to_check = (register.A & 0b01000000) >> 6
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 16
+
 
 def code_cb_77(register):
-    pass
+    """ BIT 6,A - Test what is the value of bit 6 """
+    bit_to_check = (register.A & 0b01000000) >> 6
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 8
+
 
 def code_cb_78(register):
-    pass
+    """ BIT 7,B - Test what is the value of bit 7 """
+    bit_to_check = (register.B & 0b10000000) >> 7
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 8
+
 
 def code_cb_79(register):
-    pass
+    """ BIT 7,C - Test what is the value of bit 7 """
+    bit_to_check = (register.C & 0b10000000) >> 7
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 8
+
 
 def code_cb_7a(register):
-    pass
+    """ BIT 7,D - Test what is the value of bit 7 """
+    bit_to_check = (register.D & 0b10000000) >> 7
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 8
+
 
 def code_cb_7b(register):
-    pass
+    """ BIT 7,E - Test what is the value of bit 7 """
+    bit_to_check = (register.E & 0b10000000) >> 7
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 8
+
 
 def code_cb_7c(register):
-    pass
+    """ BIT 7,H - Test what is the value of bit 7 """
+    bit_to_check = (register.H & 0b10000000) >> 7
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 8
+
 
 def code_cb_7d(register):
-    pass
+    """ BIT 7,L - Test what is the value of bit 7 """
+    bit_to_check = (register.L & 0b10000000) >> 7
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 8
+
 
 def code_cb_7e(register):
-    pass
+    """ BIT 7,(HL) - Test what is the value of bit 7 """
+    # TODO after memory is implemented
+    # bit_to_check = (register.A & 0b10000000) >> 7
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 16
+
 
 def code_cb_7f(register):
-    pass
+    """ BIT 7,A - Test what is the value of bit 7 """
+    bit_to_check = (register.A & 0b10000000) >> 7
+    register.set_z_flag(bit_to_check)
+    register.set_n_flag(False)
+    register.set_h_flag(True)
+    return 8
+
 
 # OPCODES CB 8x
 def code_cb_80(register):

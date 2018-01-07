@@ -4588,3 +4588,835 @@ def test_code_cb_3f(register):
     cycles = cpu.op.code_cb_3f(register)
     assert cycles == 8
     assert_registers(register, a=0b00000000, f=0b10010000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_40(register):
+    """ BIT 0,B - Test what is the value of bit 0 """
+    register.B = 0b00000001
+    cycles = cpu.op.code_cb_40(register)
+    assert cycles == 8
+    assert_registers(register, b=0b00000001, f=0b10100000)
+
+    register.B = 0b11111110
+    cycles = cpu.op.code_cb_40(register)
+    assert cycles == 8
+    assert_registers(register, b=0b11111110, f=0b00100000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_41(register):
+    """ BIT 0,C - Test what is the value of bit 0 """
+    register.C = 0b00000001
+    cycles = cpu.op.code_cb_41(register)
+    assert cycles == 8
+    assert_registers(register, c=0b00000001, f=0b10100000)
+
+    register.C = 0b11111110
+    cycles = cpu.op.code_cb_41(register)
+    assert cycles == 8
+    assert_registers(register, c=0b11111110, f=0b00100000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_42(register):
+    """ BIT 0,D - Test what is the value of bit 0 """
+    register.D = 0b00000001
+    cycles = cpu.op.code_cb_42(register)
+    assert cycles == 8
+    assert_registers(register, d=0b00000001, f=0b10100000)
+
+    register.D = 0b11111110
+    cycles = cpu.op.code_cb_42(register)
+    assert cycles == 8
+    assert_registers(register, d=0b11111110, f=0b00100000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_43(register):
+    """ BIT 0,E - Test what is the value of bit 0 """
+    register.E = 0b00000001
+    cycles = cpu.op.code_cb_43(register)
+    assert cycles == 8
+    assert_registers(register, e=0b00000001, f=0b10100000)
+
+    register.E = 0b11111110
+    cycles = cpu.op.code_cb_43(register)
+    assert cycles == 8
+    assert_registers(register, e=0b11111110, f=0b00100000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_44(register):
+    """ BIT 0,H - Test what is the value of bit 0 """
+    register.H = 0b00000001
+    cycles = cpu.op.code_cb_44(register)
+    assert cycles == 8
+    assert_registers(register, h=0b00000001, f=0b10100000)
+
+    register.H = 0b11111110
+    cycles = cpu.op.code_cb_44(register)
+    assert cycles == 8
+    assert_registers(register, h=0b11111110, f=0b00100000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_45(register):
+    """ BIT 0,L - Test what is the value of bit 0 """
+    register.L = 0b00000001
+    cycles = cpu.op.code_cb_45(register)
+    assert cycles == 8
+    assert_registers(register, l=0b00000001, f=0b10100000)
+
+    register.L = 0b11111110
+    cycles = cpu.op.code_cb_45(register)
+    assert cycles == 8
+    assert_registers(register, l=0b11111110, f=0b00100000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_46(register):
+    """ BIT 0,(HL) - Test what is the value of bit 0 """
+
+
+# noinspection PyShadowingNames
+def test_code_cb_47(register):
+    """ BIT 0,A - Test what is the value of bit 0 """
+    register.A = 0b00000001
+    cycles = cpu.op.code_cb_47(register)
+    assert cycles == 8
+    assert_registers(register, a=0b00000001, f=0b10100000)
+
+    register.A = 0b11111110
+    cycles = cpu.op.code_cb_47(register)
+    assert cycles == 8
+    assert_registers(register, a=0b11111110, f=0b00100000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_48(register):
+    """ BIT 1,B - Test what is the value of bit 1 """
+    register.B = 0b00000010
+    cycles = cpu.op.code_cb_48(register)
+    assert cycles == 8
+    assert_registers(register, b=0b00000010, f=0b10100000)
+
+    register.B = 0b11111101
+    cycles = cpu.op.code_cb_48(register)
+    assert cycles == 8
+    assert_registers(register, b=0b11111101, f=0b00100000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_49(register):
+    """ BIT 1,C - Test what is the value of bit 1 """
+    register.C = 0b00000010
+    cycles = cpu.op.code_cb_49(register)
+    assert cycles == 8
+    assert_registers(register, c=0b00000010, f=0b10100000)
+
+    register.C = 0b11111101
+    cycles = cpu.op.code_cb_49(register)
+    assert cycles == 8
+    assert_registers(register, c=0b11111101, f=0b00100000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_4a(register):
+    """ BIT 1,D - Test what is the value of bit 1 """
+    register.D = 0b00000010
+    cycles = cpu.op.code_cb_4a(register)
+    assert cycles == 8
+    assert_registers(register, d=0b00000010, f=0b10100000)
+
+    register.D = 0b11111101
+    cycles = cpu.op.code_cb_4a(register)
+    assert cycles == 8
+    assert_registers(register, d=0b11111101, f=0b00100000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_4b(register):
+    """ BIT 1,E - Test what is the value of bit 1 """
+    register.E = 0b00000010
+    cycles = cpu.op.code_cb_4b(register)
+    assert cycles == 8
+    assert_registers(register, e=0b00000010, f=0b10100000)
+
+    register.E = 0b11111101
+    cycles = cpu.op.code_cb_4b(register)
+    assert cycles == 8
+    assert_registers(register, e=0b11111101, f=0b00100000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_4c(register):
+    """ BIT 1,H - Test what is the value of bit 1 """
+    register.H = 0b00000010
+    cycles = cpu.op.code_cb_4c(register)
+    assert cycles == 8
+    assert_registers(register, h=0b00000010, f=0b10100000)
+
+    register.H = 0b11111101
+    cycles = cpu.op.code_cb_4c(register)
+    assert cycles == 8
+    assert_registers(register, h=0b11111101, f=0b00100000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_4d(register):
+    """ BIT 1,L - Test what is the value of bit 1 """
+    register.L = 0b00000010
+    cycles = cpu.op.code_cb_4d(register)
+    assert cycles == 8
+    assert_registers(register, l=0b00000010, f=0b10100000)
+
+    register.L = 0b11111101
+    cycles = cpu.op.code_cb_4d(register)
+    assert cycles == 8
+    assert_registers(register, l=0b11111101, f=0b00100000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_4e(register):
+    """ BIT 1,(HL) - Test what is the value of bit 1 """
+    # TODO after memory is implemented
+    pass
+
+
+# noinspection PyShadowingNames
+def test_code_cb_4f(register):
+    """ BIT 1,A - Test what is the value of bit 1 """
+    register.A = 0b00000010
+    cycles = cpu.op.code_cb_4f(register)
+    assert cycles == 8
+    assert_registers(register, a=0b00000010, f=0b10100000)
+
+    register.A = 0b11111101
+    cycles = cpu.op.code_cb_4f(register)
+    assert cycles == 8
+    assert_registers(register, a=0b11111101, f=0b00100000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_50(register):
+    """ BIT 2,B - Test what is the value of bit 2 """
+    register.B = 0b00000100
+    cycles = cpu.op.code_cb_50(register)
+    assert cycles == 8
+    assert_registers(register, b=0b00000100, f=0b10100000)
+
+    register.B = 0b11111011
+    cycles = cpu.op.code_cb_50(register)
+    assert cycles == 8
+    assert_registers(register, b=0b11111011, f=0b00100000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_51(register):
+    """ BIT 2,C - Test what is the value of bit 2 """
+    register.C = 0b00000100
+    cycles = cpu.op.code_cb_51(register)
+    assert cycles == 8
+    assert_registers(register, c=0b00000100, f=0b10100000)
+
+    register.C = 0b11111011
+    cycles = cpu.op.code_cb_51(register)
+    assert cycles == 8
+    assert_registers(register, c=0b11111011, f=0b00100000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_52(register):
+    """ BIT 2,D - Test what is the value of bit 2 """
+    register.D = 0b00000100
+    cycles = cpu.op.code_cb_52(register)
+    assert cycles == 8
+    assert_registers(register, d=0b00000100, f=0b10100000)
+
+    register.D = 0b11111011
+    cycles = cpu.op.code_cb_52(register)
+    assert cycles == 8
+    assert_registers(register, d=0b11111011, f=0b00100000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_53(register):
+    """ BIT 2,E - Test what is the value of bit 2 """
+    register.E = 0b00000100
+    cycles = cpu.op.code_cb_53(register)
+    assert cycles == 8
+    assert_registers(register, e=0b00000100, f=0b10100000)
+
+    register.E = 0b11111011
+    cycles = cpu.op.code_cb_53(register)
+    assert cycles == 8
+    assert_registers(register, e=0b11111011, f=0b00100000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_54(register):
+    """ BIT 2,H - Test what is the value of bit 2 """
+    register.H = 0b00000100
+    cycles = cpu.op.code_cb_54(register)
+    assert cycles == 8
+    assert_registers(register, h=0b00000100, f=0b10100000)
+
+    register.H = 0b11111011
+    cycles = cpu.op.code_cb_54(register)
+    assert cycles == 8
+    assert_registers(register, h=0b11111011, f=0b00100000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_55(register):
+    """ BIT 2,L - Test what is the value of bit 2 """
+    register.L = 0b00000100
+    cycles = cpu.op.code_cb_55(register)
+    assert cycles == 8
+    assert_registers(register, l=0b00000100, f=0b10100000)
+
+    register.L = 0b11111011
+    cycles = cpu.op.code_cb_55(register)
+    assert cycles == 8
+    assert_registers(register, l=0b11111011, f=0b00100000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_56(register):
+    """ BIT 2,(HL) - Test what is the value of bit 2 """
+
+
+# noinspection PyShadowingNames
+def test_code_cb_57(register):
+    """ BIT 2,A - Test what is the value of bit 2 """
+    register.A = 0b00000100
+    cycles = cpu.op.code_cb_57(register)
+    assert cycles == 8
+    assert_registers(register, a=0b00000100, f=0b10100000)
+
+    register.A = 0b11111011
+    cycles = cpu.op.code_cb_57(register)
+    assert cycles == 8
+    assert_registers(register, a=0b11111011, f=0b00100000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_58(register):
+    """ BIT 3,B - Test what is the value of bit 3 """
+    register.B = 0b00001000
+    cycles = cpu.op.code_cb_58(register)
+    assert cycles == 8
+    assert_registers(register, b=0b00001000, f=0b10100000)
+
+    register.B = 0b11110111
+    cycles = cpu.op.code_cb_58(register)
+    assert cycles == 8
+    assert_registers(register, b=0b11110111, f=0b00100000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_59(register):
+    """ BIT 3,C - Test what is the value of bit 3 """
+    register.C = 0b00001000
+    cycles = cpu.op.code_cb_59(register)
+    assert cycles == 8
+    assert_registers(register, c=0b00001000, f=0b10100000)
+
+    register.C = 0b11110111
+    cycles = cpu.op.code_cb_59(register)
+    assert cycles == 8
+    assert_registers(register, c=0b11110111, f=0b00100000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_5a(register):
+    """ BIT 3,D - Test what is the value of bit 3 """
+    register.D = 0b00001000
+    cycles = cpu.op.code_cb_5a(register)
+    assert cycles == 8
+    assert_registers(register, d=0b00001000, f=0b10100000)
+
+    register.D = 0b11110111
+    cycles = cpu.op.code_cb_5a(register)
+    assert cycles == 8
+    assert_registers(register, d=0b11110111, f=0b00100000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_5b(register):
+    """ BIT 3,E - Test what is the value of bit 3 """
+    register.E = 0b00001000
+    cycles = cpu.op.code_cb_5b(register)
+    assert cycles == 8
+    assert_registers(register, e=0b00001000, f=0b10100000)
+
+    register.E = 0b11110111
+    cycles = cpu.op.code_cb_5b(register)
+    assert cycles == 8
+    assert_registers(register, e=0b11110111, f=0b00100000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_5c(register):
+    """ BIT 3,H - Test what is the value of bit 3 """
+    register.H = 0b00001000
+    cycles = cpu.op.code_cb_5c(register)
+    assert cycles == 8
+    assert_registers(register, h=0b00001000, f=0b10100000)
+
+    register.H = 0b11110111
+    cycles = cpu.op.code_cb_5c(register)
+    assert cycles == 8
+    assert_registers(register, h=0b11110111, f=0b00100000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_5d(register):
+    """ BIT 3,L - Test what is the value of bit 3 """
+    register.L = 0b00001000
+    cycles = cpu.op.code_cb_5d(register)
+    assert cycles == 8
+    assert_registers(register, l=0b00001000, f=0b10100000)
+
+    register.L = 0b11110111
+    cycles = cpu.op.code_cb_5d(register)
+    assert cycles == 8
+    assert_registers(register, l=0b11110111, f=0b00100000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_5e(register):
+    """ BIT 3,(HL) - Test what is the value of bit 3 """
+    # TODO after memory is implemented
+    pass
+
+
+# noinspection PyShadowingNames
+def test_code_cb_5f(register):
+    """ BIT 3,A - Test what is the value of bit 3 """
+    register.A = 0b00001000
+    cycles = cpu.op.code_cb_5f(register)
+    assert cycles == 8
+    assert_registers(register, a=0b00001000, f=0b10100000)
+
+    register.A = 0b11110111
+    cycles = cpu.op.code_cb_5f(register)
+    assert cycles == 8
+    assert_registers(register, a=0b11110111, f=0b00100000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_60(register):
+    """ BIT 4,B - Test what is the value of bit 4 """
+    register.B = 0b00010000
+    cycles = cpu.op.code_cb_60(register)
+    assert cycles == 8
+    assert_registers(register, b=0b00010000, f=0b10100000)
+
+    register.B = 0b11101111
+    cycles = cpu.op.code_cb_60(register)
+    assert cycles == 8
+    assert_registers(register, b=0b11101111, f=0b00100000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_61(register):
+    """ BIT 4,C - Test what is the value of bit 4 """
+    register.C = 0b00010000
+    cycles = cpu.op.code_cb_61(register)
+    assert cycles == 8
+    assert_registers(register, c=0b00010000, f=0b10100000)
+
+    register.C = 0b11101111
+    cycles = cpu.op.code_cb_61(register)
+    assert cycles == 8
+    assert_registers(register, c=0b11101111, f=0b00100000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_64(register):
+    """ BIT 4,D - Test what is the value of bit 4 """
+    register.D = 0b00010000
+    cycles = cpu.op.code_cb_64(register)
+    assert cycles == 8
+    assert_registers(register, d=0b00010000, f=0b10100000)
+
+    register.D = 0b11101111
+    cycles = cpu.op.code_cb_64(register)
+    assert cycles == 8
+    assert_registers(register, d=0b11101111, f=0b00100000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_63(register):
+    """ BIT 4,E - Test what is the value of bit 4 """
+    register.E = 0b00010000
+    cycles = cpu.op.code_cb_63(register)
+    assert cycles == 8
+    assert_registers(register, e=0b00010000, f=0b10100000)
+
+    register.E = 0b11101111
+    cycles = cpu.op.code_cb_63(register)
+    assert cycles == 8
+    assert_registers(register, e=0b11101111, f=0b00100000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_64(register):
+    """ BIT 4,H - Test what is the value of bit 4 """
+    register.H = 0b00010000
+    cycles = cpu.op.code_cb_64(register)
+    assert cycles == 8
+    assert_registers(register, h=0b00010000, f=0b10100000)
+
+    register.H = 0b11101111
+    cycles = cpu.op.code_cb_64(register)
+    assert cycles == 8
+    assert_registers(register, h=0b11101111, f=0b00100000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_65(register):
+    """ BIT 4,L - Test what is the value of bit 4 """
+    register.L = 0b00010000
+    cycles = cpu.op.code_cb_65(register)
+    assert cycles == 8
+    assert_registers(register, l=0b00010000, f=0b10100000)
+
+    register.L = 0b11101111
+    cycles = cpu.op.code_cb_65(register)
+    assert cycles == 8
+    assert_registers(register, l=0b11101111, f=0b00100000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_66(register):
+    """ BIT 4,(HL) - Test what is the value of bit 4 """
+
+
+# noinspection PyShadowingNames
+def test_code_cb_67(register):
+    """ BIT 4,A - Test what is the value of bit 4 """
+    register.A = 0b00010000
+    cycles = cpu.op.code_cb_67(register)
+    assert cycles == 8
+    assert_registers(register, a=0b00010000, f=0b10100000)
+
+    register.A = 0b11101111
+    cycles = cpu.op.code_cb_67(register)
+    assert cycles == 8
+    assert_registers(register, a=0b11101111, f=0b00100000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_68(register):
+    """ BIT 5,B - Test what is the value of bit 5 """
+    register.B = 0b00100000
+    cycles = cpu.op.code_cb_68(register)
+    assert cycles == 8
+    assert_registers(register, b=0b00100000, f=0b10100000)
+
+    register.B = 0b11011111
+    cycles = cpu.op.code_cb_68(register)
+    assert cycles == 8
+    assert_registers(register, b=0b11011111, f=0b00100000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_69(register):
+    """ BIT 5,C - Test what is the value of bit 5 """
+    register.C = 0b00100000
+    cycles = cpu.op.code_cb_69(register)
+    assert cycles == 8
+    assert_registers(register, c=0b00100000, f=0b10100000)
+
+    register.C = 0b11011111
+    cycles = cpu.op.code_cb_69(register)
+    assert cycles == 8
+    assert_registers(register, c=0b11011111, f=0b00100000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_6a(register):
+    """ BIT 5,D - Test what is the value of bit 5 """
+    register.D = 0b00100000
+    cycles = cpu.op.code_cb_6a(register)
+    assert cycles == 8
+    assert_registers(register, d=0b00100000, f=0b10100000)
+
+    register.D = 0b11011111
+    cycles = cpu.op.code_cb_6a(register)
+    assert cycles == 8
+    assert_registers(register, d=0b11011111, f=0b00100000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_6b(register):
+    """ BIT 5,E - Test what is the value of bit 5 """
+    register.E = 0b00100000
+    cycles = cpu.op.code_cb_6b(register)
+    assert cycles == 8
+    assert_registers(register, e=0b00100000, f=0b10100000)
+
+    register.E = 0b11011111
+    cycles = cpu.op.code_cb_6b(register)
+    assert cycles == 8
+    assert_registers(register, e=0b11011111, f=0b00100000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_6c(register):
+    """ BIT 5,H - Test what is the value of bit 5 """
+    register.H = 0b00100000
+    cycles = cpu.op.code_cb_6c(register)
+    assert cycles == 8
+    assert_registers(register, h=0b00100000, f=0b10100000)
+
+    register.H = 0b11011111
+    cycles = cpu.op.code_cb_6c(register)
+    assert cycles == 8
+    assert_registers(register, h=0b11011111, f=0b00100000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_6d(register):
+    """ BIT 5,L - Test what is the value of bit 5 """
+    register.L = 0b00100000
+    cycles = cpu.op.code_cb_6d(register)
+    assert cycles == 8
+    assert_registers(register, l=0b00100000, f=0b10100000)
+
+    register.L = 0b11011111
+    cycles = cpu.op.code_cb_6d(register)
+    assert cycles == 8
+    assert_registers(register, l=0b11011111, f=0b00100000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_6e(register):
+    """ BIT 5,(HL) - Test what is the value of bit 5 """
+    # TODO after memory is implemented
+    pass
+
+
+# noinspection PyShadowingNames
+def test_code_cb_6f(register):
+    """ BIT 5,A - Test what is the value of bit 5 """
+    register.A = 0b00100000
+    cycles = cpu.op.code_cb_6f(register)
+    assert cycles == 8
+    assert_registers(register, a=0b00100000, f=0b10100000)
+
+    register.A = 0b11011111
+    cycles = cpu.op.code_cb_6f(register)
+    assert cycles == 8
+    assert_registers(register, a=0b11011111, f=0b00100000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_70(register):
+    """ BIT 6,B - Test what is the value of bit 6 """
+    register.B = 0b01000000
+    cycles = cpu.op.code_cb_70(register)
+    assert cycles == 8
+    assert_registers(register, b=0b01000000, f=0b10100000)
+
+    register.B = 0b10111111
+    cycles = cpu.op.code_cb_70(register)
+    assert cycles == 8
+    assert_registers(register, b=0b10111111, f=0b00100000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_71(register):
+    """ BIT 6,C - Test what is the value of bit 6 """
+    register.C = 0b01000000
+    cycles = cpu.op.code_cb_71(register)
+    assert cycles == 8
+    assert_registers(register, c=0b01000000, f=0b10100000)
+
+    register.C = 0b10111111
+    cycles = cpu.op.code_cb_71(register)
+    assert cycles == 8
+    assert_registers(register, c=0b10111111, f=0b00100000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_76(register):
+    """ BIT 6,D - Test what is the value of bit 6 """
+    register.D = 0b01000000
+    cycles = cpu.op.code_cb_76(register)
+    assert cycles == 8
+    assert_registers(register, d=0b01000000, f=0b10100000)
+
+    register.D = 0b10111111
+    cycles = cpu.op.code_cb_76(register)
+    assert cycles == 8
+    assert_registers(register, d=0b10111111, f=0b00100000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_73(register):
+    """ BIT 6,E - Test what is the value of bit 6 """
+    register.E = 0b01000000
+    cycles = cpu.op.code_cb_73(register)
+    assert cycles == 8
+    assert_registers(register, e=0b01000000, f=0b10100000)
+
+    register.E = 0b10111111
+    cycles = cpu.op.code_cb_73(register)
+    assert cycles == 8
+    assert_registers(register, e=0b10111111, f=0b00100000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_76(register):
+    """ BIT 6,H - Test what is the value of bit 6 """
+    register.H = 0b01000000
+    cycles = cpu.op.code_cb_76(register)
+    assert cycles == 8
+    assert_registers(register, h=0b01000000, f=0b10100000)
+
+    register.H = 0b10111111
+    cycles = cpu.op.code_cb_76(register)
+    assert cycles == 8
+    assert_registers(register, h=0b10111111, f=0b00100000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_75(register):
+    """ BIT 6,L - Test what is the value of bit 6 """
+    register.L = 0b01000000
+    cycles = cpu.op.code_cb_75(register)
+    assert cycles == 8
+    assert_registers(register, l=0b01000000, f=0b10100000)
+
+    register.L = 0b10111111
+    cycles = cpu.op.code_cb_75(register)
+    assert cycles == 8
+    assert_registers(register, l=0b10111111, f=0b00100000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_76(register):
+    """ BIT 6,(HL) - Test what is the value of bit 6 """
+
+
+# noinspection PyShadowingNames
+def test_code_cb_77(register):
+    """ BIT 6,A - Test what is the value of bit 6 """
+    register.A = 0b01000000
+    cycles = cpu.op.code_cb_77(register)
+    assert cycles == 8
+    assert_registers(register, a=0b01000000, f=0b10100000)
+
+    register.A = 0b10111111
+    cycles = cpu.op.code_cb_77(register)
+    assert cycles == 8
+    assert_registers(register, a=0b10111111, f=0b00100000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_78(register):
+    """ BIT 7,B - Test what is the value of bit 7 """
+    register.B = 0b10000000
+    cycles = cpu.op.code_cb_78(register)
+    assert cycles == 8
+    assert_registers(register, b=0b10000000, f=0b10100000)
+
+    register.B = 0b01111111
+    cycles = cpu.op.code_cb_78(register)
+    assert cycles == 8
+    assert_registers(register, b=0b01111111, f=0b00100000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_79(register):
+    """ BIT 7,C - Test what is the value of bit 7 """
+    register.C = 0b10000000
+    cycles = cpu.op.code_cb_79(register)
+    assert cycles == 8
+    assert_registers(register, c=0b10000000, f=0b10100000)
+
+    register.C = 0b01111111
+    cycles = cpu.op.code_cb_79(register)
+    assert cycles == 8
+    assert_registers(register, c=0b01111111, f=0b00100000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_7a(register):
+    """ BIT 7,D - Test what is the value of bit 7 """
+    register.D = 0b10000000
+    cycles = cpu.op.code_cb_7a(register)
+    assert cycles == 8
+    assert_registers(register, d=0b10000000, f=0b10100000)
+
+    register.D = 0b01111111
+    cycles = cpu.op.code_cb_7a(register)
+    assert cycles == 8
+    assert_registers(register, d=0b01111111, f=0b00100000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_7b(register):
+    """ BIT 7,E - Test what is the value of bit 7 """
+    register.E = 0b10000000
+    cycles = cpu.op.code_cb_7b(register)
+    assert cycles == 8
+    assert_registers(register, e=0b10000000, f=0b10100000)
+
+    register.E = 0b01111111
+    cycles = cpu.op.code_cb_7b(register)
+    assert cycles == 8
+    assert_registers(register, e=0b01111111, f=0b00100000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_7c(register):
+    """ BIT 7,H - Test what is the value of bit 7 """
+    register.H = 0b10000000
+    cycles = cpu.op.code_cb_7c(register)
+    assert cycles == 8
+    assert_registers(register, h=0b10000000, f=0b10100000)
+
+    register.H = 0b01111111
+    cycles = cpu.op.code_cb_7c(register)
+    assert cycles == 8
+    assert_registers(register, h=0b01111111, f=0b00100000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_7d(register):
+    """ BIT 7,L - Test what is the value of bit 7 """
+    register.L = 0b10000000
+    cycles = cpu.op.code_cb_7d(register)
+    assert cycles == 8
+    assert_registers(register, l=0b10000000, f=0b10100000)
+
+    register.L = 0b01111111
+    cycles = cpu.op.code_cb_7d(register)
+    assert cycles == 8
+    assert_registers(register, l=0b01111111, f=0b00100000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_7e(register):
+    """ BIT 7,(HL) - Test what is the value of bit 7 """
+    # TODO after memory is implemented
+    pass
+
+
+# noinspection PyShadowingNames
+def test_code_cb_7f(register):
+    """ BIT 7,A - Test what is the value of bit 7 """
+    register.A = 0b10000000
+    cycles = cpu.op.code_cb_7f(register)
+    assert cycles == 8
+    assert_registers(register, a=0b10000000, f=0b10100000)
+
+    register.A = 0b01111111
+    cycles = cpu.op.code_cb_7f(register)
+    assert cycles == 8
+    assert_registers(register, a=0b01111111, f=0b00100000)
