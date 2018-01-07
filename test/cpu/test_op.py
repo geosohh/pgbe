@@ -5420,3 +5420,843 @@ def test_code_cb_7f(register):
     cycles = cpu.op.code_cb_7f(register)
     assert cycles == 8
     assert_registers(register, a=0b01111111, f=0b00100000)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_c0(register):
+    """ SET 0,B - Set the specified bit """
+    register.B = 0b00000000
+    cycle = cpu.op.code_cb_c0(register)
+    assert cycle == 8
+    assert_registers(register, b=0b00000001)
+
+    register.B = 0b11111111
+    cycle = cpu.op.code_cb_c0(register)
+    assert cycle == 8
+    assert_registers(register, b=0b11111111)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_c1(register):
+    """ SET 0,C - Set the specified bit """
+    register.C = 0b00000000
+    cycle = cpu.op.code_cb_c1(register)
+    assert cycle == 8
+    assert_registers(register, c=0b00000001)
+
+    register.C = 0b11111111
+    cycle = cpu.op.code_cb_c1(register)
+    assert cycle == 8
+    assert_registers(register, c=0b11111111)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_c2(register):
+    """ SET 0,D - Set the specified bit """
+    register.D = 0b00000000
+    cycle = cpu.op.code_cb_c2(register)
+    assert cycle == 8
+    assert_registers(register, d=0b00000001)
+
+    register.D = 0b11111111
+    cycle = cpu.op.code_cb_c2(register)
+    assert cycle == 8
+    assert_registers(register, d=0b11111111)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_c3(register):
+    """ SET 0,E - Set the specified bit """
+    register.E = 0b00000000
+    cycle = cpu.op.code_cb_c3(register)
+    assert cycle == 8
+    assert_registers(register, e=0b00000001)
+
+    register.E = 0b11111111
+    cycle = cpu.op.code_cb_c3(register)
+    assert cycle == 8
+    assert_registers(register, e=0b11111111)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_c4(register):
+    """ SET 0,H - Set the specified bit """
+    register.H = 0b00000000
+    cycle = cpu.op.code_cb_c4(register)
+    assert cycle == 8
+    assert_registers(register, h=0b00000001)
+
+    register.H = 0b11111111
+    cycle = cpu.op.code_cb_c4(register)
+    assert cycle == 8
+    assert_registers(register, h=0b11111111)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_c5(register):
+    """ SET 0,L - Set the specified bit """
+    register.L = 0b00000000
+    cycle = cpu.op.code_cb_c5(register)
+    assert cycle == 8
+    assert_registers(register, l=0b00000001)
+
+    register.L = 0b11111111
+    cycle = cpu.op.code_cb_c5(register)
+    assert cycle == 8
+    assert_registers(register, l=0b11111111)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_c6(register):
+    """ SET 0,(HL) - Set the specified bit """
+    # TODO after memory is implemented
+    pass
+
+
+# noinspection PyShadowingNames
+def test_code_cb_c7(register):
+    """ SET 0,A - Set the specified bit """
+    register.A = 0b00000000
+    cycle = cpu.op.code_cb_c7(register)
+    assert cycle == 8
+    assert_registers(register, a=0b00000001)
+
+    register.A = 0b11111111
+    cycle = cpu.op.code_cb_c7(register)
+    assert cycle == 8
+    assert_registers(register, a=0b11111111)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_c8(register):
+    """ SET 1,B - Set the specified bit """
+    register.B = 0b00000000
+    cycle = cpu.op.code_cb_c8(register)
+    assert cycle == 8
+    assert_registers(register, b=0b00000010)
+
+    register.B = 0b11111111
+    cycle = cpu.op.code_cb_c8(register)
+    assert cycle == 8
+    assert_registers(register, b=0b11111111)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_c9(register):
+    """ SET 1,C - Set the specified bit """
+    register.C = 0b00000000
+    cycle = cpu.op.code_cb_c9(register)
+    assert cycle == 8
+    assert_registers(register, c=0b00000010)
+
+    register.C = 0b11111111
+    cycle = cpu.op.code_cb_c9(register)
+    assert cycle == 8
+    assert_registers(register, c=0b11111111)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_ca(register):
+    """ SET 1,D - Set the specified bit """
+    register.D = 0b00000000
+    cycle = cpu.op.code_cb_ca(register)
+    assert cycle == 8
+    assert_registers(register, d=0b00000010)
+
+    register.D = 0b11111111
+    cycle = cpu.op.code_cb_ca(register)
+    assert cycle == 8
+    assert_registers(register, d=0b11111111)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_cb(register):
+    """ SET 1,E - Set the specified bit """
+    register.E = 0b00000000
+    cycle = cpu.op.code_cb_cb(register)
+    assert cycle == 8
+    assert_registers(register, e=0b00000010)
+
+    register.E = 0b11111111
+    cycle = cpu.op.code_cb_cb(register)
+    assert cycle == 8
+    assert_registers(register, e=0b11111111)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_cc(register):
+    """ SET 1,H - Set the specified bit """
+    register.H = 0b00000000
+    cycle = cpu.op.code_cb_cc(register)
+    assert cycle == 8
+    assert_registers(register, h=0b00000010)
+
+    register.H = 0b11111111
+    cycle = cpu.op.code_cb_cc(register)
+    assert cycle == 8
+    assert_registers(register, h=0b11111111)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_cd(register):
+    """ SET 1,L - Set the specified bit """
+    register.L = 0b00000000
+    cycle = cpu.op.code_cb_cd(register)
+    assert cycle == 8
+    assert_registers(register, l=0b00000010)
+
+    register.L = 0b11111111
+    cycle = cpu.op.code_cb_cd(register)
+    assert cycle == 8
+    assert_registers(register, l=0b11111111)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_ce(register):
+    """ SET 1,(HL) - Set the specified bit """
+    # TODO after memory is implemented
+    pass
+
+
+# noinspection PyShadowingNames
+def test_code_cb_cf(register):
+    """ SET 1,A - Set the specified bit """
+    register.A = 0b00000000
+    cycle = cpu.op.code_cb_cf(register)
+    assert cycle == 8
+    assert_registers(register, a=0b00000010)
+
+    register.A = 0b11111111
+    cycle = cpu.op.code_cb_cf(register)
+    assert cycle == 8
+    assert_registers(register, a=0b11111111)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_d0(register):
+    """ SET 2,B - Set the specified bit """
+    register.B = 0b00000000
+    cycle = cpu.op.code_cb_d0(register)
+    assert cycle == 8
+    assert_registers(register, b=0b00000100)
+
+    register.B = 0b11111111
+    cycle = cpu.op.code_cb_d0(register)
+    assert cycle == 8
+    assert_registers(register, b=0b11111111)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_d1(register):
+    """ SET 2,C - Set the specified bit """
+    register.C = 0b00000000
+    cycle = cpu.op.code_cb_d1(register)
+    assert cycle == 8
+    assert_registers(register, c=0b00000100)
+
+    register.C = 0b11111111
+    cycle = cpu.op.code_cb_d1(register)
+    assert cycle == 8
+    assert_registers(register, c=0b11111111)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_d2(register):
+    """ SET 2,D - Set the specified bit """
+    register.D = 0b00000000
+    cycle = cpu.op.code_cb_d2(register)
+    assert cycle == 8
+    assert_registers(register, d=0b00000100)
+
+    register.D = 0b11111111
+    cycle = cpu.op.code_cb_d2(register)
+    assert cycle == 8
+    assert_registers(register, d=0b11111111)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_d3(register):
+    """ SET 2,E - Set the specified bit """
+    register.E = 0b00000000
+    cycle = cpu.op.code_cb_d3(register)
+    assert cycle == 8
+    assert_registers(register, e=0b00000100)
+
+    register.E = 0b11111111
+    cycle = cpu.op.code_cb_d3(register)
+    assert cycle == 8
+    assert_registers(register, e=0b11111111)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_d4(register):
+    """ SET 2,H - Set the specified bit """
+    register.H = 0b00000000
+    cycle = cpu.op.code_cb_d4(register)
+    assert cycle == 8
+    assert_registers(register, h=0b00000100)
+
+    register.H = 0b11111111
+    cycle = cpu.op.code_cb_d4(register)
+    assert cycle == 8
+    assert_registers(register, h=0b11111111)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_d5(register):
+    """ SET 2,L - Set the specified bit """
+    register.L = 0b00000000
+    cycle = cpu.op.code_cb_d5(register)
+    assert cycle == 8
+    assert_registers(register, l=0b00000100)
+
+    register.L = 0b11111111
+    cycle = cpu.op.code_cb_d5(register)
+    assert cycle == 8
+    assert_registers(register, l=0b11111111)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_d6(register):
+    """ SET 2,(HL) - Set the specified bit """
+    # TODO after memory is implemented
+    pass
+
+
+# noinspection PyShadowingNames
+def test_code_cb_d7(register):
+    """ SET 2,A - Set the specified bit """
+    register.A = 0b00000000
+    cycle = cpu.op.code_cb_d7(register)
+    assert cycle == 8
+    assert_registers(register, a=0b00000100)
+
+    register.A = 0b11111111
+    cycle = cpu.op.code_cb_d7(register)
+    assert cycle == 8
+    assert_registers(register, a=0b11111111)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_d8(register):
+    """ SET 3,B - Set the specified bit """
+    register.B = 0b00000000
+    cycle = cpu.op.code_cb_d8(register)
+    assert cycle == 8
+    assert_registers(register, b=0b00001000)
+
+    register.B = 0b11111111
+    cycle = cpu.op.code_cb_d8(register)
+    assert cycle == 8
+    assert_registers(register, b=0b11111111)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_d9(register):
+    """ SET 3,C - Set the specified bit """
+    register.C = 0b00000000
+    cycle = cpu.op.code_cb_d9(register)
+    assert cycle == 8
+    assert_registers(register, c=0b00001000)
+
+    register.C = 0b11111111
+    cycle = cpu.op.code_cb_d9(register)
+    assert cycle == 8
+    assert_registers(register, c=0b11111111)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_da(register):
+    """ SET 3,D - Set the specified bit """
+    register.D = 0b00000000
+    cycle = cpu.op.code_cb_da(register)
+    assert cycle == 8
+    assert_registers(register, d=0b00001000)
+
+    register.D = 0b11111111
+    cycle = cpu.op.code_cb_da(register)
+    assert cycle == 8
+    assert_registers(register, d=0b11111111)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_db(register):
+    """ SET 3,E - Set the specified bit """
+    register.E = 0b00000000
+    cycle = cpu.op.code_cb_db(register)
+    assert cycle == 8
+    assert_registers(register, e=0b00001000)
+
+    register.E = 0b11111111
+    cycle = cpu.op.code_cb_db(register)
+    assert cycle == 8
+    assert_registers(register, e=0b11111111)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_dc(register):
+    """ SET 3,H - Set the specified bit """
+    register.H = 0b00000000
+    cycle = cpu.op.code_cb_dc(register)
+    assert cycle == 8
+    assert_registers(register, h=0b00001000)
+
+    register.H = 0b11111111
+    cycle = cpu.op.code_cb_dc(register)
+    assert cycle == 8
+    assert_registers(register, h=0b11111111)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_dd(register):
+    """ SET 3,L - Set the specified bit """
+    register.L = 0b00000000
+    cycle = cpu.op.code_cb_dd(register)
+    assert cycle == 8
+    assert_registers(register, l=0b00001000)
+
+    register.L = 0b11111111
+    cycle = cpu.op.code_cb_dd(register)
+    assert cycle == 8
+    assert_registers(register, l=0b11111111)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_de(register):
+    """ SET 3,(HL) - Set the specified bit """
+    # TODO after memory is implemented
+    pass
+
+
+# noinspection PyShadowingNames
+def test_code_cb_df(register):
+    """ SET 3,A - Set the specified bit """
+    register.A = 0b00000000
+    cycle = cpu.op.code_cb_df(register)
+    assert cycle == 8
+    assert_registers(register, a=0b00001000)
+
+    register.A = 0b11111111
+    cycle = cpu.op.code_cb_df(register)
+    assert cycle == 8
+    assert_registers(register, a=0b11111111)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_e0(register):
+    """ SET 4,B - Set the specified bit """
+    register.B = 0b00000000
+    cycle = cpu.op.code_cb_e0(register)
+    assert cycle == 8
+    assert_registers(register, b=0b00010000)
+
+    register.B = 0b11111111
+    cycle = cpu.op.code_cb_e0(register)
+    assert cycle == 8
+    assert_registers(register, b=0b11111111)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_e1(register):
+    """ SET 4,C - Set the specified bit """
+    register.C = 0b00000000
+    cycle = cpu.op.code_cb_e1(register)
+    assert cycle == 8
+    assert_registers(register, c=0b00010000)
+
+    register.C = 0b11111111
+    cycle = cpu.op.code_cb_e1(register)
+    assert cycle == 8
+    assert_registers(register, c=0b11111111)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_e2(register):
+    """ SET 4,D - Set the specified bit """
+    register.D = 0b00000000
+    cycle = cpu.op.code_cb_e2(register)
+    assert cycle == 8
+    assert_registers(register, d=0b00010000)
+
+    register.D = 0b11111111
+    cycle = cpu.op.code_cb_e2(register)
+    assert cycle == 8
+    assert_registers(register, d=0b11111111)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_e3(register):
+    """ SET 4,E - Set the specified bit """
+    register.E = 0b00000000
+    cycle = cpu.op.code_cb_e3(register)
+    assert cycle == 8
+    assert_registers(register, e=0b00010000)
+
+    register.E = 0b11111111
+    cycle = cpu.op.code_cb_e3(register)
+    assert cycle == 8
+    assert_registers(register, e=0b11111111)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_e4(register):
+    """ SET 4,H - Set the specified bit """
+    register.H = 0b00000000
+    cycle = cpu.op.code_cb_e4(register)
+    assert cycle == 8
+    assert_registers(register, h=0b00010000)
+
+    register.H = 0b11111111
+    cycle = cpu.op.code_cb_e4(register)
+    assert cycle == 8
+    assert_registers(register, h=0b11111111)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_e5(register):
+    """ SET 4,L - Set the specified bit """
+    register.L = 0b00000000
+    cycle = cpu.op.code_cb_e5(register)
+    assert cycle == 8
+    assert_registers(register, l=0b00010000)
+
+    register.L = 0b11111111
+    cycle = cpu.op.code_cb_e5(register)
+    assert cycle == 8
+    assert_registers(register, l=0b11111111)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_e6(register):
+    """ SET 4,(HL) - Set the specified bit """
+    # TODO after memory is implemented
+    pass
+
+
+# noinspection PyShadowingNames
+def test_code_cb_e7(register):
+    """ SET 4,A - Set the specified bit """
+    register.A = 0b00000000
+    cycle = cpu.op.code_cb_e7(register)
+    assert cycle == 8
+    assert_registers(register, a=0b00010000)
+
+    register.A = 0b11111111
+    cycle = cpu.op.code_cb_e7(register)
+    assert cycle == 8
+    assert_registers(register, a=0b11111111)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_e8(register):
+    """ SET 5,B - Set the specified bit """
+    register.B = 0b00000000
+    cycle = cpu.op.code_cb_e8(register)
+    assert cycle == 8
+    assert_registers(register, b=0b00100000)
+
+    register.B = 0b11111111
+    cycle = cpu.op.code_cb_e8(register)
+    assert cycle == 8
+    assert_registers(register, b=0b11111111)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_e9(register):
+    """ SET 5,C - Set the specified bit """
+    register.C = 0b00000000
+    cycle = cpu.op.code_cb_e9(register)
+    assert cycle == 8
+    assert_registers(register, c=0b00100000)
+
+    register.C = 0b11111111
+    cycle = cpu.op.code_cb_e9(register)
+    assert cycle == 8
+    assert_registers(register, c=0b11111111)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_ea(register):
+    """ SET 5,D - Set the specified bit """
+    register.D = 0b00000000
+    cycle = cpu.op.code_cb_ea(register)
+    assert cycle == 8
+    assert_registers(register, d=0b00100000)
+
+    register.D = 0b11111111
+    cycle = cpu.op.code_cb_ea(register)
+    assert cycle == 8
+    assert_registers(register, d=0b11111111)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_eb(register):
+    """ SET 5,E - Set the specified bit """
+    register.E = 0b00000000
+    cycle = cpu.op.code_cb_eb(register)
+    assert cycle == 8
+    assert_registers(register, e=0b00100000)
+
+    register.E = 0b11111111
+    cycle = cpu.op.code_cb_eb(register)
+    assert cycle == 8
+    assert_registers(register, e=0b11111111)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_ec(register):
+    """ SET 5,H - Set the specified bit """
+    register.H = 0b00000000
+    cycle = cpu.op.code_cb_ec(register)
+    assert cycle == 8
+    assert_registers(register, h=0b00100000)
+
+    register.H = 0b11111111
+    cycle = cpu.op.code_cb_ec(register)
+    assert cycle == 8
+    assert_registers(register, h=0b11111111)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_ed(register):
+    """ SET 5,L - Set the specified bit """
+    register.L = 0b00000000
+    cycle = cpu.op.code_cb_ed(register)
+    assert cycle == 8
+    assert_registers(register, l=0b00100000)
+
+    register.L = 0b11111111
+    cycle = cpu.op.code_cb_ed(register)
+    assert cycle == 8
+    assert_registers(register, l=0b11111111)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_ee(register):
+    """ SET 5,(HL) - Set the specified bit """
+    # TODO after memory is implemented
+    pass
+
+
+# noinspection PyShadowingNames
+def test_code_cb_ef(register):
+    """ SET 5,A - Set the specified bit """
+    register.A = 0b00000000
+    cycle = cpu.op.code_cb_ef(register)
+    assert cycle == 8
+    assert_registers(register, a=0b00100000)
+
+    register.A = 0b11111111
+    cycle = cpu.op.code_cb_ef(register)
+    assert cycle == 8
+    assert_registers(register, a=0b11111111)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_f0(register):
+    """ SET 6,B - Set the specified bit """
+    register.B = 0b00000000
+    cycle = cpu.op.code_cb_f0(register)
+    assert cycle == 8
+    assert_registers(register, b=0b01000000)
+
+    register.B = 0b11111111
+    cycle = cpu.op.code_cb_f0(register)
+    assert cycle == 8
+    assert_registers(register, b=0b11111111)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_f1(register):
+    """ SET 6,C - Set the specified bit """
+    register.C = 0b00000000
+    cycle = cpu.op.code_cb_f1(register)
+    assert cycle == 8
+    assert_registers(register, c=0b01000000)
+
+    register.C = 0b11111111
+    cycle = cpu.op.code_cb_f1(register)
+    assert cycle == 8
+    assert_registers(register, c=0b11111111)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_f2(register):
+    """ SET 6,D - Set the specified bit """
+    register.D = 0b00000000
+    cycle = cpu.op.code_cb_f2(register)
+    assert cycle == 8
+    assert_registers(register, d=0b01000000)
+
+    register.D = 0b11111111
+    cycle = cpu.op.code_cb_f2(register)
+    assert cycle == 8
+    assert_registers(register, d=0b11111111)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_f3(register):
+    """ SET 6,E - Set the specified bit """
+    register.E = 0b00000000
+    cycle = cpu.op.code_cb_f3(register)
+    assert cycle == 8
+    assert_registers(register, e=0b01000000)
+
+    register.E = 0b11111111
+    cycle = cpu.op.code_cb_f3(register)
+    assert cycle == 8
+    assert_registers(register, e=0b11111111)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_f4(register):
+    """ SET 6,H - Set the specified bit """
+    register.H = 0b00000000
+    cycle = cpu.op.code_cb_f4(register)
+    assert cycle == 8
+    assert_registers(register, h=0b01000000)
+
+    register.H = 0b11111111
+    cycle = cpu.op.code_cb_f4(register)
+    assert cycle == 8
+    assert_registers(register, h=0b11111111)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_f5(register):
+    """ SET 6,L - Set the specified bit """
+    register.L = 0b00000000
+    cycle = cpu.op.code_cb_f5(register)
+    assert cycle == 8
+    assert_registers(register, l=0b01000000)
+
+    register.L = 0b11111111
+    cycle = cpu.op.code_cb_f5(register)
+    assert cycle == 8
+    assert_registers(register, l=0b11111111)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_f6(register):
+    """ SET 6,(HL) - Set the specified bit """
+    # TODO after memory is implemented
+    pass
+
+
+# noinspection PyShadowingNames
+def test_code_cb_f7(register):
+    """ SET 6,A - Set the specified bit """
+    register.A = 0b00000000
+    cycle = cpu.op.code_cb_f7(register)
+    assert cycle == 8
+    assert_registers(register, a=0b01000000)
+
+    register.A = 0b11111111
+    cycle = cpu.op.code_cb_f7(register)
+    assert cycle == 8
+    assert_registers(register, a=0b11111111)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_f8(register):
+    """ SET 7,B - Set the specified bit """
+    register.B = 0b00000000
+    cycle = cpu.op.code_cb_f8(register)
+    assert cycle == 8
+    assert_registers(register, b=0b10000000)
+
+    register.B = 0b11111111
+    cycle = cpu.op.code_cb_f8(register)
+    assert cycle == 8
+    assert_registers(register, b=0b11111111)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_f9(register):
+    """ SET 7,C - Set the specified bit """
+    register.C = 0b00000000
+    cycle = cpu.op.code_cb_f9(register)
+    assert cycle == 8
+    assert_registers(register, c=0b10000000)
+
+    register.C = 0b11111111
+    cycle = cpu.op.code_cb_f9(register)
+    assert cycle == 8
+    assert_registers(register, c=0b11111111)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_fa(register):
+    """ SET 7,D - Set the specified bit """
+    register.D = 0b00000000
+    cycle = cpu.op.code_cb_fa(register)
+    assert cycle == 8
+    assert_registers(register, d=0b10000000)
+
+    register.D = 0b11111111
+    cycle = cpu.op.code_cb_fa(register)
+    assert cycle == 8
+    assert_registers(register, d=0b11111111)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_fb(register):
+    """ SET 7,E - Set the specified bit """
+    register.E = 0b00000000
+    cycle = cpu.op.code_cb_fb(register)
+    assert cycle == 8
+    assert_registers(register, e=0b10000000)
+
+    register.E = 0b11111111
+    cycle = cpu.op.code_cb_fb(register)
+    assert cycle == 8
+    assert_registers(register, e=0b11111111)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_fc(register):
+    """ SET 7,H - Set the specified bit """
+    register.H = 0b00000000
+    cycle = cpu.op.code_cb_fc(register)
+    assert cycle == 8
+    assert_registers(register, h=0b10000000)
+
+    register.H = 0b11111111
+    cycle = cpu.op.code_cb_fc(register)
+    assert cycle == 8
+    assert_registers(register, h=0b11111111)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_fd(register):
+    """ SET 7,L - Set the specified bit """
+    register.L = 0b00000000
+    cycle = cpu.op.code_cb_fd(register)
+    assert cycle == 8
+    assert_registers(register, l=0b10000000)
+
+    register.L = 0b11111111
+    cycle = cpu.op.code_cb_fd(register)
+    assert cycle == 8
+    assert_registers(register, l=0b11111111)
+
+
+# noinspection PyShadowingNames
+def test_code_cb_fe(register):
+    """ SET 7,(HL) - Set the specified bit """
+    # TODO after memory is implemented
+    pass
+
+
+# noinspection PyShadowingNames
+def test_code_cb_ff(register):
+    """ SET 7,A - Set the specified bit """
+    register.A = 0b00000000
+    cycle = cpu.op.code_cb_ff(register)
+    assert cycle == 8
+    assert_registers(register, a=0b10000000)
+
+    register.A = 0b11111111
+    cycle = cpu.op.code_cb_ff(register)
+    assert cycle == 8
+    assert_registers(register, a=0b11111111)

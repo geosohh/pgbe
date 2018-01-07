@@ -3598,198 +3598,398 @@ def code_cb_be(register):
 def code_cb_bf(register):
     pass
 
+
 # OPCODES CB Cx
 def code_cb_c0(register):
-    pass
+    """ SET 0,B - Set the specified bit """
+    register.B = register.B | 0b00000001
+    return 8
+
 
 def code_cb_c1(register):
-    pass
+    """ SET 0,C - Set the specified bit """
+    register.C = register.C | 0b00000001
+    return 8
+
 
 def code_cb_c2(register):
-    pass
+    """ SET 0,D - Set the specified bit """
+    register.D = register.D | 0b00000001
+    return 8
+
 
 def code_cb_c3(register):
-    pass
+    """ SET 0,E - Set the specified bit """
+    register.E = register.E | 0b00000001
+    return 8
+
 
 def code_cb_c4(register):
-    pass
+    """ SET 0,H - Set the specified bit """
+    register.H = register.H | 0b00000001
+    return 8
+
 
 def code_cb_c5(register):
-    pass
+    """ SET 0,L - Set the specified bit """
+    register.L = register.L | 0b00000001
+    return 8
+
 
 def code_cb_c6(register):
-    pass
+    """ SET 0,(HL) - Set the specified bit """
+    # TODO after memory is implemented
+    # register.B = register.B | 0b00000001
+    return 16
+
 
 def code_cb_c7(register):
-    pass
+    """ SET 0,A - Set the specified bit """
+    register.A = register.A | 0b00000001
+    return 8
+
 
 def code_cb_c8(register):
-    pass
+    """ SET 1,B - Set the specified bit """
+    register.B = register.B | 0b00000010
+    return 8
+
 
 def code_cb_c9(register):
-    pass
+    """ SET 1,C - Set the specified bit """
+    register.C = register.C | 0b00000010
+    return 8
+
 
 def code_cb_ca(register):
-    pass
+    """ SET 1,D - Set the specified bit """
+    register.D = register.D | 0b00000010
+    return 8
+
 
 def code_cb_cb(register):
-    pass
+    """ SET 1,E - Set the specified bit """
+    register.E = register.E | 0b00000010
+    return 8
+
 
 def code_cb_cc(register):
-    pass
+    """ SET 1,H - Set the specified bit """
+    register.H = register.H | 0b00000010
+    return 8
+
 
 def code_cb_cd(register):
-    pass
+    """ SET 1,L - Set the specified bit """
+    register.L = register.L | 0b00000010
+    return 8
+
 
 def code_cb_ce(register):
-    pass
+    """ SET 1,(HL) - Set the specified bit """
+    # TODO after memory is implemented
+    # register.B = register.B | 0b00000010
+    return 16
+
 
 def code_cb_cf(register):
-    pass
+    """ SET 1,A - Set the specified bit """
+    register.A = register.A | 0b00000010
+    return 8
+
 
 # OPCODES CB Dx
 def code_cb_d0(register):
-    pass
+    """ SET 2,B - Set the specified bit """
+    register.B = register.B | 0b00000100
+    return 8
+
 
 def code_cb_d1(register):
-    pass
+    """ SET 2,C - Set the specified bit """
+    register.C = register.C | 0b00000100
+    return 8
+
 
 def code_cb_d2(register):
-    pass
+    """ SET 2,D - Set the specified bit """
+    register.D = register.D | 0b00000100
+    return 8
+
 
 def code_cb_d3(register):
-    pass
+    """ SET 2,E - Set the specified bit """
+    register.E = register.E | 0b00000100
+    return 8
+
 
 def code_cb_d4(register):
-    pass
+    """ SET 2,H - Set the specified bit """
+    register.H = register.H | 0b00000100
+    return 8
+
 
 def code_cb_d5(register):
-    pass
+    """ SET 2,L - Set the specified bit """
+    register.L = register.L | 0b00000100
+    return 8
+
 
 def code_cb_d6(register):
-    pass
+    """ SET 2,(HL) - Set the specified bit """
+    # TODO after memory is implemented
+    # register.B = register.B | 0b00000100
+    return 16
+
 
 def code_cb_d7(register):
-    pass
+    """ SET 2,A - Set the specified bit """
+    register.A = register.A | 0b00000100
+    return 8
+
 
 def code_cb_d8(register):
-    pass
+    """ SET 3,B - Set the specified bit """
+    register.B = register.B | 0b00001000
+    return 8
+
 
 def code_cb_d9(register):
-    pass
+    """ SET 3,C - Set the specified bit """
+    register.C = register.C | 0b00001000
+    return 8
+
 
 def code_cb_da(register):
-    pass
+    """ SET 3,D - Set the specified bit """
+    register.D = register.D | 0b00001000
+    return 8
+
 
 def code_cb_db(register):
-    pass
+    """ SET 3,E - Set the specified bit """
+    register.E = register.E | 0b00001000
+    return 8
+
 
 def code_cb_dc(register):
-    pass
+    """ SET 3,H - Set the specified bit """
+    register.H = register.H | 0b00001000
+    return 8
+
 
 def code_cb_dd(register):
-    pass
+    """ SET 3,L - Set the specified bit """
+    register.L = register.L | 0b00001000
+    return 8
+
 
 def code_cb_de(register):
-    pass
+    """ SET 3,(HL) - Set the specified bit """
+    # TODO after memory is implemented
+    # register.B = register.B | 0b00001000
+    return 16
+
 
 def code_cb_df(register):
-    pass
+    """ SET 3,A - Set the specified bit """
+    register.A = register.A | 0b00001000
+    return 8
+
 
 # OPCODES CB Ex
 def code_cb_e0(register):
-    pass
+    """ SET 4,B - Set the specified bit """
+    register.B = register.B | 0b00010000
+    return 8
+
 
 def code_cb_e1(register):
-    pass
+    """ SET 4,C - Set the specified bit """
+    register.C = register.C | 0b00010000
+    return 8
+
 
 def code_cb_e2(register):
-    pass
+    """ SET 4,D - Set the specified bit """
+    register.D = register.D | 0b00010000
+    return 8
+
 
 def code_cb_e3(register):
-    pass
+    """ SET 4,E - Set the specified bit """
+    register.E = register.E | 0b00010000
+    return 8
+
 
 def code_cb_e4(register):
-    pass
+    """ SET 4,H - Set the specified bit """
+    register.H = register.H | 0b00010000
+    return 8
+
 
 def code_cb_e5(register):
-    pass
+    """ SET 4,L - Set the specified bit """
+    register.L = register.L | 0b00010000
+    return 8
+
 
 def code_cb_e6(register):
-    pass
+    """ SET 4,(HL) - Set the specified bit """
+    # TODO after memory is implemented
+    # register.B = register.B | 0b00010000
+    return 16
+
 
 def code_cb_e7(register):
-    pass
+    """ SET 4,A - Set the specified bit """
+    register.A = register.A | 0b00010000
+    return 8
+
 
 def code_cb_e8(register):
-    pass
+    """ SET 5,B - Set the specified bit """
+    register.B = register.B | 0b00100000
+    return 8
+
 
 def code_cb_e9(register):
-    pass
+    """ SET 5,C - Set the specified bit """
+    register.C = register.C | 0b00100000
+    return 8
+
 
 def code_cb_ea(register):
-    pass
+    """ SET 5,D - Set the specified bit """
+    register.D = register.D | 0b00100000
+    return 8
+
 
 def code_cb_eb(register):
-    pass
+    """ SET 5,E - Set the specified bit """
+    register.E = register.E | 0b00100000
+    return 8
+
 
 def code_cb_ec(register):
-    pass
+    """ SET 5,H - Set the specified bit """
+    register.H = register.H | 0b00100000
+    return 8
+
 
 def code_cb_ed(register):
-    pass
+    """ SET 5,L - Set the specified bit """
+    register.L = register.L | 0b00100000
+    return 8
+
 
 def code_cb_ee(register):
-    pass
+    """ SET 5,(HL) - Set the specified bit """
+    # TODO after memory is implemented
+    # register.B = register.B | 0b00100000
+    return 16
+
 
 def code_cb_ef(register):
-    pass
+    """ SET 5,A - Set the specified bit """
+    register.A = register.A | 0b00100000
+    return 8
+
 
 # OPCODES CB Fx
 def code_cb_f0(register):
-    pass
+    """ SET 6,B - Set the specified bit """
+    register.B = register.B | 0b01000000
+    return 8
+
 
 def code_cb_f1(register):
-    pass
+    """ SET 6,C - Set the specified bit """
+    register.C = register.C | 0b01000000
+    return 8
+
 
 def code_cb_f2(register):
-    pass
+    """ SET 6,D - Set the specified bit """
+    register.D = register.D | 0b01000000
+    return 8
+
 
 def code_cb_f3(register):
-    pass
+    """ SET 6,E - Set the specified bit """
+    register.E = register.E | 0b01000000
+    return 8
+
 
 def code_cb_f4(register):
-    pass
+    """ SET 6,H - Set the specified bit """
+    register.H = register.H | 0b01000000
+    return 8
+
 
 def code_cb_f5(register):
-    pass
+    """ SET 6,L - Set the specified bit """
+    register.L = register.L | 0b01000000
+    return 8
+
 
 def code_cb_f6(register):
-    pass
+    """ SET 6,(HL) - Set the specified bit """
+    # TODO after memory is implemented
+    # register.B = register.B | 0b01000000
+    return 16
+
 
 def code_cb_f7(register):
-    pass
+    """ SET 6,A - Set the specified bit """
+    register.A = register.A | 0b01000000
+    return 8
+
 
 def code_cb_f8(register):
-    pass
+    """ SET 7,B - Set the specified bit """
+    register.B = register.B | 0b10000000
+    return 8
+
 
 def code_cb_f9(register):
-    pass
+    """ SET 7,C - Set the specified bit """
+    register.C = register.C | 0b10000000
+    return 8
+
 
 def code_cb_fa(register):
-    pass
+    """ SET 7,D - Set the specified bit """
+    register.D = register.D | 0b10000000
+    return 8
+
 
 def code_cb_fb(register):
-    pass
+    """ SET 7,E - Set the specified bit """
+    register.E = register.E | 0b10000000
+    return 8
+
 
 def code_cb_fc(register):
-    pass
+    """ SET 7,H - Set the specified bit """
+    register.H = register.H | 0b10000000
+    return 8
+
 
 def code_cb_fd(register):
-    pass
+    """ SET 7,L - Set the specified bit """
+    register.L = register.L | 0b10000000
+    return 8
+
 
 def code_cb_fe(register):
-    pass
+    """ SET 7,(HL) - Set the specified bit """
+    # TODO after memory is implemented
+    # register.B = register.B | 0b10000000
+    return 16
+
 
 def code_cb_ff(register):
-    pass
+    """ SET 7,A - Set the specified bit """
+    register.A = register.A | 0b10000000
+    return 8
