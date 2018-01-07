@@ -3404,199 +3404,398 @@ def code_cb_7f(register):
 
 # OPCODES CB 8x
 def code_cb_80(register):
-    pass
+    """ RES 0,B - Reset the specified bit """
+    register.B = register.B & 0b11111110
+    return 8
+
 
 def code_cb_81(register):
-    pass
+    """ RES 0,C - Reset the specified bit """
+    register.C = register.C & 0b11111110
+    return 8
+
 
 def code_cb_82(register):
-    pass
+    """ RES 0,D - Reset the specified bit """
+    register.D = register.D & 0b11111110
+    return 8
+
 
 def code_cb_83(register):
-    pass
+    """ RES 0,E - Reset the specified bit """
+    register.E = register.E & 0b11111110
+    return 8
+
 
 def code_cb_84(register):
-    pass
+    """ RES 0,H - Reset the specified bit """
+    register.H = register.H & 0b11111110
+    return 8
+
 
 def code_cb_85(register):
-    pass
+    """ RES 0,L - Reset the specified bit """
+    register.L = register.L & 0b11111110
+    return 8
+
 
 def code_cb_86(register):
-    pass
+    """ RES 0,(HL) - Reset the specified bit """
+    # TODO after memory is implemented
+    # register.B = register.B & 0b11111110
+    return 16
+
 
 def code_cb_87(register):
-    pass
+    """ RES 0,A - Reset the specified bit """
+    register.A = register.A & 0b11111110
+    return 8
+
 
 def code_cb_88(register):
-    pass
+    """ RES 1,B - Reset the specified bit """
+    register.B = register.B & 0b11111101
+    return 8
+
 
 def code_cb_89(register):
-    pass
+    """ RES 1,C - Reset the specified bit """
+    register.C = register.C & 0b11111101
+    return 8
+
 
 def code_cb_8a(register):
-    pass
+    """ RES 1,D - Reset the specified bit """
+    register.D = register.D & 0b11111101
+    return 8
+
 
 def code_cb_8b(register):
-    pass
+    """ RES 1,E - Reset the specified bit """
+    register.E = register.E & 0b11111101
+    return 8
+
 
 def code_cb_8c(register):
-    pass
+    """ RES 1,H - Reset the specified bit """
+    register.H = register.H & 0b11111101
+    return 8
+
 
 def code_cb_8d(register):
-    pass
+    """ RES 1,L - Reset the specified bit """
+    register.L = register.L & 0b11111101
+    return 8
+
 
 def code_cb_8e(register):
-    pass
+    """ RES 1,(HL) - Reset the specified bit """
+    # TODO after memory is implemented
+    # register.B = register.B & 0b11111101
+    return 16
+
 
 def code_cb_8f(register):
-    pass
+    """ RES 1,A - Reset the specified bit """
+    register.A = register.A & 0b11111101
+    return 8
+
 
 # OPCODES CB 9x
 def code_cb_90(register):
-    pass
+    """ RES 2,B - Reset the specified bit """
+    register.B = register.B & 0b11111011
+    return 8
+
 
 def code_cb_91(register):
-    pass
+    """ RES 2,C - Reset the specified bit """
+    register.C = register.C & 0b11111011
+    return 8
+
 
 def code_cb_92(register):
-    pass
+    """ RES 2,D - Reset the specified bit """
+    register.D = register.D & 0b11111011
+    return 8
+
 
 def code_cb_93(register):
-    pass
+    """ RES 2,E - Reset the specified bit """
+    register.E = register.E & 0b11111011
+    return 8
+
 
 def code_cb_94(register):
-    pass
+    """ RES 2,H - Reset the specified bit """
+    register.H = register.H & 0b11111011
+    return 8
+
 
 def code_cb_95(register):
-    pass
+    """ RES 2,L - Reset the specified bit """
+    register.L = register.L & 0b11111011
+    return 8
+
 
 def code_cb_96(register):
-    pass
+    """ RES 2,(HL) - Reset the specified bit """
+    # TODO after memory is implemented
+    # register.B = register.B & 0b11111011
+    return 16
+
 
 def code_cb_97(register):
-    pass
+    """ RES 2,A - Reset the specified bit """
+    register.A = register.A & 0b11111011
+    return 8
+
 
 def code_cb_98(register):
-    pass
+    """ RES 3,B - Reset the specified bit """
+    register.B = register.B & 0b11110111
+    return 8
+
 
 def code_cb_99(register):
-    pass
+    """ RES 3,C - Reset the specified bit """
+    register.C = register.C & 0b11110111
+    return 8
+
 
 def code_cb_9a(register):
-    pass
+    """ RES 3,D - Reset the specified bit """
+    register.D = register.D & 0b11110111
+    return 8
+
 
 def code_cb_9b(register):
-    pass
+    """ RES 3,E - Reset the specified bit """
+    register.E = register.E & 0b11110111
+    return 8
+
 
 def code_cb_9c(register):
-    pass
+    """ RES 3,H - Reset the specified bit """
+    register.H = register.H & 0b11110111
+    return 8
+
 
 def code_cb_9d(register):
-    pass
+    """ RES 3,L - Reset the specified bit """
+    register.L = register.L & 0b11110111
+    return 8
+
 
 def code_cb_9e(register):
-    pass
+    """ RES 3,(HL) - Reset the specified bit """
+    # TODO after memory is implemented
+    # register.B = register.B & 0b11110111
+    return 16
+
 
 def code_cb_9f(register):
-    pass
+    """ RES 3,A - Reset the specified bit """
+    register.A = register.A & 0b11110111
+    return 8
+
 
 # OPCODES CB Ax
 def code_cb_a0(register):
-    pass
+    """ RES 4,B - Reset the specified bit """
+    register.B = register.B & 0b11101111
+    return 8
+
 
 def code_cb_a1(register):
-    pass
+    """ RES 4,C - Reset the specified bit """
+    register.C = register.C & 0b11101111
+    return 8
+
 
 def code_cb_a2(register):
-    pass
+    """ RES 4,D - Reset the specified bit """
+    register.D = register.D & 0b11101111
+    return 8
+
 
 def code_cb_a3(register):
-    pass
+    """ RES 4,E - Reset the specified bit """
+    register.E = register.E & 0b11101111
+    return 8
+
 
 def code_cb_a4(register):
-    pass
+    """ RES 4,H - Reset the specified bit """
+    register.H = register.H & 0b11101111
+    return 8
+
 
 def code_cb_a5(register):
-    pass
+    """ RES 4,L - Reset the specified bit """
+    register.L = register.L & 0b11101111
+    return 8
+
 
 def code_cb_a6(register):
-    pass
+    """ RES 4,(HL) - Reset the specified bit """
+    # TODO after memory is implemented
+    # register.B = register.B & 0b11101111
+    return 16
+
 
 def code_cb_a7(register):
-    pass
+    """ RES 4,A - Reset the specified bit """
+    register.A = register.A & 0b11101111
+    return 8
+
 
 def code_cb_a8(register):
-    pass
+    """ RES 5,B - Reset the specified bit """
+    register.B = register.B & 0b11011111
+    return 8
+
 
 def code_cb_a9(register):
-    pass
+    """ RES 5,C - Reset the specified bit """
+    register.C = register.C & 0b11011111
+    return 8
+
 
 def code_cb_aa(register):
-    pass
+    """ RES 5,D - Reset the specified bit """
+    register.D = register.D & 0b11011111
+    return 8
+
 
 def code_cb_ab(register):
-    pass
+    """ RES 5,E - Reset the specified bit """
+    register.E = register.E & 0b11011111
+    return 8
+
 
 def code_cb_ac(register):
-    pass
+    """ RES 5,H - Reset the specified bit """
+    register.H = register.H & 0b11011111
+    return 8
+
 
 def code_cb_ad(register):
-    pass
+    """ RES 5,L - Reset the specified bit """
+    register.L = register.L & 0b11011111
+    return 8
+
 
 def code_cb_ae(register):
-    pass
+    """ RES 5,(HL) - Reset the specified bit """
+    # TODO after memory is implemented
+    # register.B = register.B & 0b11011111
+    return 16
+
 
 def code_cb_af(register):
-    pass
+    """ RES 5,A - Reset the specified bit """
+    register.A = register.A & 0b11011111
+    return 8
+
 
 # OPCODES CB Bx
 def code_cb_b0(register):
-    pass
+    """ RES 6,B - Reset the specified bit """
+    register.B = register.B & 0b10111111
+    return 8
+
 
 def code_cb_b1(register):
-    pass
+    """ RES 6,C - Reset the specified bit """
+    register.C = register.C & 0b10111111
+    return 8
+
 
 def code_cb_b2(register):
-    pass
+    """ RES 6,D - Reset the specified bit """
+    register.D = register.D & 0b10111111
+    return 8
+
 
 def code_cb_b3(register):
-    pass
+    """ RES 6,E - Reset the specified bit """
+    register.E = register.E & 0b10111111
+    return 8
+
 
 def code_cb_b4(register):
-    pass
+    """ RES 6,H - Reset the specified bit """
+    register.H = register.H & 0b10111111
+    return 8
+
 
 def code_cb_b5(register):
-    pass
+    """ RES 6,L - Reset the specified bit """
+    register.L = register.L & 0b10111111
+    return 8
+
 
 def code_cb_b6(register):
-    pass
+    """ RES 6,(HL) - Reset the specified bit """
+    # TODO after memory is implemented
+    # register.B = register.B & 0b10111111
+    return 16
+
 
 def code_cb_b7(register):
-    pass
+    """ RES 6,A - Reset the specified bit """
+    register.A = register.A & 0b10111111
+    return 8
+
 
 def code_cb_b8(register):
-    pass
+    """ RES 7,B - Reset the specified bit """
+    register.B = register.B & 0b01111111
+    return 8
+
 
 def code_cb_b9(register):
-    pass
+    """ RES 7,C - Reset the specified bit """
+    register.C = register.C & 0b01111111
+    return 8
+
 
 def code_cb_ba(register):
-    pass
+    """ RES 7,D - Reset the specified bit """
+    register.D = register.D & 0b01111111
+    return 8
+
 
 def code_cb_bb(register):
-    pass
+    """ RES 7,E - Reset the specified bit """
+    register.E = register.E & 0b01111111
+    return 8
+
 
 def code_cb_bc(register):
-    pass
+    """ RES 7,H - Reset the specified bit """
+    register.H = register.H & 0b01111111
+    return 8
+
 
 def code_cb_bd(register):
-    pass
+    """ RES 7,L - Reset the specified bit """
+    register.L = register.L & 0b01111111
+    return 8
+
 
 def code_cb_be(register):
-    pass
+    """ RES 7,(HL) - Reset the specified bit """
+    # TODO after memory is implemented
+    # register.B = register.B & 0b01111111
+    return 16
+
 
 def code_cb_bf(register):
-    pass
+    """ RES 7,A - Reset the specified bit """
+    register.A = register.A & 0b01111111
+    return 8
 
 
 # OPCODES CB Cx
