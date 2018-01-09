@@ -5,6 +5,10 @@ See:
 - http://www.pastraiser.com/cpu/gameboy/gameboy_opcodes.html
 - https://realboyemulator.files.wordpress.com/2013/01/gbcpuman.pdf (pages 61-118)
 - https://datacrystal.romhacking.net/wiki/Endianness
+- http://gameboy.mongenel.com/dmg/lesson1.html
+- http://gameboy.mongenel.com/dmg/lesson2.html
+- http://gameboy.mongenel.com/dmg/lesson3.html
+- http://gameboy.mongenel.com/dmg/lesson4.html
 
 - http://gbdev.gg8.se/files/docs/mirrors/pandocs.html#cpuinstructionset
 - https://github.com/CTurt/Cinoop/blob/master/source/cpu.c
@@ -15,19 +19,50 @@ The Game Boy uses Little-endian, i.e. least significant byte first. Therefore, i
 values have to be converted to Big-endian first.
 """
 
-import cpu.util
+
+def get_big_endian_value(msb, lsb):
+    """
+    Joins the two bytes received from the cartridge into a single, big-endian value.
+
+    :param msb: Most significant byte
+    :param lsb: Least significant byte
+    :return: Big-endian value
+    """
+    return (msb << 8) | lsb
+
+
+def convert_unsigned_integer_to_signed(value, bit_length=8):
+    """
+    Python does not have an "unsigned" integer, but since its integer is "infinite", when converting hex/bin to int the
+    value will be converted as if it was an unsigned hex/bin (e.g. int(0xFF) will return 255, not -1). This function
+    makes the conversion considering that the input is signed.
+
+    See: https://stackoverflow.com/a/11612456
+
+    :param value: Value to be converted to signed int
+    :param bit_length: Number of bits in the value
+    :return: Signed int value
+    """
+    mask = (2 ** bit_length) - 1  # same as 0xFFFFF...
+    if value & (1 << (bit_length - 1)):  # first bit is sign flag; if it is set then treat value as negative
+        return value | ~mask
+    else:
+        return value  # otherwise just treat it as positive, i.e. no need to do anything
 
 
 # OPCODES 0x
-def code_00():
+# noinspection PyUnusedLocal
+def code_00(cpu):
     """ NOP - Does nothing """
     return 4
 
 
-def code_01(register, d16):
+def code_01(cpu, extra_data):
     """ LD BC,d16 - Stores given 16-bit value at BC """
-    d16 = cpu.util.convert_little_endian_to_big_endian(d16)
-    register.set_bc(d16)
+    least_significant_byte = extra_data[0]
+    most_significant_byte = extra_data[1]
+    d16 = get_big_endian_value(most_significant_byte, least_significant_byte)
+    cpu.register.set_bc(d16)
     return 8
 
 

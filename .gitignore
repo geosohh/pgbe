@@ -61,4 +61,8 @@ target/
 #Ipython Notebook
 .ipynb_checkpoints
 
+#PyCharm files
 .idea/
+
+Game Boy ROM files
+*.gb
