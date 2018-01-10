@@ -84,7 +84,7 @@ def code_01(cpu):
     msb = cpu.read_next_byte_from_cartridge()
     d16 = get_big_endian_value(msb, lsb)
     cpu.register.set_bc(d16)
-    return 8
+    return 12
 
 
 def code_02(cpu):
@@ -118,8 +118,9 @@ def code_05(cpu):
     return 4
 
 
-def code_06(cpu, d8):
+def code_06(cpu):
     """ LD B,d8 """
+    d8 = cpu.read_next_byte_from_cartridge()
     cpu.register.B = d8
     return 8
 
@@ -212,17 +213,20 @@ def code_10(cpu):
     pass
 
 
-def code_11(cpu, d16):
+def code_11(cpu):
     """ LD DE,d16 - Stores given 16-bit value at DE """
-    d16 = cpu.util.convert_little_endian_to_big_endian(d16)
+    lsb = cpu.read_next_byte_from_cartridge()
+    msb = cpu.read_next_byte_from_cartridge()
+    d16 = get_big_endian_value(msb, lsb)
     cpu.register.set_de(d16)
     return 12
 
 
 def code_12(cpu):
     """ LD (DE),A - Stores reg at the address in DE """
-    # TODO after memory is implemented
-    pass
+    a16 = cpu.register.get_de()
+    cpu.memory.write_8bit(a16, cpu.register.A)
+    return 8
 
 
 def code_13(cpu):
@@ -266,11 +270,12 @@ def code_17(cpu):
     return 4
 
 
-def code_18(cpu, r8):
-    """ JP r8 - Add r8 to the current address and jump to it """
-    r8 = cpu.util.convert_unsigned_integer_to_signed(r8)
-    # TODO after cpu is implemented
-    return 8
+def code_18(cpu):
+    """ JP r8 - make the command at address (current address + r8) the next to be executed (r8 is signed) """
+    r8 = cpu.read_next_byte_from_cartridge()
+    r8 = convert_unsigned_integer_to_signed(r8)
+    cpu.register.PC = (cpu.register.PC + r8) & 0xFFFF
+    return 12
 
 
 def code_19(cpu):
@@ -287,8 +292,9 @@ def code_19(cpu):
 
 def code_1a(cpu):
     """ LD A,(DE) - Load reg with the value at the address in DE """
-    # TODO after memory is implemented
-    pass
+    d8 = cpu.memory.read_8bit(cpu.register.get_de())
+    cpu.register.A = d8
+    return 8
 
 
 def code_1b(cpu):

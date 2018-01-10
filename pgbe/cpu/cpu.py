@@ -11,7 +11,7 @@ class CPU:
     def __init__(self):
         self.register = Register()
         self.memory = Memory()
-        self.cartridge_data = None
+        self._cartridge_data = None
 
         self.halted = False  # for 76 (HALT)
         self.stopped = False  # for 10 (STOP)
@@ -19,7 +19,7 @@ class CPU:
         self.disable_interrupts_requested = False  # for F3 (DI) and FB (EI)
 
     def execute(self, cartridge_data):
-        self.cartridge_data = cartridge_data
+        self._cartridge_data = cartridge_data
 
         while(True):
             opcode = self.read_next_byte_from_cartridge()
@@ -31,7 +31,7 @@ class CPU:
         Read the next data from the ROM, increment Program Counter
         :return: 8-bit data read from ROM
         """
-        data = self.cartridge_data[self.register.PC]
+        data = self._cartridge_data[self.register.PC]
         self.register.PC += 1
         return data
 

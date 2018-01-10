@@ -8,6 +8,7 @@ See:
 - http://gameboy.mongenel.com/dmg/asmmemmap.html
 - http://gameboy.mongenel.com/dmg/lesson5.html
 - https://realboyemulator.wordpress.com/2013/01/02/the-nintendo-game-boy-part-3/
+- https://stackoverflow.com/questions/21639597/z80-register-endianness
 """
 
 
@@ -39,6 +40,7 @@ class Memory:
         :param address: Address to write
         :param value: Value to write
         """
+        print("writing 8-bit value",hex(value),"at address",hex(address))
         self._memory_map[address] = value
 
         # According to [https://realboyemulator.files.wordpress.com/2013/01/gbcpuman.pdf, page 9]:
@@ -51,8 +53,8 @@ class Memory:
 
     def write_16bit(self, address, value):
         """
-        Writes 16-bit value at the given memory address. Memory is little-endian, so least significant byte goes at
-        address, most significant byte goes at address+1.
+        Writes 16-bit big-endian value at the given memory address. Memory is little-endian, so least significant byte
+        goes at address, most significant byte goes at address+1.
         :param address: Address to write
         :param value: Value to write
         """
