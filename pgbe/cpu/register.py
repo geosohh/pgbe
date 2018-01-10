@@ -15,9 +15,9 @@ class Register:
 
     8-bit registers (can be combined to read as 16-bit registers):
     |15 ... 8 | 7 ... 0 |
-    |    A    |    F    |
-    |    B    |    C    |
-    |    D    |    E    |
+    |    A    |    F    |     When combining the registers to read them as a 16-bit value,
+    |    B    |    C    |     A/B/D/H store the most significant byte
+    |    D    |    E    |     F/C/E/L store the least significant byte.
     |    H    |    L    |
 
         A - Accumulator

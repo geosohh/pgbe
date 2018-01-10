@@ -1,6 +1,7 @@
 """
 Memory
-TODO: description
+
+As in the cartridge, data in memory is also stored in little endian format (i.e. least significant byte first)
 
 See:
 - https://realboyemulator.files.wordpress.com/2013/01/gbcpuman.pdf - page 8
@@ -32,7 +33,7 @@ class Memory:
         byte_array.extend((0x00,) * (0xFFFF + 1))
         return byte_array
 
-    def write(self,address,value):
+    def write_8bit(self,address,value):
         """
         Writes the given value at the given memory address.
         :param address: Address to write
@@ -47,6 +48,26 @@ class Memory:
             self._memory_map[address-0x2000] = value
         elif 0xC000 <= address <= 0xDE00:
             self._memory_map[address+0x2000] = value
+
+    def write_16bit(self, address, value):
+        """
+        Writes 16-bit value at the given memory address. Memory is little-endian, so least significant byte goes at
+        address, most significant byte goes at address+1.
+        :param address: Address to write
+        :param value: Value to write
+        """
+        lsb = value & 0x00ff
+        msb = (value >> 8) & 0x00ff
+        self.write_8bit(address, lsb)
+        self.write_8bit(address+1, msb)
+
+    def read_8bit(self,address):
+        """
+        Reads 8-bit value from the given address in the memory.
+        :param address: Memory address to read data from
+        :return: 8-bit value at the given memory address
+        """
+        return self._memory_map[address]
 
     @staticmethod
     def print_memory_map():
