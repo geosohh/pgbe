@@ -339,26 +339,30 @@ def code_1f(cpu):
 
 
 # OPCODES 2x
-def code_20(cpu, r8):
+def code_20(cpu):
     """ JR NZ,r8 - If flag Z is reset, add r8 to current address and jump to it """
+    r8 = cpu.read_next_byte_from_cartridge()  # Has to be read even if it is not going to be used
     if not cpu.register.get_z_flag():
-        r8 = cpu.util.convert_unsigned_integer_to_signed(r8)
-        # TODO after cpu is implemented
-        pass
+        r8 = convert_unsigned_integer_to_signed(r8)
+        cpu.register.PC = (cpu.register.PC + r8) & 0xFFFF
+        return 12
     return 8
 
 
-def code_21(cpu, d16):
+def code_21(cpu):
     """ LD HL,d16 - Stores given 16-bit value at HL """
-    d16 = cpu.util.convert_little_endian_to_big_endian(d16)
+    lsb = cpu.read_next_byte_from_cartridge()
+    msb = cpu.read_next_byte_from_cartridge()
+    d16 = get_big_endian_value(msb,lsb)
     cpu.register.set_hl(d16)
     return 12
 
 
 def code_22(cpu):
     """ LD (HL+),A or LD (HLI),A or LDI (HL),A - Put value at A into address HL. Increment HL """
-    # TODO after memory is implemented
-    cpu.register.add_hl(0x0001)  # TODO: what if HL is already 0xFFFF?
+    cpu.memory.write_8bit(cpu.register.get_hl(),cpu.register.A)
+    cpu.register.set_hl((cpu.register.get_hl() + 1) & 0xFFFF)
+    return 8
 
 
 def code_23(cpu):
@@ -416,31 +420,31 @@ def code_27(cpu):
     return 4
 
 
-def code_28(cpu, r8):
+def code_28(cpu):
     """ JR Z,r8 - If flag Z is set, add r8 to current address and jump to it """
+    r8 = cpu.read_next_byte_from_cartridge()  # Has to be read even if it is not going to be used
     if cpu.register.get_z_flag():
-        r8 = cpu.util.convert_unsigned_integer_to_signed(r8)
-        # TODO after cpu is implemented
-        pass
+        r8 = convert_unsigned_integer_to_signed(r8)
+        cpu.register.PC = (cpu.register.PC + r8) & 0xFFFF
+        return 12
     return 8
 
 
 def code_29(cpu):
     """ ADD HL,HL - HL=HL+HL """
     result = cpu.register.get_hl() * 2
-
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(((cpu.register.get_hl() & 0x0FFF) * 2) > 0x0FFF)
     cpu.register.set_c_flag(result > 0xFFFF)
-
     cpu.register.set_hl(result & 0xFFFF)
     return 8
 
 
 def code_2a(cpu):
     """ LD A,(HL+) or LD A,(HLI) or LDI A,(HL) - Put value at address HL into A. Increment HL """
-    # TODO after memory is implemented
-    cpu.register.add_hl(0x0001)  # TODO: what if HL is already 0xFFFF?
+    cpu.register.A = cpu.memory.read_8bit(cpu.register.get_hl())
+    cpu.register.set_hl((cpu.register.get_hl() + 1) & 0xFFFF)
+    return 8
 
 
 def code_2b(cpu):
@@ -482,26 +486,30 @@ def code_2f(cpu):
 
 
 # OPCODES 3x
-def code_30(cpu, r8):
+def code_30(cpu):
     """ JR NC,r8 - If flag C is reset, add r8 to current address and jump to it """
+    r8 = cpu.read_next_byte_from_cartridge()  # Has to be read even if it is not going to be used
     if not cpu.register.get_c_flag():
-        r8 = cpu.util.convert_unsigned_integer_to_signed(r8)
-        # TODO after cpu is implemented
-        pass
+        r8 = convert_unsigned_integer_to_signed(r8)
+        cpu.register.PC = (cpu.register.PC + r8) & 0xFFFF
+        return 12
     return 8
 
 
-def code_31(cpu, d16):
+def code_31(cpu):
     """ LD SP,d16 - Stores given 16-bit value at SP """
-    d16 = cpu.util.convert_little_endian_to_big_endian(d16)
+    lsb = cpu.read_next_byte_from_cartridge()
+    msb = cpu.read_next_byte_from_cartridge()
+    d16 = get_big_endian_value(msb, lsb)
     cpu.register.SP = d16
     return 12
 
 
 def code_32(cpu):
     """ LD (HL-),A or LD (HLD),A or LDD (HL),A - Put value at A into address HL. Decrement HL """
-    # TODO after memory is implemented
-    cpu.register.sub_hl(0x0001)  # TODO: what if HL is already 0x0000?
+    cpu.memory.write_8bit(cpu.register.get_hl(), cpu.register.A)
+    cpu.register.set_hl((cpu.register.get_hl() - 1) & 0xFFFF)
+    return 8
 
 
 def code_33(cpu):
@@ -512,28 +520,31 @@ def code_33(cpu):
 
 def code_34(cpu):
     """ INC (HL) - (value at address HL)=(value at address HL)+1 """
-    # TODO after memory is implemented
-    # cpu.register.L = (cpu.register.L + 1) & 0xFF
-    # cpu.register.set_zero_flag(cpu.register.L == 0)
+    current_value = cpu.memory.read_8bit(cpu.register.get_hl())
+    new_value = (current_value + 1) & 0xFF
+    cpu.memory.write_8bit(cpu.register.get_hl(), new_value)
+    cpu.register.set_z_flag(new_value == 0)
     cpu.register.set_n_flag(False)
-    # cpu.register.set_half_carry_flag((cpu.register.L & 0x0F) == 0)
+    cpu.register.set_h_flag((new_value & 0x0F) == 0)
     return 12
 
 
 def code_35(cpu):
     """ DEC (HL) - (value at address HL)=(value at address HL)-1 """
-    # TODO after memory is implemented
-    # cpu.register.L = (cpu.register.L - 1) & 0xFF
-    # cpu.register.set_zero_flag(cpu.register.L == 0)
+    current_value = cpu.memory.read_8bit(cpu.register.get_hl())
+    new_value = (current_value - 1) & 0xFF
+    cpu.memory.write_8bit(cpu.register.get_hl(), new_value)
+    cpu.register.set_z_flag(new_value == 0)
     cpu.register.set_n_flag(True)
-    # cpu.register.set_half_carry_flag((cpu.register.L & 0x0F) == 0x0F)
+    cpu.register.set_h_flag((new_value & 0x0F) == 0x0F)
     return 12
 
 
-def code_36(cpu, d8):
+def code_36(cpu):
     """ LD (HL),d8 - Stores d8 at the address in HL """
-    # TODO after memory is implemented
-    pass
+    d8 = cpu.read_next_byte_from_cartridge()
+    cpu.memory.write_8bit(cpu.register.get_hl(), d8)
+    return 12
 
 
 def code_37(cpu):
@@ -544,31 +555,31 @@ def code_37(cpu):
     return 4
 
 
-def code_38(cpu, r8):
+def code_38(cpu):
     """ JR C,r8 - If flag C is set, add r8 to current address and jump to it """
+    r8 = cpu.read_next_byte_from_cartridge()  # Has to be read even if it is not going to be used
     if cpu.register.get_c_flag():
-        r8 = cpu.util.convert_unsigned_integer_to_signed(r8)
-        # TODO after cpu is implemented
-        pass
+        r8 = convert_unsigned_integer_to_signed(r8)
+        cpu.register.PC = (cpu.register.PC + r8) & 0xFFFF
+        return 12
     return 8
 
 
 def code_39(cpu):
     """ ADD HL,SP - HL=HL+SP """
     result = cpu.register.get_hl() + cpu.register.SP
-
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(((cpu.register.get_hl() & 0x0FFF) + (cpu.register.SP & 0x0FFF)) > 0x0FFF)
     cpu.register.set_c_flag(result > 0xFFFF)
-
     cpu.register.set_hl(result & 0xFFFF)
     return 8
 
 
 def code_3a(cpu):
     """ LD A,(HL-) or LD A,(HLD) or LDD A,(HL) - Put value at address HL into A. Decrement HL """
-    # TODO after memory is implemented
-    cpu.register.sub_hl(0x0001)  # TODO: what if HL is already 0x0000?
+    cpu.register.A = cpu.memory.read_8bit(cpu.register.get_hl())
+    cpu.register.set_hl((cpu.register.get_hl() - 1) & 0xFFFF)
+    return 8
 
 
 def code_3b(cpu):
@@ -587,7 +598,12 @@ def code_3c(cpu):
 
 
 def code_3d(cpu):
-    pass
+    """ DEC A - A=A-1 """
+    cpu.register.A = (cpu.register.A - 1) & 0xFF
+    cpu.register.set_z_flag(cpu.register.A == 0)
+    cpu.register.set_n_flag(True)
+    cpu.register.set_h_flag((cpu.register.A & 0x0F) == 0x0F)
+    return 4
 
 
 def code_3e(cpu, d8):
@@ -605,9 +621,9 @@ def code_3f(cpu):
 
 
 # OPCODES 4x
+# noinspection PyUnusedLocal
 def code_40(cpu):
-    """ LD B,B (might be a newbie question but... why?) """
-    cpu.register.B = cpu.register.B
+    """ LD B,B (...why?) """
     return 4
 
 
@@ -659,9 +675,9 @@ def code_48(cpu):
     return 4
 
 
+# noinspection PyUnusedLocal
 def code_49(cpu):
-    """ LD C,C (might be a newbie question but... why?) """
-    cpu.register.C = cpu.register.C
+    """ LD C,C (...why?) """
     return 4
 
 

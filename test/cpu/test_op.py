@@ -653,23 +653,43 @@ def test_code_1f(cpu_object):
 # noinspection PyShadowingNames
 def test_code_20(cpu_object):
     """ JR NZ,r8 - If flag Z is reset, add r8 to current address and jump to it """
-    # TODO after cpu is implemented
-    pass
+    cpu_object.register.PC = 0x0000
+    cpu_object.register.F = 0b00000000
+    cpu_object._cartridge_data = bytes.fromhex("03")
+    cycles = cpu.op.code_20(cpu_object)
+    assert cycles == 12
+    assert_registers(cpu_object, PC=0x0004)
+
+    cpu_object.register.PC = 0x0000
+    cpu_object.register.F = 0b10000000
+    cpu_object._cartridge_data = bytes.fromhex("FD")  # -3
+    cycles = cpu.op.code_20(cpu_object)
+    assert cycles == 8
+    assert_registers(cpu_object, PC=0x0001, F=0b10000000)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
 def test_code_21(cpu_object):
     """ LD HL,d16 - Stores given 16-bit value at HL """
-    cycles = cpu.op.code_21(cpu_object, 0x9933)  # Little-endian
+    cpu_object.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
+    cpu_object._cartridge_data = bytes.fromhex("33 99")
+    cycles = cpu.op.code_21(cpu_object)
     assert cycles == 12
-    assert_registers(cpu_object,H=0x33,L=0x99)
+    assert_registers(cpu_object,H=0x99,L=0x33, PC=0x0002)
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
 def test_code_22(cpu_object):
     """ LD (HL+),A or LD (HLI),A or LDI (HL),A - Put value at A into address HL. Increment HL """
-    # TODO after memory is implemented
-    pass
+    cpu_object.register.A = 0x69
+    cpu_object.register.set_hl(0x1010)
+    cycles = cpu.op.code_22(cpu_object)
+    assert cycles == 8
+    assert_registers(cpu_object,A=0x69,H=0x10,L=0x11)
+    assert_memory(cpu_object,{0x1010:0x69})
 
 
 # noinspection PyShadowingNames
@@ -695,6 +715,8 @@ def test_code_23(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, H=0x00, L=0x00)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_24(cpu_object):
@@ -719,6 +741,8 @@ def test_code_24(cpu_object):
     assert cycles == 4
     assert_registers(cpu_object, H=0x00, F=0b10100000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_25(cpu_object):
@@ -738,6 +762,8 @@ def test_code_25(cpu_object):
     assert cycles == 4
     assert_registers(cpu_object, H=0x00, F=0b11000000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_26(cpu_object):
@@ -745,6 +771,7 @@ def test_code_26(cpu_object):
     cycles = cpu.op.code_26(cpu_object, 0x99)
     assert cycles == 8
     assert_registers(cpu_object,H=0x99)
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -783,12 +810,27 @@ def test_code_27(cpu_object):
     assert cycles == 4
     assert_registers(cpu_object, A=0b00000100, F=0b01000000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_28(cpu_object):
     """ JR Z,r8 - If flag Z is set, add r8 to current address and jump to it """
-    # TODO after cpu is implemented
-    pass
+    cpu_object.register.PC = 0x0000
+    cpu_object.register.F = 0b10000000
+    cpu_object._cartridge_data = bytes.fromhex("03")
+    cycles = cpu.op.code_28(cpu_object)
+    assert cycles == 12
+    assert_registers(cpu_object, PC=0x0004, F=0b10000000)
+
+    cpu_object.register.PC = 0x0000
+    cpu_object.register.F = 0b00000000
+    cpu_object._cartridge_data = bytes.fromhex("FD")  # -3
+    cycles = cpu.op.code_28(cpu_object)
+    assert cycles == 8
+    assert_registers(cpu_object, PC=0x0001)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -824,12 +866,18 @@ def test_code_29(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, H=0xFF, L=0xFE, F=0b00110000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_2a(cpu_object):
     """ LD A,(HL+) or LD A,(HLI) or LDI A,(HL) - Put value at address HL into A. Increment HL """
-    # TODO after memory is implemented
-    pass
+    cpu_object.memory.write_8bit(0x1010,0x69)
+    cpu_object.register.set_hl(0x1010)
+    cycles = cpu.op.code_2a(cpu_object)
+    assert cycles == 8
+    assert_registers(cpu_object, A=0x69, H=0x10, L=0x11)
+    assert_memory(cpu_object, {0x1010: 0x69})
 
 
 # noinspection PyShadowingNames
@@ -849,6 +897,8 @@ def test_code_2b(cpu_object):
     cycles = cpu.op.code_2b(cpu_object)
     assert cycles == 8
     assert_registers(cpu_object, H=0x0F, L=0xFF)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -874,6 +924,8 @@ def test_code_2c(cpu_object):
     assert cycles == 4
     assert_registers(cpu_object, L=0x00, F=0b10100000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_2d(cpu_object):
@@ -893,6 +945,8 @@ def test_code_2d(cpu_object):
     assert cycles == 4
     assert_registers(cpu_object, L=0x00, F=0b11000000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_2e(cpu_object):
@@ -900,6 +954,7 @@ def test_code_2e(cpu_object):
     cycles = cpu.op.code_2e(cpu_object, 0x99)
     assert cycles == 8
     assert_registers(cpu_object,L=0x99)
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -909,28 +964,49 @@ def test_code_2f(cpu_object):
     cycles = cpu.op.code_2f(cpu_object)
     assert cycles == 4
     assert_registers(cpu_object, A=0b11000011, F=0b01100000)
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
 def test_code_30(cpu_object):
     """ JR NC,r8 - If flag C is reset, add r8 to current address and jump to it """
-    # TODO after cpu is implemented
-    pass
+    cpu_object.register.PC = 0x0000
+    cpu_object.register.F = 0b00000000
+    cpu_object._cartridge_data = bytes.fromhex("03")
+    cycles = cpu.op.code_30(cpu_object)
+    assert cycles == 12
+    assert_registers(cpu_object, PC=0x0004)
+
+    cpu_object.register.PC = 0x0000
+    cpu_object.register.F = 0b00010000
+    cpu_object._cartridge_data = bytes.fromhex("FD")  # -3
+    cycles = cpu.op.code_30(cpu_object)
+    assert cycles == 8
+    assert_registers(cpu_object, PC=0x0001, F=0b00010000)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
 def test_code_31(cpu_object):
     """ LD SP,d16 - Stores given 16-bit value at SP """
-    cycles = cpu.op.code_31(cpu_object, 0x9933)
+    cpu_object.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
+    cpu_object._cartridge_data = bytes.fromhex("33 99")
+    cycles = cpu.op.code_31(cpu_object)
     assert cycles == 12
-    assert_registers(cpu_object,SP=0x3399)
+    assert_registers(cpu_object, SP=0x9933, PC=0x0002)
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
 def test_code_32(cpu_object):
     """ LD (HL-),A or LD (HLD),A or LDD (HL),A - Put value at A into address HL. Decrement HL """
-    # TODO after memory is implemented
-    pass
+    cpu_object.register.A = 0x69
+    cpu_object.register.set_hl(0x1010)
+    cycles = cpu.op.code_32(cpu_object)
+    assert cycles == 8
+    assert_registers(cpu_object, A=0x69, H=0x10, L=0x0F)
+    assert_memory(cpu_object, {0x1010: 0x69})
 
 
 # noinspection PyShadowingNames
@@ -956,26 +1032,76 @@ def test_code_33(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, SP=0x0000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_34(cpu_object):
     """ INC (HL) - (value at address HL)=(value at address HL)+1 """
-    # TODO after memory is implemented
-    pass
+    cpu_object.memory.write_8bit(0x1010,0x00)
+    cpu_object.register.set_hl(0x1010)
+    cycles = cpu.op.code_34(cpu_object)
+    assert cycles == 12
+    assert_registers(cpu_object, H=0x10, L=0x10, F=0b00000000)
+    assert_memory(cpu_object,{0x1010:0x01})
+
+    cpu_object.memory.write_8bit(0x1010, 0x0F)
+    cpu_object.register.set_hl(0x1010)
+    cycles = cpu.op.code_34(cpu_object)
+    assert cycles == 12
+    assert_registers(cpu_object, H=0x10, L=0x10, F=0b00100000)
+    assert_memory(cpu_object, {0x1010: 0x10})
+
+    cpu_object.memory.write_8bit(0x1010, 0xF0)
+    cpu_object.register.set_hl(0x1010)
+    cycles = cpu.op.code_34(cpu_object)
+    assert cycles == 12
+    assert_registers(cpu_object, H=0x10, L=0x10, F=0b00000000)
+    assert_memory(cpu_object, {0x1010: 0xF1})
+
+    cpu_object.memory.write_8bit(0x1010, 0xFF)
+    cpu_object.register.set_hl(0x1010)
+    cycles = cpu.op.code_34(cpu_object)
+    assert cycles == 12
+    assert_registers(cpu_object, H=0x10, L=0x10, F=0b10100000)
+    assert_memory(cpu_object, {0x1010: 0x00})
 
 
 # noinspection PyShadowingNames
 def test_code_35(cpu_object):
     """ DEC (HL) - (value at address HL)=(value at address HL)-1 """
-    # TODO after memory is implemented
-    pass
+    cpu_object.memory.write_8bit(0x1010, 0x00)
+    cpu_object.register.set_hl(0x1010)
+    cycles = cpu.op.code_35(cpu_object)
+    assert cycles == 12
+    assert_registers(cpu_object, H=0x10, L=0x10, F=0b01100000)
+    assert_memory(cpu_object, {0x1010: 0xFF})
+
+    cpu_object.memory.write_8bit(0x1010, 0x0F)
+    cpu_object.register.set_hl(0x1010)
+    cycles = cpu.op.code_35(cpu_object)
+    assert cycles == 12
+    assert_registers(cpu_object, H=0x10, L=0x10, F=0b01000000)
+    assert_memory(cpu_object, {0x1010: 0x0E})
+
+    cpu_object.memory.write_8bit(0x1010, 0x01)
+    cpu_object.register.set_hl(0x1010)
+    cycles = cpu.op.code_35(cpu_object)
+    assert cycles == 12
+    assert_registers(cpu_object, H=0x10, L=0x10, F=0b11000000)
+    assert_memory(cpu_object, {0x1010: 0x00})
 
 
 # noinspection PyShadowingNames
 def test_code_36(cpu_object):
     """ LD (HL),d8 - Stores d8 at the address in HL """
-    # TODO after memory is implemented
-    pass
+    cpu_object.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
+    cpu_object._cartridge_data = bytes.fromhex("99")
+    cpu_object.register.set_hl(0x1010)
+    cycles = cpu.op.code_36(cpu_object)
+    assert cycles == 12
+    assert_registers(cpu_object, H=0x10, L=0x10, PC=0x0001)
+    assert_memory(cpu_object, {0x1010:0x99})
 
 
 # noinspection PyShadowingNames
@@ -995,8 +1121,21 @@ def test_code_37(cpu_object):
 # noinspection PyShadowingNames
 def test_code_38(cpu_object):
     """ JR C,r8 - If flag C is set, add r8 to current address and jump to it """
-    # TODO after cpu is implemented
-    pass
+    cpu_object.register.PC = 0x0000
+    cpu_object.register.F = 0b00010000
+    cpu_object._cartridge_data = bytes.fromhex("03")
+    cycles = cpu.op.code_38(cpu_object)
+    assert cycles == 12
+    assert_registers(cpu_object, PC=0x0004, F=0b00010000)
+
+    cpu_object.register.PC = 0x0000
+    cpu_object.register.F = 0b00000000
+    cpu_object._cartridge_data = bytes.fromhex("FD")  # -3
+    cycles = cpu.op.code_38(cpu_object)
+    assert cycles == 8
+    assert_registers(cpu_object, PC=0x0001)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -1038,12 +1177,18 @@ def test_code_39(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, SP=0x0002, H=0x00, L=0x01, F=0b00110000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_3a(cpu_object):
     """ LD A,(HL-) or LD A,(HLD) or LDD A,(HL) - Put value at address HL into A. Decrement HL """
-    # TODO after memory is implemented
-    pass
+    cpu_object.memory.write_8bit(0x1010, 0x69)
+    cpu_object.register.set_hl(0x1010)
+    cycles = cpu.op.code_3a(cpu_object)
+    assert cycles == 8
+    assert_registers(cpu_object, A=0x69, H=0x10, L=0x0F)
+    assert_memory(cpu_object, {0x1010: 0x69})
 
 
 # noinspection PyShadowingNames
@@ -1090,6 +1235,27 @@ def test_code_3c(cpu_object):
 
 
 # noinspection PyShadowingNames
+def test_code_3d(cpu_object):
+    """ DEC A - A=A-1 """
+    cpu_object.register.A = 0x00
+    cycles = cpu.op.code_3d(cpu_object)
+    assert cycles == 4
+    assert_registers(cpu_object, A=0xFF, F=0b01100000)
+
+    cpu_object.register.A = 0x0F
+    cycles = cpu.op.code_3d(cpu_object)
+    assert cycles == 4
+    assert_registers(cpu_object, A=0x0E, F=0b01000000)
+
+    cpu_object.register.A = 0x01
+    cycles = cpu.op.code_3d(cpu_object)
+    assert cycles == 4
+    assert_registers(cpu_object, A=0x00, F=0b11000000)
+
+    assert_memory(cpu_object)
+
+
+# noinspection PyShadowingNames
 def test_code_3e(cpu_object):
     """ LD A,d8 """
     cycles = cpu.op.code_3e(cpu_object, 0x99)
@@ -1113,7 +1279,7 @@ def test_code_3f(cpu_object):
 
 # noinspection PyShadowingNames
 def test_code_40(cpu_object):
-    """ LD B,B (might be a newbie question but... why?) """
+    """ LD B,B (...why?) """
     cpu_object.register.B = 0x99
     cycles = cpu.op.code_40(cpu_object)
     assert cycles == 4
@@ -1192,7 +1358,7 @@ def test_code_48(cpu_object):
 
 # noinspection PyShadowingNames
 def test_code_49(cpu_object):
-    """ LD C,C (might be a newbie question but... why?) """
+    """ LD C,C (...why?) """
     cpu_object.register.C = 0x99
     cycles = cpu.op.code_49(cpu_object)
     assert cycles == 4
