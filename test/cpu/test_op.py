@@ -4557,8 +4557,7 @@ def test_code_d8(cpu_object):
 # noinspection PyShadowingNames
 def test_code_d9(cpu_object):
     """ RETI - Pop two bytes from stack and jump to that address then enable interrupts """
-    # TODO: after memory, cpu and interrupts are implemented
-    pass
+    assert False  # TODO: after memory, cpu and interrupts are implemented
 
 
 # noinspection PyShadowingNames
@@ -4661,8 +4660,13 @@ def test_code_df(cpu_object):
 # noinspection PyShadowingNames
 def test_code_e0(cpu_object):
     """ LDH (d8),A or LD ($FF00+d8),A - Put A into address ($FF00 + d8) """
-    # TODO after memory is implemented
-    pass
+    cpu_object.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
+    cpu_object._cartridge_data = bytes.fromhex("55")
+    cpu_object.register.A = 0x10
+    cycles = cpu.op.code_e0(cpu_object)
+    assert cycles == 12
+    assert_registers(cpu_object,A=0x10,PC=0x0001)
+    assert_memory(cpu_object,{0xFF55:0x10})
 
 
 # noinspection PyShadowingNames
@@ -4679,8 +4683,12 @@ def test_code_e1(cpu_object):
 # noinspection PyShadowingNames
 def test_code_e2(cpu_object):
     """ LD (C),A or LD ($FF00+C),A - Put A into address ($FF00 + register C) """
-    # TODO after memory is implemented
-    pass
+    cpu_object.register.A = 0x10
+    cpu_object.register.C = 0x55
+    cycles = cpu.op.code_e2(cpu_object)
+    assert cycles == 8
+    assert_registers(cpu_object, A=0x10, C=0x55)
+    assert_memory(cpu_object, {0xFF55: 0x10})
 
 
 # OPCODE E3 is unused
@@ -4703,16 +4711,18 @@ def test_code_e5(cpu_object):
 def test_code_e6(cpu_object):
     """ AND d8 - A=Logical AND A with d8 """
     cpu_object.register.A = 0b10100011
-    d8 = 0b01000100
-    cycles = cpu.op.code_e6(cpu_object,d8)
+    cpu_object.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
+    cpu_object._cartridge_data = 0b01000100.to_bytes(1,byteorder="big")
+    cycles = cpu.op.code_e6(cpu_object)
     assert cycles == 8
-    assert_registers(cpu_object, A=0b00000000, F=0b10100000)
+    assert_registers(cpu_object, A=0b00000000, F=0b10100000, PC=0x0001)
 
     cpu_object.register.A = 0b10100011
-    d8 = 0b01100110
-    cycles = cpu.op.code_e6(cpu_object,d8)
+    cpu_object.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
+    cpu_object._cartridge_data = 0b01100110.to_bytes(1, byteorder="big")
+    cycles = cpu.op.code_e6(cpu_object)
     assert cycles == 8
-    assert_registers(cpu_object, A=0b00100010, F=0b00100000)
+    assert_registers(cpu_object, A=0b00100010, F=0b00100000, PC=0x0001)
 
     assert_memory(cpu_object)
 
@@ -4765,8 +4775,12 @@ def test_code_e8(cpu_object):
 # noinspection PyShadowingNames
 def test_code_e9(cpu_object):
     """ JP (HL) - Jump to address contained in HL """
-    # TODO after memory and cpu is implemented
-    pass
+    cpu_object.register.set_hl(0x1010)
+    cpu_object.memory.write_16bit(0x1010,0x5566)
+    cycles = cpu.op.code_e9(cpu_object)
+    assert cycles == 4
+    assert_registers(cpu_object,H=0x10,L=0x10,PC=0x5566)
+    assert_memory(cpu_object,{0x1010:0x66,0x1011:0x55})
 
 
 # noinspection PyShadowingNames
@@ -4794,16 +4808,18 @@ def test_code_ea(cpu_object):
 def test_code_ee(cpu_object):
     """ XOR d8 - A=Logical XOR A with d8 """
     cpu_object.register.A = 0b10100011
-    d8 = 0b10100011
-    cycles = cpu.op.code_ee(cpu_object,d8)
+    cpu_object.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
+    cpu_object._cartridge_data = 0b10100011.to_bytes(1, byteorder="big")
+    cycles = cpu.op.code_ee(cpu_object)
     assert cycles == 8
-    assert_registers(cpu_object, A=0b00000000, F=0b10000000)
+    assert_registers(cpu_object, A=0b00000000, F=0b10000000, PC=0x0001)
 
     cpu_object.register.A = 0b10100011
-    d8 = 0b01100110
-    cycles = cpu.op.code_ee(cpu_object,d8)
+    cpu_object.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
+    cpu_object._cartridge_data = 0b01100110.to_bytes(1, byteorder="big")
+    cycles = cpu.op.code_ee(cpu_object)
     assert cycles == 8
-    assert_registers(cpu_object, A=0b11000101, F=0b00000000)
+    assert_registers(cpu_object, A=0b11000101, F=0b00000000, PC=0x0001)
 
 
 # noinspection PyShadowingNames
@@ -4820,8 +4836,13 @@ def test_code_ef(cpu_object):
 # noinspection PyShadowingNames
 def test_code_f0(cpu_object):
     """ LDH A,(d8) or LD A,($FF00+d8) - Put value at address ($FF00 + d8) into A """
-    # TODO after memory is implemented
-    pass
+    cpu_object.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
+    cpu_object._cartridge_data = bytes.fromhex("11")
+    cpu_object.memory.write_8bit(0xFF11,0x55)
+    cycles = cpu.op.code_f0(cpu_object)
+    assert cycles == 12
+    assert_registers(cpu_object,A=0x55,PC=0x0001)
+    assert_memory(cpu_object,{0xFF11:0x55})
 
 
 # noinspection PyShadowingNames
@@ -4838,15 +4859,18 @@ def test_code_f1(cpu_object):
 # noinspection PyShadowingNames
 def test_code_f2(cpu_object):
     """ LD A,(C) or LD A,($FF00+C) - Put value at address ($FF00 + register C) into A """
-    # TODO after memory is implemented
-    pass
+    cpu_object.register.C = 0x11
+    cpu_object.memory.write_8bit(0xFF11, 0x55)
+    cycles = cpu.op.code_f2(cpu_object)
+    assert cycles == 8
+    assert_registers(cpu_object, A=0x55, C=0x11)
+    assert_memory(cpu_object, {0xFF11: 0x55})
 
 
 # noinspection PyShadowingNames
 def test_code_f3(cpu_object):
     """ DI - Disable interrupts AFTER THE NEXT INSTRUCTION IS EXECUTED """
-    # TODO after cpu and interrupts are implemented
-    pass
+    assert False  # TODO after cpu and interrupts are implemented
 
 
 # OPCODE F4 is unused
@@ -4861,20 +4885,23 @@ def test_code_f5(cpu_object):
     assert_registers(cpu_object, A=0x11, F=0x22, SP=0xFFFC)
     assert_memory(cpu_object, {0xFFFC: 0x22, 0xFFFD: 0x11})
 
+
 # noinspection PyShadowingNames
 def test_code_f6(cpu_object):
     """ OR d8 - A=Logical OR A with d8 """
     cpu_object.register.A = 0b00000000
-    d8 = 0b00000000
-    cycles = cpu.op.code_f6(cpu_object,d8)
+    cpu_object.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
+    cpu_object._cartridge_data = 0b00000000.to_bytes(1, byteorder="big")
+    cycles = cpu.op.code_f6(cpu_object)
     assert cycles == 8
-    assert_registers(cpu_object, A=0b00000000, F=0b10000000)
+    assert_registers(cpu_object, A=0b00000000, F=0b10000000, PC=0x0001)
 
     cpu_object.register.A = 0b10100011
-    d8 = 0b01100110
-    cycles = cpu.op.code_f6(cpu_object,d8)
+    cpu_object.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
+    cpu_object._cartridge_data = 0b01100110.to_bytes(1, byteorder="big")
+    cycles = cpu.op.code_f6(cpu_object)
     assert cycles == 8
-    assert_registers(cpu_object, A=0b11100111, F=0b00000000)
+    assert_registers(cpu_object, A=0b11100111, F=0b00000000, PC=0x0001)
 
 
 # noinspection PyShadowingNames
@@ -4919,6 +4946,8 @@ def test_code_f8(cpu_object):
     assert cycles == 12
     assert_registers(cpu_object, H=0xFF, L=0x7F, SP=0xFFFF, F=0b00000000, PC=0x0001)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_f9(cpu_object):
@@ -4932,15 +4961,19 @@ def test_code_f9(cpu_object):
 # noinspection PyShadowingNames
 def test_code_fa(cpu_object):
     """ LD A,(a16) - Load reg with the value at the address in a16 (least significant byte first) """
-    # TODO after memory is implemented
-    pass
+    cpu_object.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
+    cpu_object._cartridge_data = bytes.fromhex("11 10")
+    cpu_object.memory.write_8bit(0x1011,0x55)
+    cycles = cpu.op.code_fa(cpu_object)
+    assert cycles == 16
+    assert_registers(cpu_object,A=0x55,PC=0x0002)
+    assert_memory(cpu_object,{0x1011:0x55})
 
 
 # noinspection PyShadowingNames
 def test_code_fb(cpu_object):
     """ EI - Enable interrupts AFTER THE NEXT INSTRUCTION IS EXECUTED """
-    # TODO after cpu and interrupts are implemented
-    pass
+    assert False  # TODO after cpu and interrupts are implemented
 
 
 # OPCODE FC is unused
@@ -4994,6 +5027,8 @@ def test_code_fe(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, A=0xFF, F=0b01000000, PC=0x0001)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_ff(cpu_object):
@@ -5004,6 +5039,9 @@ def test_code_ff(cpu_object):
     assert cycles == 16
     assert_registers(cpu_object, PC=0x0038, SP=0x100E)
     assert_memory(cpu_object, {0x100F: 0x22, 0x100E: 0x33})
+
+
+""" CB-Prefix operations """
 
 
 # noinspection PyShadowingNames
@@ -5019,6 +5057,8 @@ def test_code_cb_00(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, B=0b00000000, F=0b10000000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_01(cpu_object):
@@ -5032,6 +5072,8 @@ def test_code_cb_01(cpu_object):
     cycles = cpu.op.code_cb_01(cpu_object)
     assert cycles == 8
     assert_registers(cpu_object, C=0b00000000, F=0b10000000)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -5047,6 +5089,8 @@ def test_code_cb_02(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, D=0b00000000, F=0b10000000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_03(cpu_object):
@@ -5060,6 +5104,8 @@ def test_code_cb_03(cpu_object):
     cycles = cpu.op.code_cb_03(cpu_object)
     assert cycles == 8
     assert_registers(cpu_object, E=0b00000000, F=0b10000000)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -5075,6 +5121,8 @@ def test_code_cb_04(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, H=0b00000000, F=0b10000000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_05(cpu_object):
@@ -5089,12 +5137,25 @@ def test_code_cb_05(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, L=0b00000000, F=0b10000000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_06(cpu_object):
     """ RLC (HL) - Copy (value at address HL) bit 7 to Carry flag, then rotate (value at address HL) left """
-    # TODO after memory is implemented
-    pass
+    cpu_object.register.set_hl(0x1010)
+    cpu_object.memory.write_8bit(0x1010,0b11100010)
+    cycles = cpu.op.code_cb_06(cpu_object)
+    assert cycles == 16
+    assert_registers(cpu_object, H=0x10, L=0x10, F=0b00010000)
+    assert_memory(cpu_object,{0x1010:0b11000101})
+
+    cpu_object.register.set_hl(0x1010)
+    cpu_object.memory.write_8bit(0x1010, 0b00000000)
+    cycles = cpu.op.code_cb_06(cpu_object)
+    assert cycles == 16
+    assert_registers(cpu_object, H=0x10, L=0x10, F=0b10000000)
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -5110,6 +5171,8 @@ def test_code_cb_07(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, A=0b00000000, F=0b10000000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_08(cpu_object):
@@ -5123,6 +5186,8 @@ def test_code_cb_08(cpu_object):
     cycles = cpu.op.code_cb_08(cpu_object)
     assert cycles == 8
     assert_registers(cpu_object, B=0b00000000, F=0b10000000)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -5138,6 +5203,8 @@ def test_code_cb_09(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, C=0b00000000, F=0b10000000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_0a(cpu_object):
@@ -5151,6 +5218,8 @@ def test_code_cb_0a(cpu_object):
     cycles = cpu.op.code_cb_0a(cpu_object)
     assert cycles == 8
     assert_registers(cpu_object, D=0b00000000, F=0b10000000)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -5166,6 +5235,8 @@ def test_code_cb_0b(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, E=0b00000000, F=0b10000000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_0c(cpu_object):
@@ -5179,6 +5250,8 @@ def test_code_cb_0c(cpu_object):
     cycles = cpu.op.code_cb_0c(cpu_object)
     assert cycles == 8
     assert_registers(cpu_object, H=0b00000000, F=0b10000000)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -5194,12 +5267,24 @@ def test_code_cb_0d(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, L=0b00000000, F=0b10000000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_0e(cpu_object):
     """ RRC (HL) - Copy bit 0 to Carry flag, then rotate right """
-    # TODO after memory is implemented
-    pass
+    cpu_object.register.set_hl(0x1010)
+    cpu_object.memory.write_8bit(0x1010,0b11100011)
+    cycles = cpu.op.code_cb_0e(cpu_object)
+    assert cycles == 16
+    assert_registers(cpu_object, H=0x10, L=0x10, F=0b00010000)
+    assert_memory(cpu_object,{0x1010:0b11110001})
+
+    cpu_object.memory.write_8bit(0x1010, 0b00000000)
+    cycles = cpu.op.code_cb_0e(cpu_object)
+    assert cycles == 16
+    assert_registers(cpu_object, H=0x10, L=0x10, F=0b10000000)
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -5214,6 +5299,8 @@ def test_code_cb_0f(cpu_object):
     cycles = cpu.op.code_cb_0f(cpu_object)
     assert cycles == 8
     assert_registers(cpu_object, A=0b00000000, F=0b10000000)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -5231,6 +5318,8 @@ def test_code_cb_10(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, B=0b00000001, F=0b00000000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_11(cpu_object):
@@ -5246,6 +5335,7 @@ def test_code_cb_11(cpu_object):
     cycles = cpu.op.code_cb_11(cpu_object)
     assert cycles == 8
     assert_registers(cpu_object, C=0b00000001, F=0b00000000)
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -5263,6 +5353,8 @@ def test_code_cb_12(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, D=0b00000001, F=0b00000000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_13(cpu_object):
@@ -5278,6 +5370,8 @@ def test_code_cb_13(cpu_object):
     cycles = cpu.op.code_cb_13(cpu_object)
     assert cycles == 8
     assert_registers(cpu_object, E=0b00000001, F=0b00000000)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -5295,6 +5389,8 @@ def test_code_cb_14(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, H=0b00000001, F=0b00000000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_15(cpu_object):
@@ -5311,12 +5407,26 @@ def test_code_cb_15(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, L=0b00000001, F=0b00000000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_16(cpu_object):
     """ RL (HL) - Copy bit 7 to temp, replace bit 7 w/ Carry flag, rotate left, copy temp to Carry flag """
-    # TODO after memory is implemented
-    pass
+    cpu_object.register.set_hl(0x1010)
+    cpu_object.memory.write_8bit(0x1010, 0b11100010)
+    cpu_object.register.F = 0b00010000
+    cycles = cpu.op.code_cb_16(cpu_object)
+    assert cycles == 16
+    assert_registers(cpu_object, H=0x10, L=0x10, F=0b00010000)
+    assert_memory(cpu_object,{0x1010:0b11000101})
+
+    cpu_object.memory.write_8bit(0x1010, 0b00000000)
+    cpu_object.register.F = 0b00010000
+    cycles = cpu.op.code_cb_16(cpu_object)
+    assert cycles == 16
+    assert_registers(cpu_object, H=0x10, L=0x10, F=0b00000000)
+    assert_memory(cpu_object, {0x1010: 0b00000001})
 
 
 # noinspection PyShadowingNames
@@ -5334,6 +5444,8 @@ def test_code_cb_17(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, A=0b00000001, F=0b00000000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_18(cpu_object):
@@ -5349,6 +5461,8 @@ def test_code_cb_18(cpu_object):
     cycles = cpu.op.code_cb_18(cpu_object)
     assert cycles == 8
     assert_registers(cpu_object, B=0b10000000, F=0b00000000)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -5366,6 +5480,8 @@ def test_code_cb_19(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, C=0b10000000, F=0b00000000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_1a(cpu_object):
@@ -5381,6 +5497,8 @@ def test_code_cb_1a(cpu_object):
     cycles = cpu.op.code_cb_1a(cpu_object)
     assert cycles == 8
     assert_registers(cpu_object, D=0b10000000, F=0b00000000)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -5398,6 +5516,8 @@ def test_code_cb_1b(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, E=0b10000000, F=0b00000000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_1c(cpu_object):
@@ -5413,6 +5533,8 @@ def test_code_cb_1c(cpu_object):
     cycles = cpu.op.code_cb_1c(cpu_object)
     assert cycles == 8
     assert_registers(cpu_object, H=0b10000000, F=0b00000000)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -5430,12 +5552,26 @@ def test_code_cb_1d(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, L=0b10000000, F=0b00000000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_1e(cpu_object):
     """ RR (HL) - Copy (HL) bit 0 to temp, replace bit 0 w/ Carry flag, rotate right, copy temp to Carry flag """
-    # TODO after memory is implemented
-    pass
+    cpu_object.register.set_hl(0x1010)
+    cpu_object.memory.write_8bit(0x1010, 0b11100011)
+    cpu_object.register.F = 0b00010000
+    cycles = cpu.op.code_cb_1e(cpu_object)
+    assert cycles == 16
+    assert_registers(cpu_object, H=0x10, L=0x10, F=0b00010000)
+    assert_memory(cpu_object,{0x1010:0b11110001})
+
+    cpu_object.memory.write_8bit(0x1010, 0b00000000)
+    cpu_object.register.F = 0b00010000
+    cycles = cpu.op.code_cb_1e(cpu_object)
+    assert cycles == 16
+    assert_registers(cpu_object, H=0x10, L=0x10, F=0b00000000)
+    assert_memory(cpu_object, {0x1010: 0b10000000})
 
 
 # noinspection PyShadowingNames
@@ -5453,6 +5589,8 @@ def test_code_cb_1f(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, A=0b10000000, F=0b00000000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_20(cpu_object):
@@ -5466,6 +5604,8 @@ def test_code_cb_20(cpu_object):
     cycles = cpu.op.code_cb_20(cpu_object)
     assert cycles == 8
     assert_registers(cpu_object, B=0b00000000, F=0b10000000)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -5481,6 +5621,8 @@ def test_code_cb_21(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, C=0b00000000, F=0b10000000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_22(cpu_object):
@@ -5494,6 +5636,8 @@ def test_code_cb_22(cpu_object):
     cycles = cpu.op.code_cb_22(cpu_object)
     assert cycles == 8
     assert_registers(cpu_object, D=0b00000000, F=0b10000000)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -5509,6 +5653,8 @@ def test_code_cb_23(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, E=0b00000000, F=0b10000000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_24(cpu_object):
@@ -5522,6 +5668,8 @@ def test_code_cb_24(cpu_object):
     cycles = cpu.op.code_cb_24(cpu_object)
     assert cycles == 8
     assert_registers(cpu_object, H=0b00000000, F=0b10000000)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -5537,12 +5685,24 @@ def test_code_cb_25(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, L=0b00000000, F=0b10000000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_26(cpu_object):
     """ SLA (HL) - Copy (HL) bit 7 to temp, replace bit 7 w/ zero, rotate left, copy temp to Carry flag """
-    # TODO after memory is implemented
-    pass
+    cpu_object.register.set_hl(0x1010)
+    cpu_object.memory.write_8bit(0x1010, 0b11100010)
+    cycles = cpu.op.code_cb_26(cpu_object)
+    assert cycles == 16
+    assert_registers(cpu_object, H=0x10, L=0x10, F=0b00010000)
+    assert_memory(cpu_object,{0x1010:0b11000100})
+
+    cpu_object.memory.write_8bit(0x1010, 0b00000000)
+    cycles = cpu.op.code_cb_26(cpu_object)
+    assert cycles == 16
+    assert_registers(cpu_object, H=0x10, L=0x10, F=0b10000000)
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -5557,6 +5717,8 @@ def test_code_cb_27(cpu_object):
     cycles = cpu.op.code_cb_27(cpu_object)
     assert cycles == 8
     assert_registers(cpu_object, A=0b00000000, F=0b10000000)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -5573,6 +5735,8 @@ def test_code_cb_28(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, B=0b00000000, F=0b10010000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_29(cpu_object):
@@ -5587,6 +5751,8 @@ def test_code_cb_29(cpu_object):
     cycles = cpu.op.code_cb_29(cpu_object)
     assert cycles == 8
     assert_registers(cpu_object, C=0b00000000, F=0b10010000)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -5603,6 +5769,8 @@ def test_code_cb_2a(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, D=0b00000000, F=0b10010000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_2b(cpu_object):
@@ -5617,6 +5785,8 @@ def test_code_cb_2b(cpu_object):
     cycles = cpu.op.code_cb_2b(cpu_object)
     assert cycles == 8
     assert_registers(cpu_object, E=0b00000000, F=0b10010000)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -5633,6 +5803,8 @@ def test_code_cb_2c(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, H=0b00000000, F=0b10010000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_2d(cpu_object):
@@ -5648,12 +5820,25 @@ def test_code_cb_2d(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, L=0b00000000, F=0b10010000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_2e(cpu_object):
     """ SRA (HL) - Copy bit 7 to temp, copy bit 0 to Carry flag, shift right, replace new bit 7 with temp """
-    # TODO after memory is implemented
-    pass
+    cpu_object.register.set_hl(0x1010)
+    cpu_object.memory.write_8bit(0x1010, 0b10000001)
+    cycles = cpu.op.code_cb_2e(cpu_object)
+    assert cycles == 16
+    assert_registers(cpu_object, H=0x10, L=0x10, F=0b00010000)
+    assert_memory(cpu_object, {0x1010: 0b11000000})
+
+    cpu_object.memory.write_8bit(0x1010, 0b00000001)
+    cpu_object.register.F = 0b00000000
+    cycles = cpu.op.code_cb_2e(cpu_object)
+    assert cycles == 16
+    assert_registers(cpu_object, H=0x10, L=0x10, F=0b10010000)
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -5669,6 +5854,8 @@ def test_code_cb_2f(cpu_object):
     cycles = cpu.op.code_cb_2f(cpu_object)
     assert cycles == 8
     assert_registers(cpu_object, A=0b00000000, F=0b10010000)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -5689,6 +5876,8 @@ def test_code_cb_30(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, B=0x0F, F=0b00000000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_31(cpu_object):
@@ -5707,6 +5896,8 @@ def test_code_cb_31(cpu_object):
     cycles = cpu.op.code_cb_31(cpu_object)
     assert cycles == 8
     assert_registers(cpu_object, C=0x0F, F=0b00000000)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -5727,6 +5918,8 @@ def test_code_cb_32(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, D=0x0F, F=0b00000000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_33(cpu_object):
@@ -5745,6 +5938,8 @@ def test_code_cb_33(cpu_object):
     cycles = cpu.op.code_cb_33(cpu_object)
     assert cycles == 8
     assert_registers(cpu_object, E=0x0F, F=0b00000000)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -5765,6 +5960,8 @@ def test_code_cb_34(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, H=0x0F, F=0b00000000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_35(cpu_object):
@@ -5784,12 +5981,30 @@ def test_code_cb_35(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, L=0x0F, F=0b00000000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_36(cpu_object):
     """ SWAP (HL) - Swap upper and lower nibbles (nibble = 4 bits) """
-    # TODO after memory is implemented
-    pass
+    cpu_object.register.set_hl(0x1010)
+    cpu_object.memory.write_8bit(0x1010, 0xAB)
+    cycles = cpu.op.code_cb_36(cpu_object)
+    assert cycles == 16
+    assert_registers(cpu_object, H=0x10, L=0x10, F=0b00000000)
+    assert_memory(cpu_object,{0x1010:0xBA})
+
+    cpu_object.memory.write_8bit(0x1010, 0x00)
+    cycles = cpu.op.code_cb_36(cpu_object)
+    assert cycles == 16
+    assert_registers(cpu_object, H=0x10, L=0x10, F=0b10000000)
+    assert_memory(cpu_object)
+
+    cpu_object.memory.write_8bit(0x1010, 0xF0)
+    cycles = cpu.op.code_cb_36(cpu_object)
+    assert cycles == 16
+    assert_registers(cpu_object, H=0x10, L=0x10, F=0b00000000)
+    assert_memory(cpu_object, {0x1010: 0x0F})
 
 
 # noinspection PyShadowingNames
@@ -5810,6 +6025,8 @@ def test_code_cb_37(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, A=0x0F, F=0b00000000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_38(cpu_object):
@@ -5824,6 +6041,8 @@ def test_code_cb_38(cpu_object):
     cycles = cpu.op.code_cb_38(cpu_object)
     assert cycles == 8
     assert_registers(cpu_object, B=0b00000000, F=0b10010000)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -5840,6 +6059,8 @@ def test_code_cb_39(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, C=0b00000000, F=0b10010000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_3a(cpu_object):
@@ -5854,6 +6075,8 @@ def test_code_cb_3a(cpu_object):
     cycles = cpu.op.code_cb_3a(cpu_object)
     assert cycles == 8
     assert_registers(cpu_object, D=0b00000000, F=0b10010000)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -5870,6 +6093,8 @@ def test_code_cb_3b(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, E=0b00000000, F=0b10010000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_3c(cpu_object):
@@ -5884,6 +6109,8 @@ def test_code_cb_3c(cpu_object):
     cycles = cpu.op.code_cb_3c(cpu_object)
     assert cycles == 8
     assert_registers(cpu_object, H=0b00000000, F=0b10010000)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -5900,12 +6127,25 @@ def test_code_cb_3d(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, L=0b00000000, F=0b10010000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_3e(cpu_object):
     """ SRL (HL) - Copy bit 7 to temp, copy bit 0 to Carry flag, shift right, replace new bit 7 with temp """
-    # TODO after memory is implemented
-    pass
+    cpu_object.register.set_hl(0x1010)
+    cpu_object.memory.write_8bit(0x1010, 0b10000001)
+    cycles = cpu.op.code_cb_3e(cpu_object)
+    assert cycles == 16
+    assert_registers(cpu_object, H=0x10, L=0x10, F=0b00010000)
+    assert_memory(cpu_object, {0x1010: 0b01000000})
+
+    cpu_object.memory.write_8bit(0x1010, 0b00000001)
+    cpu_object.register.F = 0b00000000
+    cycles = cpu.op.code_cb_3e(cpu_object)
+    assert cycles == 16
+    assert_registers(cpu_object, H=0x10, L=0x10, F=0b10010000)
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -5922,6 +6162,8 @@ def test_code_cb_3f(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, A=0b00000000, F=0b10010000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_40(cpu_object):
@@ -5935,6 +6177,8 @@ def test_code_cb_40(cpu_object):
     cycles = cpu.op.code_cb_40(cpu_object)
     assert cycles == 8
     assert_registers(cpu_object, B=0b11111110, F=0b00100000)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -5950,6 +6194,8 @@ def test_code_cb_41(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, C=0b11111110, F=0b00100000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_42(cpu_object):
@@ -5963,6 +6209,8 @@ def test_code_cb_42(cpu_object):
     cycles = cpu.op.code_cb_42(cpu_object)
     assert cycles == 8
     assert_registers(cpu_object, D=0b11111110, F=0b00100000)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -5978,6 +6226,8 @@ def test_code_cb_43(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, E=0b11111110, F=0b00100000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_44(cpu_object):
@@ -5991,6 +6241,8 @@ def test_code_cb_44(cpu_object):
     cycles = cpu.op.code_cb_44(cpu_object)
     assert cycles == 8
     assert_registers(cpu_object, H=0b11111110, F=0b00100000)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -6006,10 +6258,24 @@ def test_code_cb_45(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, L=0b11111110, F=0b00100000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_46(cpu_object):
     """ BIT 0,(HL) - Test what is the value of bit 0 """
+    cpu_object.register.set_hl(0x1010)
+    cpu_object.memory.write_8bit(0x1010, 0b00000001)
+    cycles = cpu.op.code_cb_46(cpu_object)
+    assert cycles == 16
+    assert_registers(cpu_object, H=0x10, L=0x10, F=0b10100000)
+    assert_memory(cpu_object,{0x1010:0b00000001})
+
+    cpu_object.memory.write_8bit(0x1010, 0b11111110)
+    cycles = cpu.op.code_cb_46(cpu_object)
+    assert cycles == 16
+    assert_registers(cpu_object, H=0x10, L=0x10, F=0b00100000)
+    assert_memory(cpu_object, {0x1010: 0b11111110})
 
 
 # noinspection PyShadowingNames
@@ -6025,6 +6291,8 @@ def test_code_cb_47(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, A=0b11111110, F=0b00100000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_48(cpu_object):
@@ -6038,6 +6306,8 @@ def test_code_cb_48(cpu_object):
     cycles = cpu.op.code_cb_48(cpu_object)
     assert cycles == 8
     assert_registers(cpu_object, B=0b11111101, F=0b00100000)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -6053,6 +6323,8 @@ def test_code_cb_49(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, C=0b11111101, F=0b00100000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_4a(cpu_object):
@@ -6066,6 +6338,8 @@ def test_code_cb_4a(cpu_object):
     cycles = cpu.op.code_cb_4a(cpu_object)
     assert cycles == 8
     assert_registers(cpu_object, D=0b11111101, F=0b00100000)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -6081,6 +6355,8 @@ def test_code_cb_4b(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, E=0b11111101, F=0b00100000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_4c(cpu_object):
@@ -6094,6 +6370,8 @@ def test_code_cb_4c(cpu_object):
     cycles = cpu.op.code_cb_4c(cpu_object)
     assert cycles == 8
     assert_registers(cpu_object, H=0b11111101, F=0b00100000)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -6109,12 +6387,24 @@ def test_code_cb_4d(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, L=0b11111101, F=0b00100000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_4e(cpu_object):
     """ BIT 1,(HL) - Test what is the value of bit 1 """
-    # TODO after memory is implemented
-    pass
+    cpu_object.register.set_hl(0x1010)
+    cpu_object.memory.write_8bit(0x1010, 0b00000010)
+    cycles = cpu.op.code_cb_4e(cpu_object)
+    assert cycles == 16
+    assert_registers(cpu_object, H=0x10, L=0x10, F=0b10100000)
+    assert_memory(cpu_object, {0x1010: 0b00000010})
+
+    cpu_object.memory.write_8bit(0x1010, 0b11111101)
+    cycles = cpu.op.code_cb_4e(cpu_object)
+    assert cycles == 16
+    assert_registers(cpu_object, H=0x10, L=0x10, F=0b00100000)
+    assert_memory(cpu_object,{0x1010:0b11111101})
 
 
 # noinspection PyShadowingNames
@@ -6130,6 +6420,8 @@ def test_code_cb_4f(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, A=0b11111101, F=0b00100000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_50(cpu_object):
@@ -6143,6 +6435,8 @@ def test_code_cb_50(cpu_object):
     cycles = cpu.op.code_cb_50(cpu_object)
     assert cycles == 8
     assert_registers(cpu_object, B=0b11111011, F=0b00100000)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -6158,6 +6452,8 @@ def test_code_cb_51(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, C=0b11111011, F=0b00100000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_52(cpu_object):
@@ -6171,6 +6467,8 @@ def test_code_cb_52(cpu_object):
     cycles = cpu.op.code_cb_52(cpu_object)
     assert cycles == 8
     assert_registers(cpu_object, D=0b11111011, F=0b00100000)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -6186,6 +6484,8 @@ def test_code_cb_53(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, E=0b11111011, F=0b00100000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_54(cpu_object):
@@ -6199,6 +6499,8 @@ def test_code_cb_54(cpu_object):
     cycles = cpu.op.code_cb_54(cpu_object)
     assert cycles == 8
     assert_registers(cpu_object, H=0b11111011, F=0b00100000)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -6214,10 +6516,24 @@ def test_code_cb_55(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, L=0b11111011, F=0b00100000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_56(cpu_object):
     """ BIT 2,(HL) - Test what is the value of bit 2 """
+    cpu_object.register.set_hl(0x1010)
+    cpu_object.memory.write_8bit(0x1010, 0b00000100)
+    cycles = cpu.op.code_cb_56(cpu_object)
+    assert cycles == 16
+    assert_registers(cpu_object, H=0x10, L=0x10, F=0b10100000)
+    assert_memory(cpu_object, {0x1010: 0b00000100})
+
+    cpu_object.memory.write_8bit(0x1010, 0b11111011)
+    cycles = cpu.op.code_cb_56(cpu_object)
+    assert cycles == 16
+    assert_registers(cpu_object, H=0x10, L=0x10, F=0b00100000)
+    assert_memory(cpu_object,{0x1010:0b11111011})
 
 
 # noinspection PyShadowingNames
@@ -6233,6 +6549,8 @@ def test_code_cb_57(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, A=0b11111011, F=0b00100000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_58(cpu_object):
@@ -6246,6 +6564,8 @@ def test_code_cb_58(cpu_object):
     cycles = cpu.op.code_cb_58(cpu_object)
     assert cycles == 8
     assert_registers(cpu_object, B=0b11110111, F=0b00100000)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -6261,6 +6581,8 @@ def test_code_cb_59(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, C=0b11110111, F=0b00100000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_5a(cpu_object):
@@ -6274,6 +6596,8 @@ def test_code_cb_5a(cpu_object):
     cycles = cpu.op.code_cb_5a(cpu_object)
     assert cycles == 8
     assert_registers(cpu_object, D=0b11110111, F=0b00100000)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -6289,6 +6613,8 @@ def test_code_cb_5b(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, E=0b11110111, F=0b00100000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_5c(cpu_object):
@@ -6302,6 +6628,8 @@ def test_code_cb_5c(cpu_object):
     cycles = cpu.op.code_cb_5c(cpu_object)
     assert cycles == 8
     assert_registers(cpu_object, H=0b11110111, F=0b00100000)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -6317,12 +6645,24 @@ def test_code_cb_5d(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, L=0b11110111, F=0b00100000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_5e(cpu_object):
     """ BIT 3,(HL) - Test what is the value of bit 3 """
-    # TODO after memory is implemented
-    pass
+    cpu_object.register.set_hl(0x1010)
+    cpu_object.memory.write_8bit(0x1010, 0b00001000)
+    cycles = cpu.op.code_cb_5e(cpu_object)
+    assert cycles == 16
+    assert_registers(cpu_object, H=0x10, L=0x10, F=0b10100000)
+    assert_memory(cpu_object, {0x1010: 0b00001000})
+
+    cpu_object.memory.write_8bit(0x1010, 0b11110111)
+    cycles = cpu.op.code_cb_5e(cpu_object)
+    assert cycles == 16
+    assert_registers(cpu_object, H=0x10, L=0x10, F=0b00100000)
+    assert_memory(cpu_object,{0x1010:0b11110111})
 
 
 # noinspection PyShadowingNames
@@ -6338,6 +6678,8 @@ def test_code_cb_5f(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, A=0b11110111, F=0b00100000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_60(cpu_object):
@@ -6351,6 +6693,8 @@ def test_code_cb_60(cpu_object):
     cycles = cpu.op.code_cb_60(cpu_object)
     assert cycles == 8
     assert_registers(cpu_object, B=0b11101111, F=0b00100000)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -6366,19 +6710,23 @@ def test_code_cb_61(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, C=0b11101111, F=0b00100000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
-def test_code_cb_64(cpu_object):
+def test_code_cb_62(cpu_object):
     """ BIT 4,D - Test what is the value of bit 4 """
     cpu_object.register.D = 0b00010000
-    cycles = cpu.op.code_cb_64(cpu_object)
+    cycles = cpu.op.code_cb_62(cpu_object)
     assert cycles == 8
     assert_registers(cpu_object, D=0b00010000, F=0b10100000)
 
     cpu_object.register.D = 0b11101111
-    cycles = cpu.op.code_cb_64(cpu_object)
+    cycles = cpu.op.code_cb_62(cpu_object)
     assert cycles == 8
     assert_registers(cpu_object, D=0b11101111, F=0b00100000)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -6394,6 +6742,8 @@ def test_code_cb_63(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, E=0b11101111, F=0b00100000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_64(cpu_object):
@@ -6407,6 +6757,8 @@ def test_code_cb_64(cpu_object):
     cycles = cpu.op.code_cb_64(cpu_object)
     assert cycles == 8
     assert_registers(cpu_object, H=0b11101111, F=0b00100000)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -6422,10 +6774,24 @@ def test_code_cb_65(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, L=0b11101111, F=0b00100000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_66(cpu_object):
     """ BIT 4,(HL) - Test what is the value of bit 4 """
+    cpu_object.register.set_hl(0x1010)
+    cpu_object.memory.write_8bit(0x1010, 0b00010000)
+    cycles = cpu.op.code_cb_66(cpu_object)
+    assert cycles == 16
+    assert_registers(cpu_object, H=0x10, L=0x10, F=0b10100000)
+    assert_memory(cpu_object, {0x1010: 0b00010000})
+
+    cpu_object.memory.write_8bit(0x1010, 0b11101111)
+    cycles = cpu.op.code_cb_66(cpu_object)
+    assert cycles == 16
+    assert_registers(cpu_object, H=0x10, L=0x10, F=0b00100000)
+    assert_memory(cpu_object,{0x1010:0b11101111})
 
 
 # noinspection PyShadowingNames
@@ -6441,6 +6807,8 @@ def test_code_cb_67(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, A=0b11101111, F=0b00100000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_68(cpu_object):
@@ -6454,6 +6822,8 @@ def test_code_cb_68(cpu_object):
     cycles = cpu.op.code_cb_68(cpu_object)
     assert cycles == 8
     assert_registers(cpu_object, B=0b11011111, F=0b00100000)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -6469,6 +6839,8 @@ def test_code_cb_69(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, C=0b11011111, F=0b00100000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_6a(cpu_object):
@@ -6482,6 +6854,8 @@ def test_code_cb_6a(cpu_object):
     cycles = cpu.op.code_cb_6a(cpu_object)
     assert cycles == 8
     assert_registers(cpu_object, D=0b11011111, F=0b00100000)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -6497,6 +6871,8 @@ def test_code_cb_6b(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, E=0b11011111, F=0b00100000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_6c(cpu_object):
@@ -6510,6 +6886,8 @@ def test_code_cb_6c(cpu_object):
     cycles = cpu.op.code_cb_6c(cpu_object)
     assert cycles == 8
     assert_registers(cpu_object, H=0b11011111, F=0b00100000)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -6525,12 +6903,24 @@ def test_code_cb_6d(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, L=0b11011111, F=0b00100000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_6e(cpu_object):
     """ BIT 5,(HL) - Test what is the value of bit 5 """
-    # TODO after memory is implemented
-    pass
+    cpu_object.register.set_hl(0x1010)
+    cpu_object.memory.write_8bit(0x1010, 0b00100000)
+    cycles = cpu.op.code_cb_6e(cpu_object)
+    assert cycles == 16
+    assert_registers(cpu_object, H=0x10, L=0x10, F=0b10100000)
+    assert_memory(cpu_object, {0x1010: 0b00100000})
+
+    cpu_object.memory.write_8bit(0x1010, 0b11011111)
+    cycles = cpu.op.code_cb_6e(cpu_object)
+    assert cycles == 16
+    assert_registers(cpu_object, H=0x10, L=0x10, F=0b00100000)
+    assert_memory(cpu_object,{0x1010:0b11011111})
 
 
 # noinspection PyShadowingNames
@@ -6546,6 +6936,8 @@ def test_code_cb_6f(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, A=0b11011111, F=0b00100000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_70(cpu_object):
@@ -6559,6 +6951,8 @@ def test_code_cb_70(cpu_object):
     cycles = cpu.op.code_cb_70(cpu_object)
     assert cycles == 8
     assert_registers(cpu_object, B=0b10111111, F=0b00100000)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -6574,19 +6968,23 @@ def test_code_cb_71(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, C=0b10111111, F=0b00100000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
-def test_code_cb_76(cpu_object):
+def test_code_cb_72(cpu_object):
     """ BIT 6,D - Test what is the value of bit 6 """
     cpu_object.register.D = 0b01000000
-    cycles = cpu.op.code_cb_76(cpu_object)
+    cycles = cpu.op.code_cb_72(cpu_object)
     assert cycles == 8
     assert_registers(cpu_object, D=0b01000000, F=0b10100000)
 
     cpu_object.register.D = 0b10111111
-    cycles = cpu.op.code_cb_76(cpu_object)
+    cycles = cpu.op.code_cb_72(cpu_object)
     assert cycles == 8
     assert_registers(cpu_object, D=0b10111111, F=0b00100000)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -6602,19 +7000,23 @@ def test_code_cb_73(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, E=0b10111111, F=0b00100000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
-def test_code_cb_76(cpu_object):
+def test_code_cb_74(cpu_object):
     """ BIT 6,H - Test what is the value of bit 6 """
     cpu_object.register.H = 0b01000000
-    cycles = cpu.op.code_cb_76(cpu_object)
+    cycles = cpu.op.code_cb_74(cpu_object)
     assert cycles == 8
     assert_registers(cpu_object, H=0b01000000, F=0b10100000)
 
     cpu_object.register.H = 0b10111111
-    cycles = cpu.op.code_cb_76(cpu_object)
+    cycles = cpu.op.code_cb_74(cpu_object)
     assert cycles == 8
     assert_registers(cpu_object, H=0b10111111, F=0b00100000)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -6630,10 +7032,24 @@ def test_code_cb_75(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, L=0b10111111, F=0b00100000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_76(cpu_object):
     """ BIT 6,(HL) - Test what is the value of bit 6 """
+    cpu_object.register.set_hl(0x1010)
+    cpu_object.memory.write_8bit(0x1010, 0b01000000)
+    cycles = cpu.op.code_cb_76(cpu_object)
+    assert cycles == 16
+    assert_registers(cpu_object, H=0x10, L=0x10, F=0b10100000)
+    assert_memory(cpu_object, {0x1010: 0b01000000})
+
+    cpu_object.memory.write_8bit(0x1010, 0b10111111)
+    cycles = cpu.op.code_cb_76(cpu_object)
+    assert cycles == 16
+    assert_registers(cpu_object, H=0x10, L=0x10, F=0b00100000)
+    assert_memory(cpu_object,{0x1010:0b10111111})
 
 
 # noinspection PyShadowingNames
@@ -6649,6 +7065,8 @@ def test_code_cb_77(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, A=0b10111111, F=0b00100000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_78(cpu_object):
@@ -6662,6 +7080,8 @@ def test_code_cb_78(cpu_object):
     cycles = cpu.op.code_cb_78(cpu_object)
     assert cycles == 8
     assert_registers(cpu_object, B=0b01111111, F=0b00100000)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -6677,6 +7097,8 @@ def test_code_cb_79(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, C=0b01111111, F=0b00100000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_7a(cpu_object):
@@ -6690,6 +7112,8 @@ def test_code_cb_7a(cpu_object):
     cycles = cpu.op.code_cb_7a(cpu_object)
     assert cycles == 8
     assert_registers(cpu_object, D=0b01111111, F=0b00100000)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -6705,6 +7129,8 @@ def test_code_cb_7b(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, E=0b01111111, F=0b00100000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_7c(cpu_object):
@@ -6718,6 +7144,8 @@ def test_code_cb_7c(cpu_object):
     cycles = cpu.op.code_cb_7c(cpu_object)
     assert cycles == 8
     assert_registers(cpu_object, H=0b01111111, F=0b00100000)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -6733,12 +7161,24 @@ def test_code_cb_7d(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, L=0b01111111, F=0b00100000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_7e(cpu_object):
     """ BIT 7,(HL) - Test what is the value of bit 7 """
-    # TODO after memory is implemented
-    pass
+    cpu_object.register.set_hl(0x1010)
+    cpu_object.memory.write_8bit(0x1010, 0b10000000)
+    cycles = cpu.op.code_cb_7e(cpu_object)
+    assert cycles == 16
+    assert_registers(cpu_object, H=0x10, L=0x10, F=0b10100000)
+    assert_memory(cpu_object, {0x1010: 0b10000000})
+
+    cpu_object.memory.write_8bit(0x1010, 0b01111111)
+    cycles = cpu.op.code_cb_7e(cpu_object)
+    assert cycles == 16
+    assert_registers(cpu_object, H=0x10, L=0x10, F=0b00100000)
+    assert_memory(cpu_object,{0x1010:0b01111111})
 
 
 # noinspection PyShadowingNames
@@ -6754,6 +7194,8 @@ def test_code_cb_7f(cpu_object):
     assert cycles == 8
     assert_registers(cpu_object, A=0b01111111, F=0b00100000)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_80(cpu_object):
@@ -6767,6 +7209,8 @@ def test_code_cb_80(cpu_object):
     cycle = cpu.op.code_cb_80(cpu_object)
     assert cycle == 8
     assert_registers(cpu_object, B=0b11111110)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -6782,6 +7226,8 @@ def test_code_cb_81(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, C=0b11111110)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_82(cpu_object):
@@ -6795,6 +7241,8 @@ def test_code_cb_82(cpu_object):
     cycle = cpu.op.code_cb_82(cpu_object)
     assert cycle == 8
     assert_registers(cpu_object, D=0b11111110)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -6810,6 +7258,8 @@ def test_code_cb_83(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, E=0b11111110)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_84(cpu_object):
@@ -6823,6 +7273,8 @@ def test_code_cb_84(cpu_object):
     cycle = cpu.op.code_cb_84(cpu_object)
     assert cycle == 8
     assert_registers(cpu_object, H=0b11111110)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -6838,12 +7290,24 @@ def test_code_cb_85(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, L=0b11111110)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_86(cpu_object):
     """ RES 0,(HL) - Reset the specified bit """
-    # TODO after memory is implemented
-    pass
+    cpu_object.register.set_hl(0x1010)
+    cpu_object.memory.write_8bit(0x1010, 0b00000000)
+    cycle = cpu.op.code_cb_86(cpu_object)
+    assert cycle == 16
+    assert_registers(cpu_object, H=0x10, L=0x10)
+    assert_memory(cpu_object)
+
+    cpu_object.memory.write_8bit(0x1010, 0b11111111)
+    cycle = cpu.op.code_cb_86(cpu_object)
+    assert cycle == 16
+    assert_registers(cpu_object, H=0x10, L=0x10)
+    assert_memory(cpu_object,{0x1010:0b11111110})
 
 
 # noinspection PyShadowingNames
@@ -6859,6 +7323,8 @@ def test_code_cb_87(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, A=0b11111110)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_88(cpu_object):
@@ -6872,6 +7338,8 @@ def test_code_cb_88(cpu_object):
     cycle = cpu.op.code_cb_88(cpu_object)
     assert cycle == 8
     assert_registers(cpu_object, B=0b11111101)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -6887,6 +7355,8 @@ def test_code_cb_89(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, C=0b11111101)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_8a(cpu_object):
@@ -6900,6 +7370,8 @@ def test_code_cb_8a(cpu_object):
     cycle = cpu.op.code_cb_8a(cpu_object)
     assert cycle == 8
     assert_registers(cpu_object, D=0b11111101)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -6915,6 +7387,8 @@ def test_code_cb_8b(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, E=0b11111101)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_8c(cpu_object):
@@ -6928,6 +7402,8 @@ def test_code_cb_8c(cpu_object):
     cycle = cpu.op.code_cb_8c(cpu_object)
     assert cycle == 8
     assert_registers(cpu_object, H=0b11111101)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -6943,12 +7419,24 @@ def test_code_cb_8d(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, L=0b11111101)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_8e(cpu_object):
     """ RES 1,(HL) - Reset the specified bit """
-    # TODO after memory is implemented
-    pass
+    cpu_object.register.set_hl(0x1010)
+    cpu_object.memory.write_8bit(0x1010, 0b00000000)
+    cycle = cpu.op.code_cb_8e(cpu_object)
+    assert cycle == 16
+    assert_registers(cpu_object, H=0x10, L=0x10)
+    assert_memory(cpu_object)
+
+    cpu_object.memory.write_8bit(0x1010, 0b11111111)
+    cycle = cpu.op.code_cb_8e(cpu_object)
+    assert cycle == 16
+    assert_registers(cpu_object, H=0x10, L=0x10)
+    assert_memory(cpu_object,{0x1010:0b11111101})
 
 
 # noinspection PyShadowingNames
@@ -6964,6 +7452,8 @@ def test_code_cb_8f(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, A=0b11111101)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_90(cpu_object):
@@ -6977,6 +7467,8 @@ def test_code_cb_90(cpu_object):
     cycle = cpu.op.code_cb_90(cpu_object)
     assert cycle == 8
     assert_registers(cpu_object, B=0b11111011)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -6992,6 +7484,8 @@ def test_code_cb_91(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, C=0b11111011)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_92(cpu_object):
@@ -7005,6 +7499,8 @@ def test_code_cb_92(cpu_object):
     cycle = cpu.op.code_cb_92(cpu_object)
     assert cycle == 8
     assert_registers(cpu_object, D=0b11111011)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -7020,6 +7516,8 @@ def test_code_cb_93(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, E=0b11111011)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_94(cpu_object):
@@ -7033,6 +7531,8 @@ def test_code_cb_94(cpu_object):
     cycle = cpu.op.code_cb_94(cpu_object)
     assert cycle == 8
     assert_registers(cpu_object, H=0b11111011)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -7048,12 +7548,24 @@ def test_code_cb_95(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, L=0b11111011)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_96(cpu_object):
     """ RES 2,(HL) - Reset the specified bit """
-    # TODO after memory is implemented
-    pass
+    cpu_object.register.set_hl(0x1010)
+    cpu_object.memory.write_8bit(0x1010, 0b00000000)
+    cycle = cpu.op.code_cb_96(cpu_object)
+    assert cycle == 16
+    assert_registers(cpu_object, H=0x10, L=0x10)
+    assert_memory(cpu_object)
+
+    cpu_object.memory.write_8bit(0x1010, 0b11111111)
+    cycle = cpu.op.code_cb_96(cpu_object)
+    assert cycle == 16
+    assert_registers(cpu_object, H=0x10, L=0x10)
+    assert_memory(cpu_object,{0x1010:0b11111011})
 
 
 # noinspection PyShadowingNames
@@ -7069,6 +7581,8 @@ def test_code_cb_97(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, A=0b11111011)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_98(cpu_object):
@@ -7082,6 +7596,8 @@ def test_code_cb_98(cpu_object):
     cycle = cpu.op.code_cb_98(cpu_object)
     assert cycle == 8
     assert_registers(cpu_object, B=0b11110111)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -7097,6 +7613,8 @@ def test_code_cb_99(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, C=0b11110111)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_9a(cpu_object):
@@ -7110,6 +7628,8 @@ def test_code_cb_9a(cpu_object):
     cycle = cpu.op.code_cb_9a(cpu_object)
     assert cycle == 8
     assert_registers(cpu_object, D=0b11110111)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -7125,6 +7645,8 @@ def test_code_cb_9b(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, E=0b11110111)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_9c(cpu_object):
@@ -7138,6 +7660,8 @@ def test_code_cb_9c(cpu_object):
     cycle = cpu.op.code_cb_9c(cpu_object)
     assert cycle == 8
     assert_registers(cpu_object, H=0b11110111)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -7153,12 +7677,24 @@ def test_code_cb_9d(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, L=0b11110111)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_9e(cpu_object):
     """ RES 3,(HL) - Reset the specified bit """
-    # TODO after memory is implemented
-    pass
+    cpu_object.register.set_hl(0x1010)
+    cpu_object.memory.write_8bit(0x1010, 0b00000000)
+    cycle = cpu.op.code_cb_9e(cpu_object)
+    assert cycle == 16
+    assert_registers(cpu_object, H=0x10, L=0x10)
+    assert_memory(cpu_object)
+
+    cpu_object.memory.write_8bit(0x1010, 0b11111111)
+    cycle = cpu.op.code_cb_9e(cpu_object)
+    assert cycle == 16
+    assert_registers(cpu_object, H=0x10, L=0x10)
+    assert_memory(cpu_object,{0x1010:0b11110111})
 
 
 # noinspection PyShadowingNames
@@ -7174,6 +7710,8 @@ def test_code_cb_9f(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, A=0b11110111)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_a0(cpu_object):
@@ -7187,6 +7725,8 @@ def test_code_cb_a0(cpu_object):
     cycle = cpu.op.code_cb_a0(cpu_object)
     assert cycle == 8
     assert_registers(cpu_object, B=0b11101111)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -7202,6 +7742,8 @@ def test_code_cb_a1(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, C=0b11101111)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_a2(cpu_object):
@@ -7215,6 +7757,8 @@ def test_code_cb_a2(cpu_object):
     cycle = cpu.op.code_cb_a2(cpu_object)
     assert cycle == 8
     assert_registers(cpu_object, D=0b11101111)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -7230,6 +7774,8 @@ def test_code_cb_a3(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, E=0b11101111)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_a4(cpu_object):
@@ -7243,6 +7789,8 @@ def test_code_cb_a4(cpu_object):
     cycle = cpu.op.code_cb_a4(cpu_object)
     assert cycle == 8
     assert_registers(cpu_object, H=0b11101111)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -7258,12 +7806,24 @@ def test_code_cb_a5(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, L=0b11101111)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_a6(cpu_object):
     """ RES 4,(HL) - Reset the specified bit """
-    # TODO after memory is implemented
-    pass
+    cpu_object.register.set_hl(0x1010)
+    cpu_object.memory.write_8bit(0x1010, 0b00000000)
+    cycle = cpu.op.code_cb_a6(cpu_object)
+    assert cycle == 16
+    assert_registers(cpu_object, H=0x10, L=0x10)
+    assert_memory(cpu_object)
+
+    cpu_object.memory.write_8bit(0x1010, 0b11111111)
+    cycle = cpu.op.code_cb_a6(cpu_object)
+    assert cycle == 16
+    assert_registers(cpu_object, H=0x10, L=0x10)
+    assert_memory(cpu_object,{0x1010:0b11101111})
 
 
 # noinspection PyShadowingNames
@@ -7279,6 +7839,8 @@ def test_code_cb_a7(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, A=0b11101111)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_a8(cpu_object):
@@ -7292,6 +7854,8 @@ def test_code_cb_a8(cpu_object):
     cycle = cpu.op.code_cb_a8(cpu_object)
     assert cycle == 8
     assert_registers(cpu_object, B=0b11011111)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -7307,6 +7871,8 @@ def test_code_cb_a9(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, C=0b11011111)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_aa(cpu_object):
@@ -7320,6 +7886,8 @@ def test_code_cb_aa(cpu_object):
     cycle = cpu.op.code_cb_aa(cpu_object)
     assert cycle == 8
     assert_registers(cpu_object, D=0b11011111)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -7335,6 +7903,8 @@ def test_code_cb_ab(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, E=0b11011111)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_ac(cpu_object):
@@ -7348,6 +7918,8 @@ def test_code_cb_ac(cpu_object):
     cycle = cpu.op.code_cb_ac(cpu_object)
     assert cycle == 8
     assert_registers(cpu_object, H=0b11011111)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -7363,12 +7935,24 @@ def test_code_cb_ad(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, L=0b11011111)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_ae(cpu_object):
     """ RES 5,(HL) - Reset the specified bit """
-    # TODO after memory is implemented
-    pass
+    cpu_object.register.set_hl(0x1010)
+    cpu_object.memory.write_8bit(0x1010, 0b00000000)
+    cycle = cpu.op.code_cb_ae(cpu_object)
+    assert cycle == 16
+    assert_registers(cpu_object, H=0x10, L=0x10)
+    assert_memory(cpu_object)
+
+    cpu_object.memory.write_8bit(0x1010, 0b11111111)
+    cycle = cpu.op.code_cb_ae(cpu_object)
+    assert cycle == 16
+    assert_registers(cpu_object, H=0x10, L=0x10)
+    assert_memory(cpu_object,{0x1010:0b11011111})
 
 
 # noinspection PyShadowingNames
@@ -7384,6 +7968,8 @@ def test_code_cb_af(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, A=0b11011111)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_b0(cpu_object):
@@ -7397,6 +7983,8 @@ def test_code_cb_b0(cpu_object):
     cycle = cpu.op.code_cb_b0(cpu_object)
     assert cycle == 8
     assert_registers(cpu_object, B=0b10111111)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -7412,6 +8000,8 @@ def test_code_cb_b1(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, C=0b10111111)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_b2(cpu_object):
@@ -7425,6 +8015,8 @@ def test_code_cb_b2(cpu_object):
     cycle = cpu.op.code_cb_b2(cpu_object)
     assert cycle == 8
     assert_registers(cpu_object, D=0b10111111)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -7440,6 +8032,8 @@ def test_code_cb_b3(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, E=0b10111111)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_b4(cpu_object):
@@ -7453,6 +8047,8 @@ def test_code_cb_b4(cpu_object):
     cycle = cpu.op.code_cb_b4(cpu_object)
     assert cycle == 8
     assert_registers(cpu_object, H=0b10111111)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -7468,12 +8064,24 @@ def test_code_cb_b5(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, L=0b10111111)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_b6(cpu_object):
     """ RES 6,(HL) - Reset the specified bit """
-    # TODO after memory is implemented
-    pass
+    cpu_object.register.set_hl(0x1010)
+    cpu_object.memory.write_8bit(0x1010, 0b00000000)
+    cycle = cpu.op.code_cb_b6(cpu_object)
+    assert cycle == 16
+    assert_registers(cpu_object, H=0x10, L=0x10)
+    assert_memory(cpu_object)
+
+    cpu_object.memory.write_8bit(0x1010, 0b11111111)
+    cycle = cpu.op.code_cb_b6(cpu_object)
+    assert cycle == 16
+    assert_registers(cpu_object, H=0x10, L=0x10)
+    assert_memory(cpu_object,{0x1010:0b10111111})
 
 
 # noinspection PyShadowingNames
@@ -7489,6 +8097,8 @@ def test_code_cb_b7(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, A=0b10111111)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_b8(cpu_object):
@@ -7502,6 +8112,8 @@ def test_code_cb_b8(cpu_object):
     cycle = cpu.op.code_cb_b8(cpu_object)
     assert cycle == 8
     assert_registers(cpu_object, B=0b01111111)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -7517,6 +8129,8 @@ def test_code_cb_b9(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, C=0b01111111)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_ba(cpu_object):
@@ -7530,6 +8144,8 @@ def test_code_cb_ba(cpu_object):
     cycle = cpu.op.code_cb_ba(cpu_object)
     assert cycle == 8
     assert_registers(cpu_object, D=0b01111111)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -7545,6 +8161,8 @@ def test_code_cb_bb(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, E=0b01111111)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_bc(cpu_object):
@@ -7558,6 +8176,8 @@ def test_code_cb_bc(cpu_object):
     cycle = cpu.op.code_cb_bc(cpu_object)
     assert cycle == 8
     assert_registers(cpu_object, H=0b01111111)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -7573,12 +8193,24 @@ def test_code_cb_bd(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, L=0b01111111)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_be(cpu_object):
     """ RES 7,(HL) - Reset the specified bit """
-    # TODO after memory is implemented
-    pass
+    cpu_object.register.set_hl(0x1010)
+    cpu_object.memory.write_8bit(0x1010, 0b00000000)
+    cycle = cpu.op.code_cb_be(cpu_object)
+    assert cycle == 16
+    assert_registers(cpu_object, H=0x10, L=0x10)
+    assert_memory(cpu_object)
+
+    cpu_object.memory.write_8bit(0x1010, 0b11111111)
+    cycle = cpu.op.code_cb_be(cpu_object)
+    assert cycle == 16
+    assert_registers(cpu_object, H=0x10, L=0x10)
+    assert_memory(cpu_object,{0x1010:0b01111111})
 
 
 # noinspection PyShadowingNames
@@ -7594,6 +8226,8 @@ def test_code_cb_bf(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, A=0b01111111)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_c0(cpu_object):
@@ -7607,6 +8241,8 @@ def test_code_cb_c0(cpu_object):
     cycle = cpu.op.code_cb_c0(cpu_object)
     assert cycle == 8
     assert_registers(cpu_object, B=0b11111111)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -7622,6 +8258,8 @@ def test_code_cb_c1(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, C=0b11111111)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_c2(cpu_object):
@@ -7635,6 +8273,8 @@ def test_code_cb_c2(cpu_object):
     cycle = cpu.op.code_cb_c2(cpu_object)
     assert cycle == 8
     assert_registers(cpu_object, D=0b11111111)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -7650,6 +8290,8 @@ def test_code_cb_c3(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, E=0b11111111)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_c4(cpu_object):
@@ -7663,6 +8305,8 @@ def test_code_cb_c4(cpu_object):
     cycle = cpu.op.code_cb_c4(cpu_object)
     assert cycle == 8
     assert_registers(cpu_object, H=0b11111111)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -7678,12 +8322,24 @@ def test_code_cb_c5(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, L=0b11111111)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_c6(cpu_object):
     """ SET 0,(HL) - Set the specified bit """
-    # TODO after memory is implemented
-    pass
+    cpu_object.register.set_hl(0x1010)
+    cpu_object.memory.write_8bit(0x1010, 0b00000000)
+    cycle = cpu.op.code_cb_c6(cpu_object)
+    assert cycle == 16
+    assert_registers(cpu_object, H=0x10, L=0x10)
+    assert_memory(cpu_object, {0x1010: 0b00000001})
+
+    cpu_object.memory.write_8bit(0x1010, 0b11111111)
+    cycle = cpu.op.code_cb_c6(cpu_object)
+    assert cycle == 16
+    assert_registers(cpu_object, H=0x10, L=0x10)
+    assert_memory(cpu_object,{0x1010:0b11111111})
 
 
 # noinspection PyShadowingNames
@@ -7699,6 +8355,8 @@ def test_code_cb_c7(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, A=0b11111111)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_c8(cpu_object):
@@ -7712,6 +8370,8 @@ def test_code_cb_c8(cpu_object):
     cycle = cpu.op.code_cb_c8(cpu_object)
     assert cycle == 8
     assert_registers(cpu_object, B=0b11111111)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -7727,6 +8387,8 @@ def test_code_cb_c9(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, C=0b11111111)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_ca(cpu_object):
@@ -7740,6 +8402,8 @@ def test_code_cb_ca(cpu_object):
     cycle = cpu.op.code_cb_ca(cpu_object)
     assert cycle == 8
     assert_registers(cpu_object, D=0b11111111)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -7755,6 +8419,8 @@ def test_code_cb_cb(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, E=0b11111111)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_cc(cpu_object):
@@ -7768,6 +8434,8 @@ def test_code_cb_cc(cpu_object):
     cycle = cpu.op.code_cb_cc(cpu_object)
     assert cycle == 8
     assert_registers(cpu_object, H=0b11111111)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -7783,12 +8451,24 @@ def test_code_cb_cd(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, L=0b11111111)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_ce(cpu_object):
     """ SET 1,(HL) - Set the specified bit """
-    # TODO after memory is implemented
-    pass
+    cpu_object.register.set_hl(0x1010)
+    cpu_object.memory.write_8bit(0x1010, 0b00000000)
+    cycle = cpu.op.code_cb_ce(cpu_object)
+    assert cycle == 16
+    assert_registers(cpu_object, H=0x10, L=0x10)
+    assert_memory(cpu_object, {0x1010: 0b00000010})
+
+    cpu_object.memory.write_8bit(0x1010, 0b11111111)
+    cycle = cpu.op.code_cb_ce(cpu_object)
+    assert cycle == 16
+    assert_registers(cpu_object, H=0x10, L=0x10)
+    assert_memory(cpu_object,{0x1010:0b11111111})
 
 
 # noinspection PyShadowingNames
@@ -7804,6 +8484,8 @@ def test_code_cb_cf(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, A=0b11111111)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_d0(cpu_object):
@@ -7817,6 +8499,8 @@ def test_code_cb_d0(cpu_object):
     cycle = cpu.op.code_cb_d0(cpu_object)
     assert cycle == 8
     assert_registers(cpu_object, B=0b11111111)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -7832,6 +8516,8 @@ def test_code_cb_d1(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, C=0b11111111)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_d2(cpu_object):
@@ -7845,6 +8531,8 @@ def test_code_cb_d2(cpu_object):
     cycle = cpu.op.code_cb_d2(cpu_object)
     assert cycle == 8
     assert_registers(cpu_object, D=0b11111111)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -7860,6 +8548,8 @@ def test_code_cb_d3(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, E=0b11111111)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_d4(cpu_object):
@@ -7873,6 +8563,8 @@ def test_code_cb_d4(cpu_object):
     cycle = cpu.op.code_cb_d4(cpu_object)
     assert cycle == 8
     assert_registers(cpu_object, H=0b11111111)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -7888,12 +8580,24 @@ def test_code_cb_d5(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, L=0b11111111)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_d6(cpu_object):
     """ SET 2,(HL) - Set the specified bit """
-    # TODO after memory is implemented
-    pass
+    cpu_object.register.set_hl(0x1010)
+    cpu_object.memory.write_8bit(0x1010, 0b00000000)
+    cycle = cpu.op.code_cb_d6(cpu_object)
+    assert cycle == 16
+    assert_registers(cpu_object, H=0x10, L=0x10)
+    assert_memory(cpu_object, {0x1010: 0b00000100})
+
+    cpu_object.memory.write_8bit(0x1010, 0b11111111)
+    cycle = cpu.op.code_cb_d6(cpu_object)
+    assert cycle == 16
+    assert_registers(cpu_object, H=0x10, L=0x10)
+    assert_memory(cpu_object,{0x1010:0b11111111})
 
 
 # noinspection PyShadowingNames
@@ -7909,6 +8613,8 @@ def test_code_cb_d7(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, A=0b11111111)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_d8(cpu_object):
@@ -7922,6 +8628,8 @@ def test_code_cb_d8(cpu_object):
     cycle = cpu.op.code_cb_d8(cpu_object)
     assert cycle == 8
     assert_registers(cpu_object, B=0b11111111)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -7937,6 +8645,8 @@ def test_code_cb_d9(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, C=0b11111111)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_da(cpu_object):
@@ -7950,6 +8660,8 @@ def test_code_cb_da(cpu_object):
     cycle = cpu.op.code_cb_da(cpu_object)
     assert cycle == 8
     assert_registers(cpu_object, D=0b11111111)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -7965,6 +8677,8 @@ def test_code_cb_db(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, E=0b11111111)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_dc(cpu_object):
@@ -7978,6 +8692,8 @@ def test_code_cb_dc(cpu_object):
     cycle = cpu.op.code_cb_dc(cpu_object)
     assert cycle == 8
     assert_registers(cpu_object, H=0b11111111)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -7993,12 +8709,24 @@ def test_code_cb_dd(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, L=0b11111111)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_de(cpu_object):
     """ SET 3,(HL) - Set the specified bit """
-    # TODO after memory is implemented
-    pass
+    cpu_object.register.set_hl(0x1010)
+    cpu_object.memory.write_8bit(0x1010, 0b00000000)
+    cycle = cpu.op.code_cb_de(cpu_object)
+    assert cycle == 16
+    assert_registers(cpu_object, H=0x10, L=0x10)
+    assert_memory(cpu_object, {0x1010: 0b00001000})
+
+    cpu_object.memory.write_8bit(0x1010, 0b11111111)
+    cycle = cpu.op.code_cb_de(cpu_object)
+    assert cycle == 16
+    assert_registers(cpu_object, H=0x10, L=0x10)
+    assert_memory(cpu_object,{0x1010:0b11111111})
 
 
 # noinspection PyShadowingNames
@@ -8014,6 +8742,8 @@ def test_code_cb_df(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, A=0b11111111)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_e0(cpu_object):
@@ -8027,6 +8757,8 @@ def test_code_cb_e0(cpu_object):
     cycle = cpu.op.code_cb_e0(cpu_object)
     assert cycle == 8
     assert_registers(cpu_object, B=0b11111111)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -8042,6 +8774,8 @@ def test_code_cb_e1(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, C=0b11111111)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_e2(cpu_object):
@@ -8055,6 +8789,8 @@ def test_code_cb_e2(cpu_object):
     cycle = cpu.op.code_cb_e2(cpu_object)
     assert cycle == 8
     assert_registers(cpu_object, D=0b11111111)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -8070,6 +8806,8 @@ def test_code_cb_e3(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, E=0b11111111)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_e4(cpu_object):
@@ -8083,6 +8821,8 @@ def test_code_cb_e4(cpu_object):
     cycle = cpu.op.code_cb_e4(cpu_object)
     assert cycle == 8
     assert_registers(cpu_object, H=0b11111111)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -8098,12 +8838,24 @@ def test_code_cb_e5(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, L=0b11111111)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_e6(cpu_object):
     """ SET 4,(HL) - Set the specified bit """
-    # TODO after memory is implemented
-    pass
+    cpu_object.register.set_hl(0x1010)
+    cpu_object.memory.write_8bit(0x1010, 0b00000000)
+    cycle = cpu.op.code_cb_e6(cpu_object)
+    assert cycle == 16
+    assert_registers(cpu_object, H=0x10, L=0x10)
+    assert_memory(cpu_object, {0x1010: 0b00010000})
+
+    cpu_object.memory.write_8bit(0x1010, 0b11111111)
+    cycle = cpu.op.code_cb_e6(cpu_object)
+    assert cycle == 16
+    assert_registers(cpu_object, H=0x10, L=0x10)
+    assert_memory(cpu_object,{0x1010:0b11111111})
 
 
 # noinspection PyShadowingNames
@@ -8119,6 +8871,8 @@ def test_code_cb_e7(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, A=0b11111111)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_e8(cpu_object):
@@ -8132,6 +8886,8 @@ def test_code_cb_e8(cpu_object):
     cycle = cpu.op.code_cb_e8(cpu_object)
     assert cycle == 8
     assert_registers(cpu_object, B=0b11111111)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -8147,6 +8903,8 @@ def test_code_cb_e9(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, C=0b11111111)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_ea(cpu_object):
@@ -8160,6 +8918,8 @@ def test_code_cb_ea(cpu_object):
     cycle = cpu.op.code_cb_ea(cpu_object)
     assert cycle == 8
     assert_registers(cpu_object, D=0b11111111)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -8175,6 +8935,8 @@ def test_code_cb_eb(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, E=0b11111111)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_ec(cpu_object):
@@ -8188,6 +8950,8 @@ def test_code_cb_ec(cpu_object):
     cycle = cpu.op.code_cb_ec(cpu_object)
     assert cycle == 8
     assert_registers(cpu_object, H=0b11111111)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -8203,12 +8967,24 @@ def test_code_cb_ed(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, L=0b11111111)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_ee(cpu_object):
     """ SET 5,(HL) - Set the specified bit """
-    # TODO after memory is implemented
-    pass
+    cpu_object.register.set_hl(0x1010)
+    cpu_object.memory.write_8bit(0x1010, 0b00000000)
+    cycle = cpu.op.code_cb_ee(cpu_object)
+    assert cycle == 16
+    assert_registers(cpu_object, H=0x10, L=0x10)
+    assert_memory(cpu_object, {0x1010: 0b00100000})
+
+    cpu_object.memory.write_8bit(0x1010, 0b11111111)
+    cycle = cpu.op.code_cb_ee(cpu_object)
+    assert cycle == 16
+    assert_registers(cpu_object, H=0x10, L=0x10)
+    assert_memory(cpu_object,{0x1010:0b11111111})
 
 
 # noinspection PyShadowingNames
@@ -8224,6 +9000,8 @@ def test_code_cb_ef(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, A=0b11111111)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_f0(cpu_object):
@@ -8237,6 +9015,8 @@ def test_code_cb_f0(cpu_object):
     cycle = cpu.op.code_cb_f0(cpu_object)
     assert cycle == 8
     assert_registers(cpu_object, B=0b11111111)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -8252,6 +9032,8 @@ def test_code_cb_f1(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, C=0b11111111)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_f2(cpu_object):
@@ -8265,6 +9047,8 @@ def test_code_cb_f2(cpu_object):
     cycle = cpu.op.code_cb_f2(cpu_object)
     assert cycle == 8
     assert_registers(cpu_object, D=0b11111111)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -8280,6 +9064,8 @@ def test_code_cb_f3(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, E=0b11111111)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_f4(cpu_object):
@@ -8293,6 +9079,8 @@ def test_code_cb_f4(cpu_object):
     cycle = cpu.op.code_cb_f4(cpu_object)
     assert cycle == 8
     assert_registers(cpu_object, H=0b11111111)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -8308,12 +9096,24 @@ def test_code_cb_f5(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, L=0b11111111)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_f6(cpu_object):
     """ SET 6,(HL) - Set the specified bit """
-    # TODO after memory is implemented
-    pass
+    cpu_object.register.set_hl(0x1010)
+    cpu_object.memory.write_8bit(0x1010, 0b00000000)
+    cycle = cpu.op.code_cb_f6(cpu_object)
+    assert cycle == 16
+    assert_registers(cpu_object, H=0x10, L=0x10)
+    assert_memory(cpu_object, {0x1010: 0b01000000})
+
+    cpu_object.memory.write_8bit(0x1010, 0b11111111)
+    cycle = cpu.op.code_cb_f6(cpu_object)
+    assert cycle == 16
+    assert_registers(cpu_object, H=0x10, L=0x10)
+    assert_memory(cpu_object,{0x1010:0b11111111})
 
 
 # noinspection PyShadowingNames
@@ -8329,6 +9129,8 @@ def test_code_cb_f7(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, A=0b11111111)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_f8(cpu_object):
@@ -8342,6 +9144,8 @@ def test_code_cb_f8(cpu_object):
     cycle = cpu.op.code_cb_f8(cpu_object)
     assert cycle == 8
     assert_registers(cpu_object, B=0b11111111)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -8357,6 +9161,8 @@ def test_code_cb_f9(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, C=0b11111111)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_fa(cpu_object):
@@ -8370,6 +9176,8 @@ def test_code_cb_fa(cpu_object):
     cycle = cpu.op.code_cb_fa(cpu_object)
     assert cycle == 8
     assert_registers(cpu_object, D=0b11111111)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -8385,6 +9193,8 @@ def test_code_cb_fb(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, E=0b11111111)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_fc(cpu_object):
@@ -8398,6 +9208,8 @@ def test_code_cb_fc(cpu_object):
     cycle = cpu.op.code_cb_fc(cpu_object)
     assert cycle == 8
     assert_registers(cpu_object, H=0b11111111)
+
+    assert_memory(cpu_object)
 
 
 # noinspection PyShadowingNames
@@ -8413,12 +9225,24 @@ def test_code_cb_fd(cpu_object):
     assert cycle == 8
     assert_registers(cpu_object, L=0b11111111)
 
+    assert_memory(cpu_object)
+
 
 # noinspection PyShadowingNames
 def test_code_cb_fe(cpu_object):
     """ SET 7,(HL) - Set the specified bit """
-    # TODO after memory is implemented
-    pass
+    cpu_object.register.set_hl(0x1010)
+    cpu_object.memory.write_8bit(0x1010, 0b00000000)
+    cycle = cpu.op.code_cb_fe(cpu_object)
+    assert cycle == 16
+    assert_registers(cpu_object, H=0x10, L=0x10)
+    assert_memory(cpu_object, {0x1010: 0b10000000})
+
+    cpu_object.memory.write_8bit(0x1010, 0b11111111)
+    cycle = cpu.op.code_cb_fe(cpu_object)
+    assert cycle == 16
+    assert_registers(cpu_object, H=0x10, L=0x10)
+    assert_memory(cpu_object,{0x1010:0b11111111})
 
 
 # noinspection PyShadowingNames
@@ -8433,3 +9257,5 @@ def test_code_cb_ff(cpu_object):
     cycle = cpu.op.code_cb_ff(cpu_object)
     assert cycle == 8
     assert_registers(cpu_object, A=0b11111111)
+
+    assert_memory(cpu_object)

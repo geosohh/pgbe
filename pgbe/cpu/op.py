@@ -2011,10 +2011,12 @@ def code_df(cpu):
 
 
 # OPCODES Ex
-def code_e0(cpu, d8):
+def code_e0(cpu):
     """ LDH (d8),A or LD ($FF00+d8),A - Put A into address ($FF00 + d8) """
-    # TODO after memory is implemented
-    pass
+    d8 = cpu.read_next_byte_from_cartridge()
+    address = (0xFF00 + d8) & 0xFFFF
+    cpu.memory.write_8bit(address,cpu.register.A)
+    return 12
 
 
 def code_e1(cpu):
@@ -2028,18 +2030,21 @@ def code_e1(cpu):
 
 def code_e2(cpu):
     """ LD (C),A or LD ($FF00+C),A - Put A into address ($FF00 + register C) """
-    # TODO after memory is implemented
-    pass
+    address = (0xFF00 + cpu.register.C) & 0xFFFF
+    cpu.memory.write_8bit(address, cpu.register.A)
+    return 8
 
 
-def code_e3():
+# noinspection PyUnusedLocal
+def code_e3(cpu):
     """ Unused opcode """
-    pass
+    return 0
 
 
-def code_e4():
+# noinspection PyUnusedLocal
+def code_e4(cpu):
     """ Unused opcode """
-    pass
+    return 0
 
 
 def code_e5(cpu):
@@ -2049,15 +2054,14 @@ def code_e5(cpu):
     return 16
 
 
-def code_e6(cpu, d8):
+def code_e6(cpu):
     """ AND d8 - A=Logical AND A with d8 """
+    d8 = cpu.read_next_byte_from_cartridge()
     cpu.register.A = cpu.register.A & d8
-
     cpu.register.set_z_flag(cpu.register.A == 0)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(True)
     cpu.register.set_c_flag(False)
-
     return 8
 
 
@@ -2074,19 +2078,17 @@ def code_e8(cpu):
     r8 = cpu.read_next_byte_from_cartridge()
     r8 = convert_unsigned_integer_to_signed(r8)
     result = cpu.register.SP + r8
-
     cpu.register.set_z_flag(False)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(((cpu.register.SP & 0x0F) + (r8 & 0x0F)) > 0x0F)
     cpu.register.set_c_flag(result > 0xFFFF)
-
     cpu.register.SP = result & 0xFFFF
     return 16
 
 
 def code_e9(cpu):
     """ JP (HL) - Jump to address contained in HL """
-    # TODO after memory and cpu is implemented
+    cpu.register.PC = cpu.memory.read_16bit(cpu.register.get_hl())
     return 4
 
 
@@ -2099,30 +2101,32 @@ def code_ea(cpu):
     return 16
 
 
-def code_eb():
+# noinspection PyUnusedLocal
+def code_eb(cpu):
     """ Unused opcode """
-    pass
+    return 0
 
 
-def code_ec():
+# noinspection PyUnusedLocal
+def code_ec(cpu):
     """ Unused opcode """
-    pass
+    return 0
 
 
-def code_ed():
+# noinspection PyUnusedLocal
+def code_ed(cpu):
     """ Unused opcode """
-    pass
+    return 0
 
 
-def code_ee(cpu, d8):
+def code_ee(cpu):
     """ XOR d8 - A=Logical XOR A with d8 """
+    d8 = cpu.read_next_byte_from_cartridge()
     cpu.register.A = cpu.register.A ^ d8
-
     cpu.register.set_z_flag(cpu.register.A == 0)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(False)
     cpu.register.set_c_flag(False)
-
     return 8
 
 
@@ -2135,10 +2139,12 @@ def code_ef(cpu):
 
 
 # OPCODES Fx
-def code_f0(cpu, d8):
+def code_f0(cpu):
     """ LDH A,(d8) or LD A,($FF00+d8) - Put value at address ($FF00 + d8) into A """
-    # TODO after memory is implemented
-    pass
+    d8 = cpu.read_next_byte_from_cartridge()
+    address = (0xFF00 + d8) & 0xFFFF
+    cpu.register.A = cpu.memory.read_8bit(address)
+    return 12
 
 
 def code_f1(cpu):
@@ -2152,8 +2158,9 @@ def code_f1(cpu):
 
 def code_f2(cpu):
     """ LD A,(C) or LD A,($FF00+C) - Put value at address ($FF00 + register C) into A """
-    # TODO after memory is implemented
-    pass
+    address = (0xFF00 + cpu.register.C) & 0xFFFF
+    cpu.register.A = cpu.memory.read_8bit(address)
+    return 8
 
 
 def code_f3(cpu):
@@ -2162,9 +2169,10 @@ def code_f3(cpu):
     pass
 
 
-def code_f4():
+# noinspection PyUnusedLocal
+def code_f4(cpu):
     """ Unused opcode """
-    pass
+    return 0
 
 
 def code_f5(cpu):
@@ -2174,15 +2182,14 @@ def code_f5(cpu):
     return 16
 
 
-def code_f6(cpu, d8):
+def code_f6(cpu):
     """ OR d8 - A=Logical OR A with d8 """
+    d8 = cpu.read_next_byte_from_cartridge()
     cpu.register.A = cpu.register.A | d8
-
     cpu.register.set_z_flag(cpu.register.A == 0)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(False)
     cpu.register.set_c_flag(False)
-
     return 8
 
 
@@ -2199,12 +2206,10 @@ def code_f8(cpu):
     r8 = cpu.read_next_byte_from_cartridge()
     r8 = convert_unsigned_integer_to_signed(r8)
     result = cpu.register.SP + r8
-
     cpu.register.set_z_flag(False)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(((cpu.register.SP & 0x0F) + (r8 & 0x0F)) > 0x0F)
     cpu.register.set_c_flag(result > 0xFFFF)
-
     cpu.register.set_hl(result & 0xFFFF)
     return 12
 
@@ -2215,11 +2220,13 @@ def code_f9(cpu):
     return 8
 
 
-def code_fa(cpu, a16):
-    """ LD A,(a16) - Load reg with the value at the address in a16 (least significant byte first) """
-    a16 = cpu.util.convert_little_endian_to_big_endian(a16)
-    # TODO after memory is implemented
-    pass
+def code_fa(cpu):
+    """ LD A,(a16) - Load reg with the value at the address in a16 """
+    lsb = cpu.read_next_byte_from_cartridge()
+    msb = cpu.read_next_byte_from_cartridge()
+    a16 = get_big_endian_value(msb, lsb)
+    cpu.register.A = cpu.memory.read_8bit(a16)
+    return 16
 
 
 def code_fb(cpu):
@@ -2228,14 +2235,16 @@ def code_fb(cpu):
     pass
 
 
-def code_fc():
+# noinspection PyUnusedLocal
+def code_fc(cpu):
     """ Unused opcode """
-    pass
+    return 0
 
 
-def code_fd():
+# noinspection PyUnusedLocal
+def code_fd(cpu):
     """ Unused opcode """
-    pass
+    return 0
 
 
 def code_fe(cpu):
@@ -2328,13 +2337,14 @@ def code_cb_05(cpu):
 
 def code_cb_06(cpu):
     """ RLC (HL) - Copy (value at address HL) bit 7 to Carry flag, then rotate (value at address HL) left """
-    # TODO after memory is implemented
-    # bit_7 = cpu.register.B >> 7
-    # cpu.register.B = ((cpu.register.B << 1) + bit_7) & 0xFF
-    # cpu.register.set_z_flag(cpu.register.B == 0)
+    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    bit_7 = value >> 7
+    value = ((value << 1) + bit_7) & 0xFF
+    cpu.register.set_z_flag(value == 0)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(False)
     cpu.register.set_c_flag(bit_7)
+    cpu.memory.write_8bit(cpu.register.get_hl(),value)
     return 16
 
 
@@ -2412,13 +2422,14 @@ def code_cb_0d(cpu):
 
 def code_cb_0e(cpu):
     """ RRC (HL) - Copy bit 0 to Carry flag, then rotate right """
-    # TODO after memory is implemented
-    # bit_0 = cpu.register.B & 0b00000001
-    # cpu.register.B = ((bit_0 << 7) + (cpu.register.B >> 1)) & 0xFF
-    # cpu.register.set_z_flag(cpu.register.B == 0)
+    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    bit_0 = value & 0b00000001
+    value = ((bit_0 << 7) + (value >> 1)) & 0xFF
+    cpu.register.set_z_flag(value == 0)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(False)
     cpu.register.set_c_flag(bit_0)
+    cpu.memory.write_8bit(cpu.register.get_hl(),value)
     return 16
 
 
@@ -2497,13 +2508,14 @@ def code_cb_15(cpu):
 
 def code_cb_16(cpu):
     """ RL (HL) - Copy bit 7 to temp, replace bit 7 w/ Carry flag, rotate left, copy temp to Carry flag """
-    # TODO after memory is implemented
-    # bit_7 = cpu.register.B >> 7
-    # cpu.register.B = ((cpu.register.B << 1) + cpu.register.get_c_flag()) & 0xFF
-    # cpu.register.set_z_flag(cpu.register.B == 0)
+    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    bit_7 = value >> 7
+    value = ((value << 1) + cpu.register.get_c_flag()) & 0xFF
+    cpu.register.set_z_flag(value == 0)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(False)
     cpu.register.set_c_flag(bit_7)
+    cpu.memory.write_8bit(cpu.register.get_hl(),value)
     return 16
 
 
@@ -2581,13 +2593,14 @@ def code_cb_1d(cpu):
 
 def code_cb_1e(cpu):
     """ RR (HL) - Copy (HL) bit 0 to temp, replace bit 0 w/ Carry flag, rotate right, copy temp to Carry flag """
-    # TODO after memory is implemented
-    # bit_0 = cpu.register.B & 0b00000001
-    # cpu.register.B = ((cpu.register.get_c_flag() << 7) + (cpu.register.B >> 1)) & 0xFF
-    # cpu.register.set_z_flag(cpu.register.B == 0)
+    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    bit_0 = value & 0b00000001
+    value = ((cpu.register.get_c_flag() << 7) + (value >> 1)) & 0xFF
+    cpu.register.set_z_flag(value == 0)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(False)
     cpu.register.set_c_flag(bit_0)
+    cpu.memory.write_8bit(cpu.register.get_hl(),value)
     return 16
 
 
@@ -2666,13 +2679,14 @@ def code_cb_25(cpu):
 
 def code_cb_26(cpu):
     """ SLA (HL) - Copy bit 7 to temp, replace bit 7 w/ zero, rotate left, copy temp to Carry flag """
-    # TODO after memory is implemented
-    # bit_7 = cpu.register.B >> 7
-    # cpu.register.B = (cpu.register.B << 1) & 0xFF
-    # cpu.register.set_z_flag(cpu.register.B == 0)
+    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    bit_7 = value >> 7
+    value = (value << 1) & 0xFF
+    cpu.register.set_z_flag(value == 0)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(False)
     cpu.register.set_c_flag(bit_7)
+    cpu.memory.write_8bit(cpu.register.get_hl(), value)
     return 16
 
 
@@ -2761,14 +2775,15 @@ def code_cb_2d(cpu):
 
 def code_cb_2e(cpu):
     """ SRA (HL) - Copy bit 7 to temp, copy bit 0 to Carry flag, shift right, replace new bit 7 with temp """
-    # TODO after memory is implemented
-    # bit_7 = cpu.register.B >> 7
-    # bit_0 = cpu.register.B & 0b00000001
-    # cpu.register.B = ((bit_7 << 7) + (cpu.register.B >> 1)) & 0xFF
-    # cpu.register.set_z_flag(cpu.register.B == 0)
+    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    bit_7 = value >> 7
+    bit_0 = value & 0b00000001
+    value = ((bit_7 << 7) + (value >> 1)) & 0xFF
+    cpu.register.set_z_flag(value == 0)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(False)
     cpu.register.set_c_flag(bit_0)
+    cpu.memory.write_8bit(cpu.register.get_hl(), value)
     return 16
 
 
@@ -2859,13 +2874,15 @@ def code_cb_35(cpu):
 
 def code_cb_36(cpu):
     """ SWAP (HL) - Swap upper and lower nibbles (nibble = 4 bits) """
-    # lower_nibble = cpu.register.C & 0x0F
-    # upper_nibble = (cpu.register.C >> 4) & 0x0F
-    # cpu.register.C = (lower_nibble << 4) | upper_nibble
-    # cpu.register.set_z_flag(cpu.register.C == 0)
+    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    lower_nibble = value & 0x0F
+    upper_nibble = (value >> 4) & 0x0F
+    value = (lower_nibble << 4) | upper_nibble
+    cpu.register.set_z_flag(value == 0)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(False)
     cpu.register.set_c_flag(False)
+    cpu.memory.write_8bit(cpu.register.get_hl(), value)
     return 16
 
 
@@ -2949,13 +2966,14 @@ def code_cb_3d(cpu):
 
 def code_cb_3e(cpu):
     """ SRL (HL) - Copy bit 7 to temp, copy bit 0 to Carry flag, shift right, replace new bit 7 with temp """
-    # TODO after memory is implemented
-    # bit_0 = cpu.register.B & 0b00000001
-    # cpu.register.B = (cpu.register.B >> 1) & 0xFF
-    # cpu.register.set_z_flag(cpu.register.B == 0)
+    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    bit_0 = value & 0b00000001
+    value = (value >> 1) & 0xFF
+    cpu.register.set_z_flag(value == 0)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(False)
     cpu.register.set_c_flag(bit_0)
+    cpu.memory.write_8bit(cpu.register.get_hl(), value)
     return 16
 
 
@@ -3027,11 +3045,12 @@ def code_cb_45(cpu):
 
 def code_cb_46(cpu):
     """ BIT 0,(HL) - Test what is the value of bit 0 """
-    # TODO after memory is implemented
-    # bit_to_check = cpu.register.B & 0b00000001
+    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    bit_to_check = value & 0b00000001
     cpu.register.set_z_flag(bit_to_check)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(True)
+    cpu.memory.write_8bit(cpu.register.get_hl(), value)
     return 16
 
 
@@ -3100,11 +3119,12 @@ def code_cb_4d(cpu):
 
 def code_cb_4e(cpu):
     """ BIT 1,(HL) - Test what is the value of bit 1 """
-    # TODO after memory is implemented
-    # bit_to_check = (cpu.register.B & 0b00000010) >> 1
+    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    bit_to_check = (value & 0b00000010) >> 1
     cpu.register.set_z_flag(bit_to_check)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(True)
+    cpu.memory.write_8bit(cpu.register.get_hl(), value)
     return 16
 
 
@@ -3174,11 +3194,12 @@ def code_cb_55(cpu):
 
 def code_cb_56(cpu):
     """ BIT 2,(HL) - Test what is the value of bit 2 """
-    # TODO after memory is implemented
-    # bit_to_check = (cpu.register.B & 0b00000100) >> 2
+    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    bit_to_check = (value & 0b00000100) >> 2
     cpu.register.set_z_flag(bit_to_check)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(True)
+    cpu.memory.write_8bit(cpu.register.get_hl(), value)
     return 16
 
 
@@ -3247,11 +3268,12 @@ def code_cb_5d(cpu):
 
 def code_cb_5e(cpu):
     """ BIT 3,(HL) - Test what is the value of bit 3 """
-    # TODO after memory is implemented
-    # bit_to_check = (cpu.register.B & 0b00001000) >> 3
+    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    bit_to_check = (value & 0b00001000) >> 3
     cpu.register.set_z_flag(bit_to_check)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(True)
+    cpu.memory.write_8bit(cpu.register.get_hl(), value)
     return 16
 
 
@@ -3321,11 +3343,12 @@ def code_cb_65(cpu):
 
 def code_cb_66(cpu):
     """ BIT 4,(HL) - Test what is the value of bit 4 """
-    # TODO after memory is implemented
-    # bit_to_check = (cpu.register.B & 0b00010000) >> 4
+    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    bit_to_check = (value & 0b00010000) >> 4
     cpu.register.set_z_flag(bit_to_check)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(True)
+    cpu.memory.write_8bit(cpu.register.get_hl(), value)
     return 16
 
 
@@ -3394,11 +3417,12 @@ def code_cb_6d(cpu):
 
 def code_cb_6e(cpu):
     """ BIT 5,(HL) - Test what is the value of bit 5 """
-    # TODO after memory is implemented
-    # bit_to_check = (cpu.register.A & 0b00100000) >> 5
+    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    bit_to_check = (value & 0b00100000) >> 5
     cpu.register.set_z_flag(bit_to_check)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(True)
+    cpu.memory.write_8bit(cpu.register.get_hl(), value)
     return 16
 
 
@@ -3468,11 +3492,12 @@ def code_cb_75(cpu):
 
 def code_cb_76(cpu):
     """ BIT 6,(HL) - Test what is the value of bit 6 """
-    # TODO after memory is implemented
-    # bit_to_check = (cpu.register.A & 0b01000000) >> 6
+    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    bit_to_check = (value & 0b01000000) >> 6
     cpu.register.set_z_flag(bit_to_check)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(True)
+    cpu.memory.write_8bit(cpu.register.get_hl(), value)
     return 16
 
 
@@ -3541,11 +3566,12 @@ def code_cb_7d(cpu):
 
 def code_cb_7e(cpu):
     """ BIT 7,(HL) - Test what is the value of bit 7 """
-    # TODO after memory is implemented
-    # bit_to_check = (cpu.register.A & 0b10000000) >> 7
+    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    bit_to_check = (value & 0b10000000) >> 7
     cpu.register.set_z_flag(bit_to_check)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(True)
+    cpu.memory.write_8bit(cpu.register.get_hl(), value)
     return 16
 
 
@@ -3597,8 +3623,9 @@ def code_cb_85(cpu):
 
 def code_cb_86(cpu):
     """ RES 0,(HL) - Reset the specified bit """
-    # TODO after memory is implemented
-    # cpu.register.B = cpu.register.B & 0b11111110
+    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    value = value & 0b11111110
+    cpu.memory.write_8bit(cpu.register.get_hl(), value)
     return 16
 
 
@@ -3646,8 +3673,9 @@ def code_cb_8d(cpu):
 
 def code_cb_8e(cpu):
     """ RES 1,(HL) - Reset the specified bit """
-    # TODO after memory is implemented
-    # cpu.register.B = cpu.register.B & 0b11111101
+    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    value = value & 0b11111101
+    cpu.memory.write_8bit(cpu.register.get_hl(), value)
     return 16
 
 
@@ -3696,8 +3724,9 @@ def code_cb_95(cpu):
 
 def code_cb_96(cpu):
     """ RES 2,(HL) - Reset the specified bit """
-    # TODO after memory is implemented
-    # cpu.register.B = cpu.register.B & 0b11111011
+    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    value = value & 0b11111011
+    cpu.memory.write_8bit(cpu.register.get_hl(), value)
     return 16
 
 
@@ -3745,8 +3774,9 @@ def code_cb_9d(cpu):
 
 def code_cb_9e(cpu):
     """ RES 3,(HL) - Reset the specified bit """
-    # TODO after memory is implemented
-    # cpu.register.B = cpu.register.B & 0b11110111
+    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    value = value & 0b11110111
+    cpu.memory.write_8bit(cpu.register.get_hl(), value)
     return 16
 
 
@@ -3795,8 +3825,9 @@ def code_cb_a5(cpu):
 
 def code_cb_a6(cpu):
     """ RES 4,(HL) - Reset the specified bit """
-    # TODO after memory is implemented
-    # cpu.register.B = cpu.register.B & 0b11101111
+    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    value = value & 0b11101111
+    cpu.memory.write_8bit(cpu.register.get_hl(), value)
     return 16
 
 
@@ -3844,8 +3875,9 @@ def code_cb_ad(cpu):
 
 def code_cb_ae(cpu):
     """ RES 5,(HL) - Reset the specified bit """
-    # TODO after memory is implemented
-    # cpu.register.B = cpu.register.B & 0b11011111
+    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    value = value & 0b11011111
+    cpu.memory.write_8bit(cpu.register.get_hl(), value)
     return 16
 
 
@@ -3894,8 +3926,9 @@ def code_cb_b5(cpu):
 
 def code_cb_b6(cpu):
     """ RES 6,(HL) - Reset the specified bit """
-    # TODO after memory is implemented
-    # cpu.register.B = cpu.register.B & 0b10111111
+    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    value = value & 0b10111111
+    cpu.memory.write_8bit(cpu.register.get_hl(), value)
     return 16
 
 
@@ -3943,8 +3976,9 @@ def code_cb_bd(cpu):
 
 def code_cb_be(cpu):
     """ RES 7,(HL) - Reset the specified bit """
-    # TODO after memory is implemented
-    # cpu.register.B = cpu.register.B & 0b01111111
+    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    value = value & 0b01111111
+    cpu.memory.write_8bit(cpu.register.get_hl(), value)
     return 16
 
 
@@ -3993,8 +4027,9 @@ def code_cb_c5(cpu):
 
 def code_cb_c6(cpu):
     """ SET 0,(HL) - Set the specified bit """
-    # TODO after memory is implemented
-    # cpu.register.B = cpu.register.B | 0b00000001
+    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    value = value | 0b00000001
+    cpu.memory.write_8bit(cpu.register.get_hl(), value)
     return 16
 
 
@@ -4042,8 +4077,9 @@ def code_cb_cd(cpu):
 
 def code_cb_ce(cpu):
     """ SET 1,(HL) - Set the specified bit """
-    # TODO after memory is implemented
-    # cpu.register.B = cpu.register.B | 0b00000010
+    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    value = value | 0b00000010
+    cpu.memory.write_8bit(cpu.register.get_hl(), value)
     return 16
 
 
@@ -4092,8 +4128,9 @@ def code_cb_d5(cpu):
 
 def code_cb_d6(cpu):
     """ SET 2,(HL) - Set the specified bit """
-    # TODO after memory is implemented
-    # cpu.register.B = cpu.register.B | 0b00000100
+    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    value = value | 0b00000100
+    cpu.memory.write_8bit(cpu.register.get_hl(), value)
     return 16
 
 
@@ -4141,8 +4178,9 @@ def code_cb_dd(cpu):
 
 def code_cb_de(cpu):
     """ SET 3,(HL) - Set the specified bit """
-    # TODO after memory is implemented
-    # cpu.register.B = cpu.register.B | 0b00001000
+    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    value = value | 0b00001000
+    cpu.memory.write_8bit(cpu.register.get_hl(), value)
     return 16
 
 
@@ -4191,8 +4229,9 @@ def code_cb_e5(cpu):
 
 def code_cb_e6(cpu):
     """ SET 4,(HL) - Set the specified bit """
-    # TODO after memory is implemented
-    # cpu.register.B = cpu.register.B | 0b00010000
+    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    value = value | 0b00010000
+    cpu.memory.write_8bit(cpu.register.get_hl(), value)
     return 16
 
 
@@ -4240,8 +4279,9 @@ def code_cb_ed(cpu):
 
 def code_cb_ee(cpu):
     """ SET 5,(HL) - Set the specified bit """
-    # TODO after memory is implemented
-    # cpu.register.B = cpu.register.B | 0b00100000
+    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    value = value | 0b00100000
+    cpu.memory.write_8bit(cpu.register.get_hl(), value)
     return 16
 
 
@@ -4290,8 +4330,9 @@ def code_cb_f5(cpu):
 
 def code_cb_f6(cpu):
     """ SET 6,(HL) - Set the specified bit """
-    # TODO after memory is implemented
-    # cpu.register.B = cpu.register.B | 0b01000000
+    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    value = value | 0b01000000
+    cpu.memory.write_8bit(cpu.register.get_hl(), value)
     return 16
 
 
@@ -4339,8 +4380,9 @@ def code_cb_fd(cpu):
 
 def code_cb_fe(cpu):
     """ SET 7,(HL) - Set the specified bit """
-    # TODO after memory is implemented
-    # cpu.register.B = cpu.register.B | 0b10000000
+    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    value = value | 0b10000000
+    cpu.memory.write_8bit(cpu.register.get_hl(), value)
     return 16
 
 

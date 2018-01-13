@@ -1,14 +1,5 @@
 """
 Memory
-
-As in the cartridge, data in memory is also stored in little endian format (i.e. least significant byte first)
-
-See:
-- https://realboyemulator.files.wordpress.com/2013/01/gbcpuman.pdf - page 8
-- http://gameboy.mongenel.com/dmg/asmmemmap.html
-- http://gameboy.mongenel.com/dmg/lesson5.html
-- https://realboyemulator.wordpress.com/2013/01/02/the-nintendo-game-boy-part-3/
-- https://stackoverflow.com/questions/21639597/z80-register-endianness
 """
 
 
@@ -18,7 +9,20 @@ import array
 class Memory:
     """
     Memory
-    TODO: description
+
+    From 0x0000 to 0xFFFF (64kB), stored as a binary array.
+
+    As in the cartridge, data in memory is also stored in little endian format (i.e. least significant byte first).
+
+    The addresses E000-FE00 are an "echo" (i.e. copy) of the internal RAM (C000-DE00). Bytes written in one will
+    appear in the other as well.
+
+    See:
+    - https://realboyemulator.files.wordpress.com/2013/01/gbcpuman.pdf - page 8
+    - http://gameboy.mongenel.com/dmg/asmmemmap.html
+    - http://gameboy.mongenel.com/dmg/lesson5.html
+    - https://realboyemulator.wordpress.com/2013/01/02/the-nintendo-game-boy-part-3/
+    - https://stackoverflow.com/questions/21639597/z80-register-endianness
     """
     def __init__(self):
         self._memory_map = self._generate_memory_map()
@@ -71,29 +75,24 @@ class Memory:
         """
         return self._memory_map[address]
 
-    @staticmethod
-    def print_memory_map():
+    def read_16bit(self,address):
+        """
+        Reads 16-bit value from the given address in the memory. Least significant byte in address, most significant
+        byte in address+1.
+        :param address: Memory address to read data from
+        :return: 16-bit value at the given memory address
+        """
+        lsb = self._memory_map[address]
+        msb = self._memory_map[address+1]
+        return (msb << 8) | lsb
+
+    def print_memory_map(self):
         """
         Prints the current memory map to console
         """
-        for i in range(0, len(memory._memory_map), 16):
+        for i in range(0, len(self._memory_map), 16):
             mem_str = "0x{:04X} | ".format(i)
             for j in range(0, 16):
-                mem_str += "{:02X} ".format((memory._memory_map[i + j]))
+                mem_str += "{:02X} ".format((self._memory_map[i + j]))
             mem_str += "|"
             print(mem_str)
-
-
-if __name__ == '__main__':
-    memory = Memory()
-    print("Memory length =", len(memory._memory_map), "bytes")
-
-    memory._memory_map[0xFF92] = 0xAA
-    memory._memory_map[0xFF94] = 0xBB
-    memory._memory_map[0xFF96] = 0xCC
-    memory._memory_map[0xFF98] = 0xDD
-    memory._memory_map[0xFF9a] = 0xEE
-    memory._memory_map[0xFF9c] = 0xFF
-
-    memory.print_memory_map()
-    print(str(memory._memory_map[10:15]))
