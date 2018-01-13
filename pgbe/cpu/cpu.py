@@ -23,7 +23,7 @@ class CPU:
 
         while(True):
             opcode = self.read_next_byte_from_cartridge()
-            print("Executing", "{:02X} ".format(opcode))
+            print("Executing", "0x{:04X}: {:02X} ".format(self.register.PC-1,opcode))
             cpu.op.execute(self,opcode)
 
     def read_next_byte_from_cartridge(self):

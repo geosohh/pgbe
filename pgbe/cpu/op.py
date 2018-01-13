@@ -186,8 +186,9 @@ def code_0d(cpu):
     return 4
 
 
-def code_0e(cpu, d8):
+def code_0e(cpu):
     """ LD C,d8 """
+    d8 = cpu.read_next_byte_from_cartridge()
     cpu.register.C = d8
     return 8
 
@@ -253,8 +254,9 @@ def code_15(cpu):
     return 4
 
 
-def code_16(cpu, d8):
+def code_16(cpu):
     """ LD D,d8 """
+    d8 = cpu.read_next_byte_from_cartridge()
     cpu.register.D = d8
     return 8
 
@@ -281,11 +283,9 @@ def code_18(cpu):
 def code_19(cpu):
     """ ADD HL,DE - HL=HL+DE """
     result = cpu.register.get_hl() + cpu.register.get_de()
-
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(((cpu.register.get_hl() & 0x0FFF) + (cpu.register.get_de() & 0x0FFF)) > 0x0FFF)
     cpu.register.set_c_flag(result > 0xFFFF)
-
     cpu.register.set_hl(result & 0xFFFF)
     return 8
 
@@ -321,8 +321,9 @@ def code_1d(cpu):
     return 4
 
 
-def code_1e(cpu, d8):
+def code_1e(cpu):
     """ LD E,d8 """
+    d8 = cpu.read_next_byte_from_cartridge()
     cpu.register.E = d8
     return 8
 
@@ -389,8 +390,9 @@ def code_25(cpu):
     return 4
 
 
-def code_26(cpu, d8):
+def code_26(cpu):
     """ LD H,d8 """
+    d8 = cpu.read_next_byte_from_cartridge()
     cpu.register.H = d8
     return 8
 
@@ -471,8 +473,9 @@ def code_2d(cpu):
     return 4
 
 
-def code_2e(cpu, d8):
+def code_2e(cpu):
     """ LD L,d8 """
+    d8 = cpu.read_next_byte_from_cartridge()
     cpu.register.L = d8
     return 8
 
@@ -606,8 +609,9 @@ def code_3d(cpu):
     return 4
 
 
-def code_3e(cpu, d8):
+def code_3e(cpu):
     """ LD A,d8 """
+    d8 = cpu.read_next_byte_from_cartridge()
     cpu.register.A = d8
     return 8
 
@@ -659,8 +663,8 @@ def code_45(cpu):
 
 def code_46(cpu):
     """ LD B,(HL) - Load reg with the value at the address in HL """
-    # TODO after memory is implemented
-    pass
+    cpu.register.B = cpu.memory.read_8bit(cpu.register.get_hl())
+    return 8
 
 
 def code_47(cpu):
@@ -707,8 +711,8 @@ def code_4d(cpu):
 
 def code_4e(cpu):
     """ LD C,(HL) - Load reg with the value at the address in HL """
-    # TODO after memory is implemented
-    pass
+    cpu.register.C = cpu.memory.read_8bit(cpu.register.get_hl())
+    return 8
 
 
 def code_4f(cpu):
@@ -730,9 +734,9 @@ def code_51(cpu):
     return 4
 
 
+# noinspection PyUnusedLocal
 def code_52(cpu):
-    """ LD D,D (might be a newbie question but... why?) """
-    cpu.register.D = cpu.register.D
+    """ LD D,D (...why?) """
     return 4
 
 
@@ -756,8 +760,8 @@ def code_55(cpu):
 
 def code_56(cpu):
     """ LD D,(HL) - Load reg with the value at the address in HL """
-    # TODO after memory is implemented
-    pass
+    cpu.register.D = cpu.memory.read_8bit(cpu.register.get_hl())
+    return 8
 
 
 def code_57(cpu):
@@ -784,9 +788,9 @@ def code_5a(cpu):
     return 4
 
 
+# noinspection PyUnusedLocal
 def code_5b(cpu):
-    """ LD E,E (might be a newbie question but... why?) """
-    cpu.register.E = cpu.register.E
+    """ LD E,E (...why?) """
     return 4
 
 
@@ -804,8 +808,8 @@ def code_5d(cpu):
 
 def code_5e(cpu):
     """ LD E,(HL) - Load reg with the value at the address in HL """
-    # TODO after memory is implemented
-    pass
+    cpu.register.E = cpu.memory.read_8bit(cpu.register.get_hl())
+    return 8
 
 
 def code_5f(cpu):
@@ -839,9 +843,9 @@ def code_63(cpu):
     return 4
 
 
+# noinspection PyUnusedLocal
 def code_64(cpu):
-    """ LD H,H (might be a newbie question but... why?) """
-    cpu.register.H = cpu.register.H
+    """ LD H,H (...why?) """
     return 4
 
 
@@ -853,8 +857,8 @@ def code_65(cpu):
 
 def code_66(cpu):
     """ LD H,(HL) - Load reg with the value at the address in HL """
-    # TODO after memory is implemented
-    pass
+    cpu.register.H = cpu.memory.read_8bit(cpu.register.get_hl())
+    return 8
 
 
 def code_67(cpu):
@@ -893,16 +897,16 @@ def code_6c(cpu):
     return 4
 
 
+# noinspection PyUnusedLocal
 def code_6d(cpu):
-    """ LD L,L (might be a newbie question but... why?) """
-    cpu.register.L = cpu.register.L
+    """ LD L,L (...why?) """
     return 4
 
 
 def code_6e(cpu):
     """ LD L,(HL) - Load reg with the value at the address in HL """
-    # TODO after memory is implemented
-    pass
+    cpu.register.L = cpu.memory.read_8bit(cpu.register.get_hl())
+    return 8
 
 
 def code_6f(cpu):
@@ -914,38 +918,38 @@ def code_6f(cpu):
 # OPCODES 7x
 def code_70(cpu):
     """ LD (HL),B - Stores reg at the address in HL """
-    # TODO after memory is implemented
-    pass
+    cpu.memory.write_8bit(cpu.register.get_hl(), cpu.register.B)
+    return 8
 
 
 def code_71(cpu):
     """ LD (HL),C - Stores reg at the address in HL """
-    # TODO after memory is implemented
-    pass
+    cpu.memory.write_8bit(cpu.register.get_hl(), cpu.register.C)
+    return 8
 
 
 def code_72(cpu):
     """ LD (HL),D - Stores reg at the address in HL """
-    # TODO after memory is implemented
-    pass
+    cpu.memory.write_8bit(cpu.register.get_hl(), cpu.register.D)
+    return 8
 
 
 def code_73(cpu):
     """ LD (HL),E - Stores reg at the address in HL """
-    # TODO after memory is implemented
-    pass
+    cpu.memory.write_8bit(cpu.register.get_hl(), cpu.register.E)
+    return 8
 
 
 def code_74(cpu):
     """ LD (HL),H - Stores reg at the address in HL """
-    # TODO after memory is implemented
-    pass
+    cpu.memory.write_8bit(cpu.register.get_hl(), cpu.register.H)
+    return 8
 
 
 def code_75(cpu):
     """ LD (HL),L - Stores reg at the address in HL """
-    # TODO after memory is implemented
-    pass
+    cpu.memory.write_8bit(cpu.register.get_hl(), cpu.register.L)
+    return 8
 
 
 def code_76(cpu):
@@ -959,8 +963,8 @@ def code_76(cpu):
 
 def code_77(cpu):
     """ LD (HL),A - Stores reg at the address in HL """
-    # TODO after memory is implemented
-    pass
+    cpu.memory.write_8bit(cpu.register.get_hl(), cpu.register.A)
+    return 8
 
 
 def code_78(cpu):
@@ -1001,13 +1005,13 @@ def code_7d(cpu):
 
 def code_7e(cpu):
     """ LD A,(HL) - Load reg with the value at the address in HL """
-    # TODO after memory is implemented
-    pass
+    cpu.register.A = cpu.memory.read_8bit(cpu.register.get_hl())
+    return 8
 
 
+# noinspection PyUnusedLocal
 def code_7f(cpu):
-    """ LD A,A (might be a newbie question but... why?) """
-    cpu.register.A = cpu.register.A
+    """ LD A,A (...why?) """
     return 4
 
 
@@ -1015,12 +1019,10 @@ def code_7f(cpu):
 def code_80(cpu):
     """ ADD A,B - A=A+B """
     result = cpu.register.A + cpu.register.B
-
     cpu.register.set_z_flag((result & 0xFF) == 0)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(((cpu.register.A & 0x0F) + (cpu.register.B & 0x0F)) > 0x0F)
     cpu.register.set_c_flag(result > 0xFF)
-
     cpu.register.A = result & 0xFF
     return 4
 
@@ -1028,12 +1030,10 @@ def code_80(cpu):
 def code_81(cpu):
     """ ADD A,C - A=A+C """
     result = cpu.register.A + cpu.register.C
-
     cpu.register.set_z_flag((result & 0xFF) == 0)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(((cpu.register.A & 0x0F) + (cpu.register.C & 0x0F)) > 0x0F)
     cpu.register.set_c_flag(result > 0xFF)
-
     cpu.register.A = result & 0xFF
     return 4
 
@@ -1041,12 +1041,10 @@ def code_81(cpu):
 def code_82(cpu):
     """ ADD A,D - A=A+D """
     result = cpu.register.A + cpu.register.D
-
     cpu.register.set_z_flag((result & 0xFF) == 0)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(((cpu.register.A & 0x0F) + (cpu.register.D & 0x0F)) > 0x0F)
     cpu.register.set_c_flag(result > 0xFF)
-
     cpu.register.A = result & 0xFF
     return 4
 
@@ -1054,12 +1052,10 @@ def code_82(cpu):
 def code_83(cpu):
     """ ADD A,E - A=A+E """
     result = cpu.register.A + cpu.register.E
-
     cpu.register.set_z_flag((result & 0xFF) == 0)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(((cpu.register.A & 0x0F) + (cpu.register.E & 0x0F)) > 0x0F)
     cpu.register.set_c_flag(result > 0xFF)
-
     cpu.register.A = result & 0xFF
     return 4
 
@@ -1067,12 +1063,10 @@ def code_83(cpu):
 def code_84(cpu):
     """ ADD A,H - A=A+H """
     result = cpu.register.A + cpu.register.H
-
     cpu.register.set_z_flag((result & 0xFF) == 0)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(((cpu.register.A & 0x0F) + (cpu.register.H & 0x0F)) > 0x0F)
     cpu.register.set_c_flag(result > 0xFF)
-
     cpu.register.A = result & 0xFF
     return 4
 
@@ -1080,26 +1074,22 @@ def code_84(cpu):
 def code_85(cpu):
     """ ADD A,L - A=A+L """
     result = cpu.register.A + cpu.register.L
-
     cpu.register.set_z_flag((result & 0xFF) == 0)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(((cpu.register.A & 0x0F) + (cpu.register.L & 0x0F)) > 0x0F)
     cpu.register.set_c_flag(result > 0xFF)
-
     cpu.register.A = result & 0xFF
     return 4
 
 
 def code_86(cpu):
     """ ADD A,(HL) - A=A+(value at address HL) """
-    # TODO after memory is implemented
-    # result = cpu.register.A + cpu.register.C
-
+    mem_hl = cpu.memory.read_8bit(cpu.register.get_hl())
+    result = cpu.register.A + mem_hl
     cpu.register.set_z_flag((result & 0xFF) == 0)
     cpu.register.set_n_flag(False)
-    # cpu.register.set_half_carry_flag(((cpu.register.A & 0x0F) + (cpu.register.C & 0x0F)) > 0x0F)
+    cpu.register.set_h_flag(((cpu.register.A & 0x0F) + (mem_hl & 0x0F)) > 0x0F)
     cpu.register.set_c_flag(result > 0xFF)
-
     cpu.register.A = result & 0xFF
     return 8
 
@@ -1107,12 +1097,10 @@ def code_86(cpu):
 def code_87(cpu):
     """ ADD A,A - A=A+A """
     result = cpu.register.A + cpu.register.A
-
     cpu.register.set_z_flag((result & 0xFF) == 0)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(((cpu.register.A & 0x0F) + (cpu.register.A & 0x0F)) > 0x0F)
     cpu.register.set_c_flag(result > 0xFF)
-
     cpu.register.A = result & 0xFF
     return 4
 
@@ -1121,12 +1109,10 @@ def code_88(cpu):
     """ ADC A,B - A=A+B+carry_flag (yes, '+carry_flag' is just +1 or +0) """
     carry_flag = cpu.register.get_c_flag()
     result = cpu.register.A + cpu.register.B + carry_flag
-
     cpu.register.set_z_flag((result & 0xFF) == 0)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(((cpu.register.A & 0x0F) + (cpu.register.B & 0x0F) + carry_flag) > 0x0F)
     cpu.register.set_c_flag(result > 0xFF)
-
     cpu.register.A = result & 0xFF
     return 4
 
@@ -1135,12 +1121,10 @@ def code_89(cpu):
     """ ADC A,C - A=A+C+carry_flag (yes, '+carry_flag' is just +1 or +0) """
     carry_flag = cpu.register.get_c_flag()
     result = cpu.register.A + cpu.register.C + carry_flag
-
     cpu.register.set_z_flag((result & 0xFF) == 0)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(((cpu.register.A & 0x0F) + (cpu.register.C & 0x0F) + carry_flag) > 0x0F)
     cpu.register.set_c_flag(result > 0xFF)
-
     cpu.register.A = result & 0xFF
     return 4
 
@@ -1149,12 +1133,10 @@ def code_8a(cpu):
     """ ADC A,D - A=A+D+carry_flag (yes, '+carry_flag' is just +1 or +0) """
     carry_flag = cpu.register.get_c_flag()
     result = cpu.register.A + cpu.register.D + carry_flag
-
     cpu.register.set_z_flag((result & 0xFF) == 0)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(((cpu.register.A & 0x0F) + (cpu.register.D & 0x0F) + carry_flag) > 0x0F)
     cpu.register.set_c_flag(result > 0xFF)
-
     cpu.register.A = result & 0xFF
     return 4
 
@@ -1163,12 +1145,10 @@ def code_8b(cpu):
     """ ADC A,E - A=A+E+carry_flag (yes, '+carry_flag' is just +1 or +0) """
     carry_flag = cpu.register.get_c_flag()
     result = cpu.register.A + cpu.register.E + carry_flag
-
     cpu.register.set_z_flag((result & 0xFF) == 0)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(((cpu.register.A & 0x0F) + (cpu.register.E & 0x0F) + carry_flag) > 0x0F)
     cpu.register.set_c_flag(result > 0xFF)
-
     cpu.register.A = result & 0xFF
     return 4
 
@@ -1177,12 +1157,10 @@ def code_8c(cpu):
     """ ADC A,H - A=A+H+carry_flag (yes, '+carry_flag' is just +1 or +0) """
     carry_flag = cpu.register.get_c_flag()
     result = cpu.register.A + cpu.register.H + carry_flag
-
     cpu.register.set_z_flag((result & 0xFF) == 0)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(((cpu.register.A & 0x0F) + (cpu.register.H & 0x0F) + carry_flag) > 0x0F)
     cpu.register.set_c_flag(result > 0xFF)
-
     cpu.register.A = result & 0xFF
     return 4
 
@@ -1191,12 +1169,10 @@ def code_8d(cpu):
     """ ADC A,L - A=A+L+carry_flag (yes, '+carry_flag' is just +1 or +0) """
     carry_flag = cpu.register.get_c_flag()
     result = cpu.register.A + cpu.register.L + carry_flag
-
     cpu.register.set_z_flag((result & 0xFF) == 0)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(((cpu.register.A & 0x0F) + (cpu.register.L & 0x0F) + carry_flag) > 0x0F)
     cpu.register.set_c_flag(result > 0xFF)
-
     cpu.register.A = result & 0xFF
     return 4
 
@@ -1204,14 +1180,12 @@ def code_8d(cpu):
 def code_8e(cpu):
     """ ADC A,(HL) - A=A+(value at address HL)+carry_flag (yes, '+carry_flag' is just +1 or +0) """
     carry_flag = cpu.register.get_c_flag()
-    # TODO after memory is implemented
-    # result = cpu.register.A + cpu.register.L + carry_flag
-
+    mem_hl = cpu.memory.read_8bit(cpu.register.get_hl())
+    result = cpu.register.A + mem_hl + carry_flag
     cpu.register.set_z_flag((result & 0xFF) == 0)
     cpu.register.set_n_flag(False)
-    # cpu.register.set_half_carry_flag(((cpu.register.A & 0x0F) + (cpu.register.L & 0x0F) + carry_flag) > 0x0F)
+    cpu.register.set_h_flag(((cpu.register.A & 0x0F) + (mem_hl & 0x0F) + carry_flag) > 0x0F)
     cpu.register.set_c_flag(result > 0xFF)
-
     cpu.register.A = result & 0xFF
     return 8
 
@@ -1220,12 +1194,10 @@ def code_8f(cpu):
     """ ADC A,A - A=A+A+carry_flag (yes, '+carry_flag' is just +1 or +0) """
     carry_flag = cpu.register.get_c_flag()
     result = cpu.register.A + cpu.register.A + carry_flag
-
     cpu.register.set_z_flag((result & 0xFF) == 0)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(((cpu.register.A & 0x0F) + (cpu.register.A & 0x0F) + carry_flag) > 0x0F)
     cpu.register.set_c_flag(result > 0xFF)
-
     cpu.register.A = result & 0xFF
     return 4
 
@@ -1234,12 +1206,10 @@ def code_8f(cpu):
 def code_90(cpu):
     """ SUB A,B - A=A-B """
     result = (cpu.register.A - cpu.register.B) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
-
     cpu.register.set_z_flag((result & 0xFF) == 0)
     cpu.register.set_n_flag(True)
     cpu.register.set_h_flag((cpu.register.B & 0x0F) > (cpu.register.A & 0x0F))
     cpu.register.set_c_flag(cpu.register.B > cpu.register.A)
-
     cpu.register.A = result
     return 4
 
@@ -1247,12 +1217,10 @@ def code_90(cpu):
 def code_91(cpu):
     """ SUB A,C - A=A-C """
     result = (cpu.register.A - cpu.register.C) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
-
     cpu.register.set_z_flag((result & 0xFF) == 0)
     cpu.register.set_n_flag(True)
     cpu.register.set_h_flag((cpu.register.C & 0x0F) > (cpu.register.A & 0x0F))
     cpu.register.set_c_flag(cpu.register.C > cpu.register.A)
-
     cpu.register.A = result
     return 4
 
@@ -1260,12 +1228,10 @@ def code_91(cpu):
 def code_92(cpu):
     """ SUB A,D - A=A-D """
     result = (cpu.register.A - cpu.register.D) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
-
     cpu.register.set_z_flag((result & 0xFF) == 0)
     cpu.register.set_n_flag(True)
     cpu.register.set_h_flag((cpu.register.D & 0x0F) > (cpu.register.A & 0x0F))
     cpu.register.set_c_flag(cpu.register.D > cpu.register.A)
-
     cpu.register.A = result
     return 4
 
@@ -1273,12 +1239,10 @@ def code_92(cpu):
 def code_93(cpu):
     """ SUB A,E - A=A-E """
     result = (cpu.register.A - cpu.register.E) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
-
     cpu.register.set_z_flag((result & 0xFF) == 0)
     cpu.register.set_n_flag(True)
     cpu.register.set_h_flag((cpu.register.E & 0x0F) > (cpu.register.A & 0x0F))
     cpu.register.set_c_flag(cpu.register.E > cpu.register.A)
-
     cpu.register.A = result
     return 4
 
@@ -1286,12 +1250,10 @@ def code_93(cpu):
 def code_94(cpu):
     """ SUB A,H - A=A-H """
     result = (cpu.register.A - cpu.register.H) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
-
     cpu.register.set_z_flag((result & 0xFF) == 0)
     cpu.register.set_n_flag(True)
     cpu.register.set_h_flag((cpu.register.H & 0x0F) > (cpu.register.A & 0x0F))
     cpu.register.set_c_flag(cpu.register.H > cpu.register.A)
-
     cpu.register.A = result
     return 4
 
@@ -1299,26 +1261,22 @@ def code_94(cpu):
 def code_95(cpu):
     """ SUB A,L - A=A-L """
     result = (cpu.register.A - cpu.register.L) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
-
     cpu.register.set_z_flag((result & 0xFF) == 0)
     cpu.register.set_n_flag(True)
     cpu.register.set_h_flag((cpu.register.L & 0x0F) > (cpu.register.A & 0x0F))
     cpu.register.set_c_flag(cpu.register.L > cpu.register.A)
-
     cpu.register.A = result
     return 4
 
 
 def code_96(cpu):
     """ SUB A,(HL) - A=A-(value at address HL) """
-    # TODO after memory is implemented
-    # result = (cpu.register.A - cpu.register.B) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
-
+    mem_hl = cpu.memory.read_8bit(cpu.register.get_hl())
+    result = (cpu.register.A - mem_hl) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
     cpu.register.set_z_flag((result & 0xFF) == 0)
     cpu.register.set_n_flag(True)
-    # cpu.register.set_half_carry_flag((cpu.register.B & 0x0F) > (cpu.register.A & 0x0F))
-    # cpu.register.set_carry_flag(cpu.register.B > cpu.register.A)
-
+    cpu.register.set_h_flag((mem_hl & 0x0F) > (cpu.register.A & 0x0F))
+    cpu.register.set_c_flag(mem_hl > cpu.register.A)
     cpu.register.A = result
     return 8
 
@@ -1329,7 +1287,6 @@ def code_97(cpu):
     cpu.register.set_n_flag(True)
     cpu.register.set_h_flag(False)
     cpu.register.set_c_flag(False)
-
     cpu.register.A = 0x00  # A-A, therefore result is zero, always
     return 4
 
@@ -1338,12 +1295,10 @@ def code_98(cpu):
     """ SBC A,B - A=A-B-carry_flag (yes, '-carry_flag' is just -1 or -0) """
     value = cpu.register.B + cpu.register.get_c_flag()
     result = (cpu.register.A - value) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
-
     cpu.register.set_z_flag((result & 0xFF) == 0)
     cpu.register.set_n_flag(True)
     cpu.register.set_h_flag((value & 0x0F) > (cpu.register.A & 0x0F))
     cpu.register.set_c_flag(value > cpu.register.A)
-
     cpu.register.A = result
     return 4
 
@@ -1352,12 +1307,10 @@ def code_99(cpu):
     """ SBC A,C - A=A-C-carry_flag (yes, '-carry_flag' is just -1 or -0) """
     value = cpu.register.C + cpu.register.get_c_flag()
     result = (cpu.register.A - value) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
-
     cpu.register.set_z_flag((result & 0xFF) == 0)
     cpu.register.set_n_flag(True)
     cpu.register.set_h_flag((value & 0x0F) > (cpu.register.A & 0x0F))
     cpu.register.set_c_flag(value > cpu.register.A)
-
     cpu.register.A = result
     return 4
 
@@ -1366,12 +1319,10 @@ def code_9a(cpu):
     """ SBC A,D - A=A-D-carry_flag (yes, '-carry_flag' is just -1 or -0) """
     value = cpu.register.D + cpu.register.get_c_flag()
     result = (cpu.register.A - value) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
-
     cpu.register.set_z_flag((result & 0xFF) == 0)
     cpu.register.set_n_flag(True)
     cpu.register.set_h_flag((value & 0x0F) > (cpu.register.A & 0x0F))
     cpu.register.set_c_flag(value > cpu.register.A)
-
     cpu.register.A = result
     return 4
 
@@ -1380,12 +1331,10 @@ def code_9b(cpu):
     """ SBC A,E - A=A-E-carry_flag (yes, '-carry_flag' is just -1 or -0) """
     value = cpu.register.E + cpu.register.get_c_flag()
     result = (cpu.register.A - value) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
-
     cpu.register.set_z_flag((result & 0xFF) == 0)
     cpu.register.set_n_flag(True)
     cpu.register.set_h_flag((value & 0x0F) > (cpu.register.A & 0x0F))
     cpu.register.set_c_flag(value > cpu.register.A)
-
     cpu.register.A = result
     return 4
 
@@ -1394,12 +1343,10 @@ def code_9c(cpu):
     """ SBC A,H - A=A-H-carry_flag (yes, '-carry_flag' is just -1 or -0) """
     value = cpu.register.H + cpu.register.get_c_flag()
     result = (cpu.register.A - value) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
-
     cpu.register.set_z_flag((result & 0xFF) == 0)
     cpu.register.set_n_flag(True)
     cpu.register.set_h_flag((value & 0x0F) > (cpu.register.A & 0x0F))
     cpu.register.set_c_flag(value > cpu.register.A)
-
     cpu.register.A = result
     return 4
 
@@ -1408,27 +1355,23 @@ def code_9d(cpu):
     """ SBC A,L - A=A-L-carry_flag (yes, '-carry_flag' is just -1 or -0) """
     value = cpu.register.L + cpu.register.get_c_flag()
     result = (cpu.register.A - value) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
-
     cpu.register.set_z_flag((result & 0xFF) == 0)
     cpu.register.set_n_flag(True)
     cpu.register.set_h_flag((value & 0x0F) > (cpu.register.A & 0x0F))
     cpu.register.set_c_flag(value > cpu.register.A)
-
     cpu.register.A = result
     return 4
 
 
 def code_9e(cpu):
     """ SBC A,(HL) - A=A-(value at address HL)-carry_flag (yes, '-carry_flag' is just -1 or -0) """
-    # TODO after memory is implemented
-    # value = cpu.register.L + cpu.register.get_carry_flag()
+    mem_hl = cpu.memory.read_8bit(cpu.register.get_hl())
+    value = mem_hl + cpu.register.get_c_flag()
     result = (cpu.register.A - value) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
-
     cpu.register.set_z_flag((result & 0xFF) == 0)
     cpu.register.set_n_flag(True)
     cpu.register.set_h_flag((value & 0x0F) > (cpu.register.A & 0x0F))
     cpu.register.set_c_flag(value > cpu.register.A)
-
     cpu.register.A = result
     return 8
 
@@ -1437,12 +1380,10 @@ def code_9f(cpu):
     """ SBC A,A - A=A-A-carry_flag (yes, '-carry_flag' is just -1 or -0) """
     carry_flag = cpu.register.get_c_flag()
     result = (-carry_flag) & 0xFF  # A-A-carry_flag, therefore result is -carry_flag, always
-
     cpu.register.set_z_flag((result & 0xFF) == 0)
     cpu.register.set_n_flag(True)
     cpu.register.set_h_flag(carry_flag)
     cpu.register.set_c_flag(carry_flag)
-
     cpu.register.A = result
     return 4
 
@@ -1451,194 +1392,160 @@ def code_9f(cpu):
 def code_a0(cpu):
     """ AND B - A=Logical AND A with B """
     cpu.register.A = cpu.register.A & cpu.register.B
-
     cpu.register.set_z_flag(cpu.register.A == 0)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(True)
     cpu.register.set_c_flag(False)
-
     return 4
 
 
 def code_a1(cpu):
     """ AND C - A=Logical AND A with C """
     cpu.register.A = cpu.register.A & cpu.register.C
-
     cpu.register.set_z_flag(cpu.register.A == 0)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(True)
     cpu.register.set_c_flag(False)
-
     return 4
 
 
 def code_a2(cpu):
     """ AND D - A=Logical AND A with D """
     cpu.register.A = cpu.register.A & cpu.register.D
-
     cpu.register.set_z_flag(cpu.register.A == 0)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(True)
     cpu.register.set_c_flag(False)
-
     return 4
 
 
 def code_a3(cpu):
     """ AND E - A=Logical AND A with E """
     cpu.register.A = cpu.register.A & cpu.register.E
-
     cpu.register.set_z_flag(cpu.register.A == 0)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(True)
     cpu.register.set_c_flag(False)
-
     return 4
 
 
 def code_a4(cpu):
     """ AND H - A=Logical AND A with H """
     cpu.register.A = cpu.register.A & cpu.register.H
-
     cpu.register.set_z_flag(cpu.register.A == 0)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(True)
     cpu.register.set_c_flag(False)
-
     return 4
 
 
 def code_a5(cpu):
     """ AND L - A=Logical AND A with L """
     cpu.register.A = cpu.register.A & cpu.register.L
-
     cpu.register.set_z_flag(cpu.register.A == 0)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(True)
     cpu.register.set_c_flag(False)
-
     return 4
 
 
 def code_a6(cpu):
     """ AND (HL) - A=Logical AND A with (value at address HL) """
-    # TODO after memory is implemented
-    # cpu.register.A = cpu.register.A & cpu.register.B
-
+    cpu.register.A = cpu.register.A & cpu.memory.read_8bit(cpu.register.get_hl())
     cpu.register.set_z_flag(cpu.register.A == 0)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(True)
     cpu.register.set_c_flag(False)
-
     return 8
 
 
 def code_a7(cpu):
     """ AND A - A=Logical AND A with A (why?) """
     # cpu.register.A = cpu.register.A & cpu.register.A -- result is A=A, therefore useless
-
     cpu.register.set_z_flag(cpu.register.A == 0)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(True)
     cpu.register.set_c_flag(False)
-
     return 4
 
 
 def code_a8(cpu):
     """ XOR B - A=Logical XOR A with B """
     cpu.register.A = cpu.register.A ^ cpu.register.B
-
     cpu.register.set_z_flag(cpu.register.A == 0)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(False)
     cpu.register.set_c_flag(False)
-
     return 4
 
 
 def code_a9(cpu):
     """ XOR C - A=Logical XOR A with C """
     cpu.register.A = cpu.register.A ^ cpu.register.C
-
     cpu.register.set_z_flag(cpu.register.A == 0)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(False)
     cpu.register.set_c_flag(False)
-
     return 4
 
 
 def code_aa(cpu):
     """ XOR D - A=Logical XOR A with D """
     cpu.register.A = cpu.register.A ^ cpu.register.D
-
     cpu.register.set_z_flag(cpu.register.A == 0)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(False)
     cpu.register.set_c_flag(False)
-
     return 4
 
 
 def code_ab(cpu):
     """ XOR E - A=Logical XOR A with E """
     cpu.register.A = cpu.register.A ^ cpu.register.E
-
     cpu.register.set_z_flag(cpu.register.A == 0)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(False)
     cpu.register.set_c_flag(False)
-
     return 4
 
 
 def code_ac(cpu):
     """ XOR H - A=Logical XOR A with H """
     cpu.register.A = cpu.register.A ^ cpu.register.H
-
     cpu.register.set_z_flag(cpu.register.A == 0)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(False)
     cpu.register.set_c_flag(False)
-
     return 4
 
 
 def code_ad(cpu):
     """ XOR L - A=Logical XOR A with L """
     cpu.register.A = cpu.register.A ^ cpu.register.L
-
     cpu.register.set_z_flag(cpu.register.A == 0)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(False)
     cpu.register.set_c_flag(False)
-
     return 4
 
 
 def code_ae(cpu):
     """ XOR (HL) - A=Logical XOR A with (value at address HL) """
-    # TODO after memory is implemented
-    # cpu.register.A = cpu.register.A ^ cpu.register.D
-
+    cpu.register.A = cpu.register.A ^ cpu.memory.read_8bit(cpu.register.get_hl())
     cpu.register.set_z_flag(cpu.register.A == 0)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(False)
     cpu.register.set_c_flag(False)
-
     return 8
 
 
 def code_af(cpu):
     """ XOR A - A=Logical XOR A with A """
     cpu.register.A = 0
-
     cpu.register.set_z_flag(True)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(False)
     cpu.register.set_c_flag(False)
-
     return 4
 
 
@@ -1646,97 +1553,80 @@ def code_af(cpu):
 def code_b0(cpu):
     """ OR B - A=Logical OR A with B """
     cpu.register.A = cpu.register.A | cpu.register.B
-
     cpu.register.set_z_flag(cpu.register.A == 0)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(False)
     cpu.register.set_c_flag(False)
-
     return 4
 
 
 def code_b1(cpu):
     """ OR C - A=Logical OR A with C """
     cpu.register.A = cpu.register.A | cpu.register.C
-
     cpu.register.set_z_flag(cpu.register.A == 0)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(False)
     cpu.register.set_c_flag(False)
-
     return 4
 
 
 def code_b2(cpu):
     """ OR D - A=Logical OR A with D """
     cpu.register.A = cpu.register.A | cpu.register.D
-
     cpu.register.set_z_flag(cpu.register.A == 0)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(False)
     cpu.register.set_c_flag(False)
-
     return 4
 
 
 def code_b3(cpu):
     """ OR E - A=Logical OR A with E """
     cpu.register.A = cpu.register.A | cpu.register.E
-
     cpu.register.set_z_flag(cpu.register.A == 0)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(False)
     cpu.register.set_c_flag(False)
-
     return 4
 
 
 def code_b4(cpu):
     """ OR H - A=Logical OR A with H """
     cpu.register.A = cpu.register.A | cpu.register.H
-
     cpu.register.set_z_flag(cpu.register.A == 0)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(False)
     cpu.register.set_c_flag(False)
-
     return 4
 
 
 def code_b5(cpu):
     """ OR L - A=Logical OR A with L """
     cpu.register.A = cpu.register.A | cpu.register.L
-
     cpu.register.set_z_flag(cpu.register.A == 0)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(False)
     cpu.register.set_c_flag(False)
-
     return 4
 
 
 def code_b6(cpu):
     """ OR (HL) - A=Logical OR A with (value at address HL) """
-    # TODO after memory is implemented
-    # cpu.register.A = cpu.register.A | cpu.register.B
-
+    cpu.register.A = cpu.register.A | cpu.memory.read_8bit(cpu.register.get_hl())
     cpu.register.set_z_flag(cpu.register.A == 0)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(False)
     cpu.register.set_c_flag(False)
-
     return 8
 
 
 def code_b7(cpu):
     """ OR L - A=Logical OR A with A (why?) """
     # cpu.register.A = cpu.register.A | cpu.register.A -- result is A=A, therefore useless
-
     cpu.register.set_z_flag(cpu.register.A == 0)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(False)
     cpu.register.set_c_flag(False)
-
     return 4
 
 
@@ -1796,11 +1686,11 @@ def code_bd(cpu):
 
 def code_be(cpu):
     """ CP A,(HL) - same as SUB A,(HL) but throw the result away, only set flags """
-    # TODO after memory is implemented
-    # cpu.register.set_zero_flag(cpu.register.A == cpu.register.B)
+    mem_hl = cpu.memory.read_8bit(cpu.register.get_hl())
+    cpu.register.set_z_flag(cpu.register.A == mem_hl)
     cpu.register.set_n_flag(True)
-    # cpu.register.set_half_carry_flag((cpu.register.B & 0x0F) > (cpu.register.A & 0x0F))
-    # cpu.register.set_carry_flag(cpu.register.B > cpu.register.A)
+    cpu.register.set_h_flag((mem_hl & 0x0F) > (cpu.register.A & 0x0F))
+    cpu.register.set_c_flag(mem_hl > cpu.register.A)
     return 8
 
 
@@ -1817,88 +1707,107 @@ def code_bf(cpu):
 def code_c0(cpu):
     """ RET NZ - Return if flag Z is reset """
     if not cpu.register.get_z_flag():
-        # TODO: after cpu is implemented
-        pass
+        code_c9(cpu)
+        return 20
     return 8
 
 
 def code_c1(cpu):
     """ POP BC - Copy 16-bit value from stack (i.e. SP address) into BC, then increment SP by 2 """
-    # TODO after memory is implemented
-    cpu.register.SP += 2
+    lsb = cpu.memory.read_8bit(cpu.register.SP)
+    msb = cpu.memory.read_8bit(cpu.register.SP + 1)
+    cpu.register.set_bc(get_big_endian_value(msb,lsb))
+    cpu.register.SP = (cpu.register.SP + 2) & 0xFFFF
     return 12
 
 
-def code_c2(cpu, a16):
+def code_c2(cpu):
     """ JP NZ,a16 - Jump to address a16 if Z flag is reset """
-    a16 = cpu.util.convert_little_endian_to_big_endian(a16)
+    lsb = cpu.read_next_byte_from_cartridge()
+    msb = cpu.read_next_byte_from_cartridge()
+    a16 = get_big_endian_value(msb,lsb)
     if not cpu.register.get_z_flag():
-        # TODO: after memory and cpu are implemented
-        pass
+        cpu.register.PC = a16
+        return 16
     return 12
 
 
 def code_c3(cpu):
     """ JP a16 - Jump to address a16 """
-    # TODO: after memory and cpu are implemented
-    return 12
+    lsb = cpu.read_next_byte_from_cartridge()
+    msb = cpu.read_next_byte_from_cartridge()
+    a16 = get_big_endian_value(msb,lsb)
+    cpu.register.PC = a16
+    return 16
 
 
-def code_c4(cpu, a16):
+def code_c4(cpu):
     """ CALL NZ,a16 - Call address a16 if flag Z is reset """
+    lsb = cpu.read_next_byte_from_cartridge()
+    msb = cpu.read_next_byte_from_cartridge()
+    a16 = get_big_endian_value(msb,lsb)
     if not cpu.register.get_z_flag():
-        a16 = cpu.util.convert_little_endian_to_big_endian(a16)
-        # TODO after cpu is implemented
-        pass
+        cpu.register.SP = (cpu.register.SP - 2) & 0xFFFF
+        cpu.memory.write_16bit(cpu.register.SP, cpu.register.PC)
+        cpu.register.PC = a16
+        return 24
     return 12
 
 
 def code_c5(cpu):
     """ PUSH BC - Decrement SP by 2 then push BC value onto stack (i.e. SP address) """
-    cpu.register.SP -= 2
-    # TODO after memory is implemented
+    cpu.register.SP = (cpu.register.SP - 2) & 0xFFFF
+    cpu.memory.write_16bit(cpu.register.SP, cpu.register.get_bc())
     return 16
 
 
-def code_c6(cpu, d8):
+def code_c6(cpu):
     """ ADD A,d8 - A=A+d8 """
+    d8 = cpu.read_next_byte_from_cartridge()
     result = cpu.register.A + d8
-
     cpu.register.set_z_flag((result & 0xFF) == 0)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(((cpu.register.A & 0x0F) + (d8 & 0x0F)) > 0x0F)
     cpu.register.set_c_flag(result > 0xFF)
-
     cpu.register.A = result & 0xFF
     return 8
 
 
 def code_c7(cpu):
     """ RST 00H - Push present address onto stack, jump to address $0000 + 00H """
-    # TODO: after memory and cpu are implemented
-    return 32
+    cpu.register.SP = (cpu.register.SP - 2) & 0xFFFF  # Increase stack
+    cpu.memory.write_16bit(cpu.register.SP, cpu.register.PC)  # Store PC into new stack element
+    cpu.register.PC = 0x0000
+    return 16
 
 
 def code_c8(cpu):
     """ RET Z - Return if flag Z is set """
     if cpu.register.get_z_flag():
-        # TODO: after cpu is implemented
-        pass
+        code_c9(cpu)
+        return 20
     return 8
 
 
 def code_c9(cpu):
-    """ RET - Pop two bytes from stask and jump to that address """
-    # TODO: after cpu is implemented
-    return 8
+    """ RET - Pop two bytes from stack and jump to that address """
+    # Stack starts at FFFE and grows in inverse order (FFFD, FFFC, etc), and data is stored in little endian,
+    # therefore (SP) contains lsb and (SP+1) contains msb.
+    return_address_lsb = cpu.memory.read_8bit(cpu.register.SP)
+    return_address_msb = cpu.memory.read_8bit(cpu.register.SP + 1)
+    cpu.register.PC = get_big_endian_value(return_address_msb, return_address_lsb)
+    cpu.register.SP = (cpu.register.SP + 2) & 0xFFFF
+    return 16
 
 
-def code_ca(cpu, a16):
+def code_ca(cpu):
     """ JP Z,a16 - Jump to address a16 if Z flag is set """
-    a16 = cpu.util.convert_little_endian_to_big_endian(a16)
+    lsb = cpu.read_next_byte_from_cartridge()
+    msb = cpu.read_next_byte_from_cartridge()
+    a16 = get_big_endian_value(msb, lsb)
     if cpu.register.get_z_flag():
-        # TODO: after memory and cpu are implemented
-        pass
+        cpu.register.PC = a16
+        return 16
     return 12
 
 
@@ -1909,167 +1818,196 @@ def code_cb(cpu):
     return 4 + _instruction_cb_dict[opcode](cpu)
 
 
-def code_cc(cpu, a16):
+def code_cc(cpu):
     """ CALL Z,a16 - Call address a16 if flag Z is set """
+    lsb = cpu.read_next_byte_from_cartridge()
+    msb = cpu.read_next_byte_from_cartridge()
+    a16 = get_big_endian_value(msb, lsb)
     if cpu.register.get_z_flag():
-        a16 = cpu.util.convert_little_endian_to_big_endian(a16)
-        # TODO after cpu is implemented
-        pass
+        cpu.register.SP = (cpu.register.SP - 2) & 0xFFFF
+        cpu.memory.write_16bit(cpu.register.SP, cpu.register.PC)
+        cpu.register.PC = a16
+        return 24
     return 12
 
 
-def code_cd(cpu, a16):
+def code_cd(cpu):
     """ CALL a16 - Push address of next instruction onto stack then jump to address a16 """
-    a16 = cpu.util.convert_little_endian_to_big_endian(a16)
-    # TODO: after cpu are implemented
-    return 12
+    lsb = cpu.read_next_byte_from_cartridge()
+    msb = cpu.read_next_byte_from_cartridge()
+    a16 = get_big_endian_value(msb, lsb)
+    cpu.register.SP = (cpu.register.SP - 2) & 0xFFFF
+    cpu.memory.write_16bit(cpu.register.SP, cpu.register.PC)
+    cpu.register.PC = a16
+    return 24
 
 
-def code_ce(cpu, d8):
+def code_ce(cpu):
     """ ADC A,d8 - A=A+d8+carry_flag (yes, '+carry_flag' is just +1 or +0) """
+    d8 = cpu.read_next_byte_from_cartridge()
     carry_flag = cpu.register.get_c_flag()
     result = cpu.register.A + d8 + carry_flag
-
     cpu.register.set_z_flag((result & 0xFF) == 0)
     cpu.register.set_n_flag(False)
     cpu.register.set_h_flag(((cpu.register.A & 0x0F) + (d8 & 0x0F) + carry_flag) > 0x0F)
     cpu.register.set_c_flag(result > 0xFF)
-
     cpu.register.A = result & 0xFF
     return 8
 
 
 def code_cf(cpu):
     """ RST 08H - Push present address onto stack, jump to address $0000 + 08H """
-    # TODO: after memory and cpu are implemented
-    return 32
+    cpu.register.SP = (cpu.register.SP - 2) & 0xFFFF  # Increase stack
+    cpu.memory.write_16bit(cpu.register.SP, cpu.register.PC)  # Store PC into new stack element
+    cpu.register.PC = 0x0008
+    return 16
 
 
 # OPCODES Dx
 def code_d0(cpu):
     """ RET NC - Return if flag C is reset """
     if not cpu.register.get_c_flag():
-        # TODO: after cpu is implemented
-        pass
+        code_c9(cpu)
+        return 20
     return 8
 
 
 def code_d1(cpu):
     """ POP DE - Copy 16-bit value from stack (i.e. SP address) into DE, then increment SP by 2 """
-    # TODO after memory is implemented
-    cpu.register.SP += 2
+    lsb = cpu.memory.read_8bit(cpu.register.SP)
+    msb = cpu.memory.read_8bit(cpu.register.SP + 1)
+    cpu.register.set_de(get_big_endian_value(msb, lsb))
+    cpu.register.SP = (cpu.register.SP + 2) & 0xFFFF
     return 12
 
 
-def code_d2(cpu, a16):
+def code_d2(cpu):
     """ JP NC,a16 - Jump to address a16 if C flag is reset """
-    a16 = cpu.util.convert_little_endian_to_big_endian(a16)
+    lsb = cpu.read_next_byte_from_cartridge()
+    msb = cpu.read_next_byte_from_cartridge()
+    a16 = get_big_endian_value(msb, lsb)
     if not cpu.register.get_c_flag():
-        # TODO: after memory and cpu are implemented
-        pass
+        cpu.register.PC = a16
+        return 16
     return 12
 
 
-def code_d3():
+# noinspection PyUnusedLocal
+def code_d3(cpu):
     """ Unused opcode """
-    pass
+    return 0
 
 
-def code_d4(cpu, a16):
+def code_d4(cpu):
     """ CALL NC,a16 - Call address a16 if flag C is reset """
+    lsb = cpu.read_next_byte_from_cartridge()
+    msb = cpu.read_next_byte_from_cartridge()
+    a16 = get_big_endian_value(msb, lsb)
     if not cpu.register.get_c_flag():
-        a16 = cpu.util.convert_little_endian_to_big_endian(a16)
-        # TODO after cpu is implemented
-        pass
+        cpu.register.SP = (cpu.register.SP - 2) & 0xFFFF
+        cpu.memory.write_16bit(cpu.register.SP, cpu.register.PC)
+        cpu.register.PC = a16
+        return 24
     return 12
 
 
 def code_d5(cpu):
     """ PUSH DE - Decrement SP by 2 then push DE value onto stack (i.e. SP address) """
-    cpu.register.SP -= 2
-    # TODO after memory is implemented
+    cpu.register.SP = (cpu.register.SP - 2) & 0xFFFF
+    cpu.memory.write_16bit(cpu.register.SP, cpu.register.get_de())
     return 16
 
 
-def code_d6(cpu, d8):
+def code_d6(cpu):
     """ SUB A,d8 - A=A-d8 """
+    d8 = cpu.read_next_byte_from_cartridge()
     result = (cpu.register.A - d8) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
-
     cpu.register.set_z_flag((result & 0xFF) == 0)
     cpu.register.set_n_flag(True)
     cpu.register.set_h_flag((d8 & 0x0F) > (cpu.register.A & 0x0F))
     cpu.register.set_c_flag(d8 > cpu.register.A)
-
     cpu.register.A = result
     return 8
 
 
 def code_d7(cpu):
     """ RST 10H - Push present address onto stack, jump to address $0000 + 10H """
-    # TODO: after memory and cpu are implemented
-    return 32
+    cpu.register.SP = (cpu.register.SP - 2) & 0xFFFF  # Increase stack
+    cpu.memory.write_16bit(cpu.register.SP, cpu.register.PC)  # Store PC into new stack element
+    cpu.register.PC = 0x0010
+    return 16
 
 
 def code_d8(cpu):
     """ RET C - Return if flag C is set """
     if cpu.register.get_c_flag():
-        # TODO: after cpu is implemented
-        pass
+        code_c9(cpu)
+        return 20
     return 8
 
 
 def code_d9(cpu):
-    """ RETI - Pop two bytes from stask and jump to that address then enable interrupts """
+    """ RETI - Pop two bytes from stack and jump to that address then enable interrupts """
+    code_c9(cpu)
     # TODO: after memory, cpu and interrupts are implemented
-    return 8
+    return 16
 
 
 def code_da(cpu):
     """ JP C,a16 - Jump to address a16 if C flag is set """
-    a16 = cpu.util.convert_little_endian_to_big_endian(a16)
+    lsb = cpu.read_next_byte_from_cartridge()
+    msb = cpu.read_next_byte_from_cartridge()
+    a16 = get_big_endian_value(msb, lsb)
     if cpu.register.get_c_flag():
-        # TODO: after memory and cpu are implemented
-        pass
+        cpu.register.PC = a16
+        return 16
     return 12
 
 
-def code_db():
+# noinspection PyUnusedLocal
+def code_db(cpu):
     """ Unused opcode """
-    pass
+    return 0
 
 
-def code_dc(cpu, a16):
+def code_dc(cpu):
     """ CALL C,a16 - Call address a16 if flag C is set """
+    lsb = cpu.read_next_byte_from_cartridge()
+    msb = cpu.read_next_byte_from_cartridge()
+    a16 = get_big_endian_value(msb, lsb)
     if cpu.register.get_c_flag():
-        a16 = cpu.util.convert_little_endian_to_big_endian(a16)
-        # TODO after cpu is implemented
-        pass
+        cpu.register.SP = (cpu.register.SP - 2) & 0xFFFF
+        cpu.memory.write_16bit(cpu.register.SP, cpu.register.PC)
+        cpu.register.PC = a16
+        return 24
     return 12
 
 
-def code_dd():
+# noinspection PyUnusedLocal
+def code_dd(cpu):
     """ Unused opcode """
-    pass
+    return 0
 
 
-def code_de(cpu, d8):
+def code_de(cpu):
     """ SBC A,d8 - A=A-d8-carry_flag (yes, '-carry_flag' is just -1 or -0) """
+    d8 = cpu.read_next_byte_from_cartridge()
     value = d8 + cpu.register.get_c_flag()
     result = (cpu.register.A - value) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
-
     cpu.register.set_z_flag((result & 0xFF) == 0)
     cpu.register.set_n_flag(True)
     cpu.register.set_h_flag((value & 0x0F) > (cpu.register.A & 0x0F))
     cpu.register.set_c_flag(value > cpu.register.A)
-
     cpu.register.A = result
     return 8
 
 
 def code_df(cpu):
     """ RST 18H - Push present address onto stack, jump to address $0000 + 18H """
-    # TODO: after memory and cpu are implemented
-    return 32
+    cpu.register.SP = (cpu.register.SP - 2) & 0xFFFF  # Increase stack
+    cpu.memory.write_16bit(cpu.register.SP, cpu.register.PC)  # Store PC into new stack element
+    cpu.register.PC = 0x0018
+    return 16
 
 
 # OPCODES Ex
@@ -2081,8 +2019,10 @@ def code_e0(cpu, d8):
 
 def code_e1(cpu):
     """ POP HL - Copy 16-bit value from stack (i.e. SP address) into HL, then increment SP by 2 """
-    # TODO after memory is implemented
-    cpu.register.SP += 2
+    lsb = cpu.memory.read_8bit(cpu.register.SP)
+    msb = cpu.memory.read_8bit(cpu.register.SP + 1)
+    cpu.register.set_hl(get_big_endian_value(msb, lsb))
+    cpu.register.SP = (cpu.register.SP + 2) & 0xFFFF
     return 12
 
 
@@ -2104,8 +2044,8 @@ def code_e4():
 
 def code_e5(cpu):
     """ PUSH HL - Decrement SP by 2 then push HL value onto stack (i.e. SP address) """
-    cpu.register.SP -= 2
-    # TODO after memory is implemented
+    cpu.register.SP = (cpu.register.SP - 2) & 0xFFFF
+    cpu.memory.write_16bit(cpu.register.SP, cpu.register.get_hl())
     return 16
 
 
@@ -2123,13 +2063,16 @@ def code_e6(cpu, d8):
 
 def code_e7(cpu):
     """ RST 20H - Push present address onto stack, jump to address $0000 + 20H """
-    # TODO: after memory and cpu are implemented
-    return 32
+    cpu.register.SP = (cpu.register.SP - 2) & 0xFFFF  # Increase stack
+    cpu.memory.write_16bit(cpu.register.SP, cpu.register.PC)  # Store PC into new stack element
+    cpu.register.PC = 0x0020
+    return 16
 
 
-def code_e8(cpu, r8):
+def code_e8(cpu):
     """ ADD SP,r8 - SP=SP+r8 (r8 is a signed value) """
-    r8 = cpu.util.convert_unsigned_integer_to_signed(r8)
+    r8 = cpu.read_next_byte_from_cartridge()
+    r8 = convert_unsigned_integer_to_signed(r8)
     result = cpu.register.SP + r8
 
     cpu.register.set_z_flag(False)
@@ -2147,11 +2090,13 @@ def code_e9(cpu):
     return 4
 
 
-def code_ea(cpu, a16):
+def code_ea(cpu):
     """ LD (a16),A - Stores reg at the address in a16 (least significant byte first) """
-    a16 = cpu.util.convert_little_endian_to_big_endian(a16)
-    # TODO after memory is implemented
-    pass
+    lsb = cpu.read_next_byte_from_cartridge()
+    msb = cpu.read_next_byte_from_cartridge()
+    a16 = get_big_endian_value(msb,lsb)
+    cpu.memory.write_8bit(a16,cpu.register.A)
+    return 16
 
 
 def code_eb():
@@ -2183,8 +2128,10 @@ def code_ee(cpu, d8):
 
 def code_ef(cpu):
     """ RST 28H - Push present address onto stack, jump to address $0000 + 28H """
-    # TODO: after memory and cpu are implemented
-    return 32
+    cpu.register.SP = (cpu.register.SP - 2) & 0xFFFF  # Increase stack
+    cpu.memory.write_16bit(cpu.register.SP, cpu.register.PC)  # Store PC into new stack element
+    cpu.register.PC = 0x0028
+    return 16
 
 
 # OPCODES Fx
@@ -2196,8 +2143,10 @@ def code_f0(cpu, d8):
 
 def code_f1(cpu):
     """ POP AF - Copy 16-bit value from stack (i.e. SP address) into AF, then increment SP by 2 """
-    # TODO after memory is implemented
-    cpu.register.SP += 2
+    lsb = cpu.memory.read_8bit(cpu.register.SP)
+    msb = cpu.memory.read_8bit(cpu.register.SP + 1)
+    cpu.register.set_af(get_big_endian_value(msb, lsb))
+    cpu.register.SP = (cpu.register.SP + 2) & 0xFFFF
     return 12
 
 
@@ -2220,8 +2169,8 @@ def code_f4():
 
 def code_f5(cpu):
     """ PUSH AF - Decrement SP by 2 then push AF value onto stack (i.e. SP address) """
-    cpu.register.SP -= 2
-    # TODO after memory is implemented
+    cpu.register.SP = (cpu.register.SP - 2) & 0xFFFF
+    cpu.memory.write_16bit(cpu.register.SP, cpu.register.get_af())
     return 16
 
 
@@ -2239,13 +2188,16 @@ def code_f6(cpu, d8):
 
 def code_f7(cpu):
     """ RST 30H - Push present address onto stack, jump to address $0000 + 30H """
-    # TODO: after memory and cpu are implemented
-    return 32
+    cpu.register.SP = (cpu.register.SP - 2) & 0xFFFF  # Increase stack
+    cpu.memory.write_16bit(cpu.register.SP, cpu.register.PC)  # Store PC into new stack element
+    cpu.register.PC = 0x0030
+    return 16
 
 
-def code_f8(cpu, r8):
+def code_f8(cpu):
     """ LD HL,SP+d8 or LDHL SP,r8 - Put result of SP+r8 into HL (r8 is a signed value) """
-    r8 = cpu.util.convert_unsigned_integer_to_signed(r8)
+    r8 = cpu.read_next_byte_from_cartridge()
+    r8 = convert_unsigned_integer_to_signed(r8)
     result = cpu.register.SP + r8
 
     cpu.register.set_z_flag(False)
@@ -2286,8 +2238,9 @@ def code_fd():
     pass
 
 
-def code_fe(cpu, d8):
+def code_fe(cpu):
     """ CP A,d8 - same as SUB A,d8 but throw the result away, only set flags """
+    d8 = cpu.read_next_byte_from_cartridge()
     cpu.register.set_z_flag(cpu.register.A == d8)
     cpu.register.set_n_flag(True)
     cpu.register.set_h_flag((d8 & 0x0F) > (cpu.register.A & 0x0F))
@@ -2297,8 +2250,10 @@ def code_fe(cpu, d8):
 
 def code_ff(cpu):
     """ RST 38H - Push present address onto stack, jump to address $0000 + 38H """
-    # TODO: after memory and cpu are implemented
-    return 32
+    cpu.register.SP = (cpu.register.SP - 2) & 0xFFFF  # Increase stack
+    cpu.memory.write_16bit(cpu.register.SP, cpu.register.PC)  # Store PC into new stack element
+    cpu.register.PC = 0x0038
+    return 16
 
 
 """ CB-Prefix operations """

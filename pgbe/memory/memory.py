@@ -40,7 +40,7 @@ class Memory:
         :param address: Address to write
         :param value: Value to write
         """
-        print("writing 8-bit value",hex(value),"at address",hex(address))
+        print("writing 8-bit value","{:02X}".format(value),"at address","0x{:04X}".format(address))
         self._memory_map[address] = value
 
         # According to [https://realboyemulator.files.wordpress.com/2013/01/gbcpuman.pdf, page 9]:
