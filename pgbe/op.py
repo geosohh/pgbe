@@ -27,7 +27,7 @@ def execute(cpu,opcode):
     :param cpu: CPU instance 
     :param opcode: Instruction to execute
     """
-    _instruction_dict[opcode](cpu)
+    return _instruction_dict[opcode](cpu)
 
 
 def get_big_endian_value(msb, lsb):
@@ -210,8 +210,8 @@ def code_10(cpu):
     STOP - Switch Game Boy into VERY low power standby mode. Halt CPU and LCD display until a button is pressed
     See: http://gbdev.gg8.se/wiki/articles/Reducing_Power_Consumption
     """
-    # TODO after cpu and interrupts are implemented
-    pass
+    cpu.stopped = True
+    return 4
 
 
 def code_11(cpu):
@@ -957,8 +957,8 @@ def code_76(cpu):
     HALT - Power down CPU (by stopping the system clock) until an interrupt occurs
     See: http://gbdev.gg8.se/wiki/articles/Reducing_Power_Consumption
     """
-    # TODO after cpu and interrupts are implemented
-    pass
+    cpu.halted = True
+    return 4
 
 
 def code_77(cpu):
@@ -1947,9 +1947,11 @@ def code_d8(cpu):
 
 
 def code_d9(cpu):
-    """ RETI - Pop two bytes from stack and jump to that address then enable interrupts """
+    """ RETI - Pop two bytes from stack and jump to that address then enable interrupts  - same as EI + RET """
     code_c9(cpu)
-    # TODO: after memory, cpu and interrupts are implemented
+    # Interrupt update will execute next. EI enables interrupts after next instruction, but since the next instruction
+    # has already been executed (RET), interrupts must be enabled now. For the sake of keeping equal to EI and DI,
+    # interrupts will be enabled at the interrupt update step and not here.
     return 16
 
 
@@ -2163,10 +2165,12 @@ def code_f2(cpu):
     return 8
 
 
+# noinspection PyUnusedLocal
 def code_f3(cpu):
     """ DI - Disable interrupts AFTER THE NEXT INSTRUCTION IS EXECUTED """
-    # TODO after cpu and interrupts are implemented
-    pass
+    # Interrupt update will execute next. Since the disable is only after the next instruction, the boolean
+    # "disable_IME_after_next_instruction" will be set to true during the interrupt step and not here.
+    return 4
 
 
 # noinspection PyUnusedLocal
@@ -2229,10 +2233,12 @@ def code_fa(cpu):
     return 16
 
 
+# noinspection PyUnusedLocal
 def code_fb(cpu):
     """ EI - Enable interrupts AFTER THE NEXT INSTRUCTION IS EXECUTED """
-    # TODO after cpu and interrupts are implemented
-    pass
+    # Interrupt update will execute next. Since the enable is only after the next instruction, the boolean
+    # "enable_IME_after_next_instruction" will be set to true during the interrupt step and not here.
+    return 4
 
 
 # noinspection PyUnusedLocal

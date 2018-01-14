@@ -96,3 +96,13 @@ class Memory:
                 mem_str += "{:02X} ".format((self._memory_map[i + j]))
             mem_str += "|"
             print(mem_str)
+
+    def debug(self):
+        """
+        Prints debug info to console.
+        """
+        custom_dict = {}
+        for i in range(0, len(self._memory_map)):
+            if self._memory_map[i] != 0:
+                custom_dict["0x{:04X}".format(i)] = "{:02X}".format(self._memory_map[i])
+        print(custom_dict)

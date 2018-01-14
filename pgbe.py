@@ -2,7 +2,7 @@
 Python Game Boy Emulator
 """
 
-from cpu.cpu import CPU
+from cpu import CPU
 import sys
 
 
@@ -20,10 +20,11 @@ def print_rom_data(rom_data):
 
 if __name__ == '__main__':
     rom_file = sys.argv[1]
+    debug = sys.argv[2]
     f = open(rom_file, "rb")
     cartridge_data = f.read()
     f.close()
     # print_rom_data(rom_data)
 
     cpu = CPU()
-    cpu.execute(cartridge_data)
+    cpu.execute(cartridge_data,debug)

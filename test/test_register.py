@@ -16,7 +16,7 @@ def register():
     Create Register instance for testing.
     :return: new register instance
     """
-    from cpu.register import Register
+    from register import Register
     return Register()
 
 

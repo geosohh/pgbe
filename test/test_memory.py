@@ -16,7 +16,7 @@ def memory():
     Create Memory instance for testing.
     :return: new memory instance
     """
-    from memory.memory import Memory
+    from memory import Memory
     return Memory()
 
 

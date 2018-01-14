@@ -210,3 +210,19 @@ class Register:
         """
         self.L = d16 & 0x00ff  # H==high / L==low
         self.H = (d16 >> 8) & 0x00ff
+
+    def debug(self):
+        """
+        Prints debug info to console.
+        """
+        af = "{:04X}".format(self.get_af())
+        bc = "{:04X}".format(self.get_bc())
+        de = "{:04X}".format(self.get_de())
+        hl = "{:04X}".format(self.get_hl())
+        sp = "{:04X}".format(self.SP)
+        pc = "{:04X}".format(self.PC)
+        z = self.get_z_flag()
+        n = self.get_n_flag()
+        h = self.get_h_flag()
+        c = self.get_c_flag()
+        print("AF:",af,"\tBC:",bc,"\tDE:",de,"\tHL:",hl,"\tSP:",sp,"\tPC:",pc,"\tz:",z,"\tn:",n,"\th:",h,"\tc:",c)
