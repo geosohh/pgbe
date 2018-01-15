@@ -4,6 +4,7 @@ Memory
 
 
 import array
+import logging
 
 
 class Memory:
@@ -26,6 +27,7 @@ class Memory:
     """
     def __init__(self):
         self._memory_map = self._generate_memory_map()
+        self.logger = logging.getLogger("pgbe")
 
     @staticmethod
     def _generate_memory_map():
@@ -44,7 +46,7 @@ class Memory:
         :param address: Address to write
         :param value: Value to write
         """
-        print("writing 8-bit value","{:02X}".format(value),"at address","0x{:04X}".format(address))
+        self.logger.debug("writing 8-bit value %02X at address 0x%04X",value,address)
         self._memory_map[address] = value
 
         # According to [https://realboyemulator.files.wordpress.com/2013/01/gbcpuman.pdf, page 9]:
@@ -105,4 +107,4 @@ class Memory:
         for i in range(0, len(self._memory_map)):
             if self._memory_map[i] != 0:
                 custom_dict["0x{:04X}".format(i)] = "{:02X}".format(self._memory_map[i])
-        print(custom_dict)
+        self.logger.debug(custom_dict)

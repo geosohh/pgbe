@@ -3,6 +3,9 @@ CPU Registers.
 """
 
 
+import logging
+
+
 class Register:
     """
     CPU Registers
@@ -83,6 +86,8 @@ class Register:
         # 16-bit registers
         self.SP = 0xFFFE  # Stack Pointer
         self.PC = 0x0100  # Program Counter
+
+        self.logger = logging.getLogger("pgbe")
 
     # Get Flags
     def _get_flag(self, bit_position):
@@ -225,4 +230,5 @@ class Register:
         n = self.get_n_flag()
         h = self.get_h_flag()
         c = self.get_c_flag()
-        print("AF:",af,"\tBC:",bc,"\tDE:",de,"\tHL:",hl,"\tSP:",sp,"\tPC:",pc,"\tz:",z,"\tn:",n,"\th:",h,"\tc:",c)
+        self.logger.debug("AF: %s\tBC: %s\tDE: %s\tHL: %s\tSP: %s\tPC: %s\tz: %s\tn: %s\th: %s\tc: %s",
+                          af,bc,de,hl,sp,pc,z,n,h,c)

@@ -11,12 +11,15 @@ class Interrupts:
         Global enable/disable of interrupts, no matter what the ENABLED_FLAG says. Hardware clears the IME flag as a
         result of servicing an interrupt, and sets it as a result of returning from an interrupt.
 
-    ENABLED_FLAG - # TODO
+    ENABLED_FLAG - Tells the CPU what devices the game is interested in receiving interrupts from.
+
+    REQUESTS_FLAG - Set to 1 by the hardware to signal that an interrupt occurred.
 
     See:
     - http://gbdev.gg8.se/wiki/articles/Interrupts
     - http://gbdev.gg8.se/files/docs/mirrors/pandocs.html#interrupts
     - https://realboyemulator.wordpress.com/2013/01/18/emulating-the-core-2/
+    - https://realboyemulator.wordpress.com/2013/07/01/interrupt-processing-a-real-world-example/
     """
     
     REQUESTS_FLAG_ADDRESS = 0xFF0F
@@ -40,7 +43,7 @@ class Interrupts:
         interrupt must be fired.
 
         :param opcode_executed: Used to update IME flag
-        :return Number of cycles spent (0 or 5)
+        :return Number of cycles spent
         """
         cycles_spent = 0
         if self.enable_IME_after_next_instruction or opcode_executed == 0xD9:  # RETI - Same as EI,RET
@@ -209,3 +212,13 @@ class Interrupts:
         """ Push current address to stack so game knows where to return to after handling interrupt """
         self.cpu.register.SP = (self.cpu.register.SP - 2) & 0xFFFF  # Increase stack
         self.cpu.memory.write_16bit(self.cpu.register.SP, self.cpu.register.PC)  # Store PC into new stack element
+
+    def debug(self):
+        """
+        Prints debug info to console.
+        """
+        requests_byte = "{:08b}".format(self.cpu.memory.read_8bit(self.REQUESTS_FLAG_ADDRESS))
+        enabled_byte = "{:08b}".format(self.cpu.memory.read_8bit(self.ENABLED_FLAG_ADDRESS))
+        self.cpu.logger.debug("IEM: %s\tRequests(IF@FF0F): %s\tEnabled(IE@FFFF): %s\tEnable_next: %s\tDisable_next: %s",
+                              self.IME,requests_byte,enabled_byte,self.enable_IME_after_next_instruction,
+                              self.disable_IME_after_next_instruction)
