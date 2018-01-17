@@ -14,8 +14,10 @@ class GPU:
     - http://imrannazar.com/GameBoy-Emulation-in-JavaScript:-GPU-Timings
     """
 
-    LCD_STAT_IO_ADDRESS = 0xFF41
-    LCD_Y_COORDINATE_ADDRESS = 0xFF44
+    LCD_STAT_IO_ADDRESS = 0xFF41  # also called STAT
+    SCROLL_Y_ADDRESS = 0xFF42  # also called SCY
+    SCROLL_X_ADDRESS = 0xFF43  # also called SCX
+    LCD_Y_COORDINATE_ADDRESS = 0xFF44  # also called LY
 
     def __init__(self,cpu):
         self.cpu = cpu  # To access/modify gpu-related memory
@@ -52,8 +54,8 @@ class GPU:
             # The LCD controller is reading from both OAM and VRAM.
             # The CPU <cannot> access OAM and VRAM during this period.
             if self.cpu_cycles >= 172:
+                # TODO: write the current display line to the framebuffer
                 self.set_lcd_controller_mode(0)
-                # TODO: write a scanline to the framebuffer
                 self.cpu_cycles -= 172
         elif mode == 0:
             # H-Blank: the controller is moving to the beginning of the next display line.
@@ -69,14 +71,15 @@ class GPU:
         elif mode == 1:
             # V-Blank: the controller finished drawing the frame and is now moving back to the display's top-left.
             # The CPU can access both the display RAM (8000h-9FFFh) and OAM (FE00h-FE9Fh).
-            if self.cpu_cycles >= 456:  # 4560 cycles, divided as 10 gpu loops
+            if self.cpu_cycles >= 456:  # takes 4560 cpu cycles, but divided as 10 gpu loops
                 next_line = self.go_to_next_lcd_y_line()
                 if next_line == 0:  # First line, so restart drawing cycle
                     self.set_lcd_controller_mode(2)
                 self.cpu_cycles -= 456
 
+    # STAT register
     def lcd_controller_mode(self):
-        """ Current state of the LCD controller. Goes from 0 to 3. """
+        """ :return Current state of the LCD controller. Goes from 0 to 3. """
         lcd_stat_byte = self.cpu.memory.read_8bit(self.LCD_STAT_IO_ADDRESS)
         return lcd_stat_byte & 0b00000011
 
@@ -86,6 +89,7 @@ class GPU:
         new_lcd_stat_byte = (lcd_stat_byte & 0b11111100) | new_mode
         self.cpu.memory.write_8bit(self.LCD_STAT_IO_ADDRESS,new_lcd_stat_byte)
 
+    # LY register
     def go_to_next_lcd_y_line(self):
         """
         Simulate display processing line change.
@@ -98,6 +102,22 @@ class GPU:
             new_line = current_line + 1
         self.cpu.memory.write_8bit(self.LCD_Y_COORDINATE_ADDRESS,new_line)
         return new_line
+
+    # SCY register
+    def scroll_y(self):
+        """
+        Used to scroll the background image, i.e. select the part of it that will be shown on screen.
+        :return: Current Y offset
+        """
+        return self.cpu.memory.read_8bit(self.SCROLL_Y_ADDRESS)
+
+    # SCX register
+    def scroll_x(self):
+        """
+        Used to scroll the background image, i.e. select the part of it that will be shown on screen.
+        :return: Current X offset
+        """
+        return self.cpu.memory.read_8bit(self.SCROLL_X_ADDRESS)
 
     def debug(self):
         """
