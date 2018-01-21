@@ -26,7 +26,7 @@ class CPU:
 
     def __init__(self):
         self.register = Register()
-        self.memory = Memory()
+        self.memory = Memory(self)
         self.interrupts = Interrupts(self)
         self.gpu = GPU(self)
         self.halted = False  # for 76 (HALT)

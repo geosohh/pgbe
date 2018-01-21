@@ -25,7 +25,8 @@ class Memory:
     - https://realboyemulator.wordpress.com/2013/01/02/the-nintendo-game-boy-part-3/
     - https://stackoverflow.com/questions/21639597/z80-register-endianness
     """
-    def __init__(self):
+    def __init__(self,cpu):
+        self.cpu = cpu
         self._memory_map = self._generate_memory_map()
         self.logger = logging.getLogger("pgbe")
 
@@ -56,6 +57,9 @@ class Memory:
             self._memory_map[address-0x2000] = value
         elif 0xC000 <= address <= 0xDE00:
             self._memory_map[address+0x2000] = value
+        elif 0x8000 <= address <= 0x97FF:
+            # A pixel in the tile set has been changed, so update the internal tile representation
+            self.cpu.gpu.update_tile_at_address(address)
 
     def write_16bit(self, address, value):
         """
