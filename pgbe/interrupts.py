@@ -1,26 +1,25 @@
 """
 Interrupts
+
+IME - Interrupt Master Enable
+    Global enable/disable of interrupts, no matter what the ENABLED_FLAG says. Hardware clears the IME flag as a
+    result of servicing an interrupt, and sets it as a result of returning from an interrupt.
+
+ENABLED_FLAG - Tells the CPU what devices the game is interested in receiving interrupts from.
+
+REQUESTS_FLAG - Set to 1 by the hardware to signal that an interrupt occurred.
+
+See:
+- http://gbdev.gg8.se/wiki/articles/Interrupts
+- http://gbdev.gg8.se/files/docs/mirrors/pandocs.html#interrupts
+- https://realboyemulator.wordpress.com/2013/01/18/emulating-the-core-2/
+- https://realboyemulator.wordpress.com/2013/07/01/interrupt-processing-a-real-world-example/
 """
+import logging
 
 
 class Interrupts:
-    """
-    Interrupts
-
-    IME - Interrupt Master Enable
-        Global enable/disable of interrupts, no matter what the ENABLED_FLAG says. Hardware clears the IME flag as a
-        result of servicing an interrupt, and sets it as a result of returning from an interrupt.
-
-    ENABLED_FLAG - Tells the CPU what devices the game is interested in receiving interrupts from.
-
-    REQUESTS_FLAG - Set to 1 by the hardware to signal that an interrupt occurred.
-
-    See:
-    - http://gbdev.gg8.se/wiki/articles/Interrupts
-    - http://gbdev.gg8.se/files/docs/mirrors/pandocs.html#interrupts
-    - https://realboyemulator.wordpress.com/2013/01/18/emulating-the-core-2/
-    - https://realboyemulator.wordpress.com/2013/07/01/interrupt-processing-a-real-world-example/
-    """
+    """ Interrupts """
     
     REQUESTS_FLAG_ADDRESS = 0xFF0F
     ENABLED_FLAG_ADDRESS = 0xFFFF
@@ -31,13 +30,22 @@ class Interrupts:
     SERIAL_HANDLER = 0x0058
     JOYPAD_HANDLER = 0x0060
     
-    def __init__(self,cpu):
-        self.cpu = cpu  # Necessary to access/update CPU HALT flag, memory (for interrupt flags), etc.
+    def __init__(self, gb):
+        """
+        :type gb: gb.GB
+        """
+        # Communication with other components
+        self.gb = gb
+
+        # State initialization
         self.IME = False
         self.enable_IME_after_next_instruction = False
         self.disable_IME_after_next_instruction = False
 
-    def update(self,opcode_executed):
+        # Logger
+        self.logger = logging.getLogger("pgbe")
+
+    def update(self, opcode_executed: int):
         """
         Executed after each instruction. Update the status of interrupts and makes the required changes when an
         interrupt must be fired.
@@ -58,36 +66,36 @@ class Interrupts:
                 self.IME = False  # Disable interrupts
                 self.set_v_blank_requested_flag(False)  # Interrupt request is being handled, so disable flag
                 self._push_current_address_to_stack()
-                self.cpu.register.PC = self.V_BLANK_HANDLER
-                self.cpu.halted = False
+                self.gb.cpu.register.PC = self.V_BLANK_HANDLER
+                self.gb.cpu.halted = False
                 cycles_spent = 5
             elif self.lcd_stat_requested() and self.lcd_stat_enabled():
                 self.IME = False  # Disable interrupts
                 self.set_lcd_stat_requested_flag(False)  # Interrupt request is being handled, so disable flag
                 self._push_current_address_to_stack()
-                self.cpu.register.PC = self.LCD_STAT_HANDLER
-                self.cpu.halted = False
+                self.gb.cpu.register.PC = self.LCD_STAT_HANDLER
+                self.gb.cpu.halted = False
                 cycles_spent = 5
             elif self.timer_requested() and self.timer_enabled():
                 self.IME = False  # Disable interrupts
                 self.set_timer_requested_flag(False)  # Interrupt request is being handled, so disable flag
                 self._push_current_address_to_stack()
-                self.cpu.register.PC = self.TIMER_HANDLER
-                self.cpu.halted = False
+                self.gb.cpu.register.PC = self.TIMER_HANDLER
+                self.gb.cpu.halted = False
                 cycles_spent = 5
             elif self.serial_requested() and self.serial_enabled():
                 self.IME = False  # Disable interrupts
                 self.set_serial_requested_flag(False)  # Interrupt request is being handled, so disable flag
                 self._push_current_address_to_stack()
-                self.cpu.register.PC = self.SERIAL_HANDLER
-                self.cpu.halted = False
+                self.gb.cpu.register.PC = self.SERIAL_HANDLER
+                self.gb.cpu.halted = False
                 cycles_spent = 5
             elif self.joypad_requested() and self.joypad_enabled():
                 self.IME = False  # Disable interrupts
                 self.set_joypad_requested_flag(False)  # Interrupt request is being handled, so disable flag
                 self._push_current_address_to_stack()
-                self.cpu.register.PC = self.JOYPAD_HANDLER
-                self.cpu.halted = False
+                self.gb.cpu.register.PC = self.JOYPAD_HANDLER
+                self.gb.cpu.halted = False
                 cycles_spent = 5
 
         # Prepare for next update cycle
@@ -100,13 +108,13 @@ class Interrupts:
 
     # Get Flags
 
-    def _get_flag(self,address,bit_position):
+    def _get_flag(self, address: int, bit_position: int):
         """
         Get specified flag bit.
         :param address: Address to read from memory
         :param bit_position: Flag to return
         """
-        interrupt_flag_byte = self.cpu.memory.read_8bit(address)
+        interrupt_flag_byte = self.gb.memory.read_8bit(address)
         mask = 1 << bit_position
         return (interrupt_flag_byte & mask) >> bit_position
 
@@ -152,57 +160,57 @@ class Interrupts:
 
     # Set Flags
 
-    def _set_flag(self,address,bit_position,new_value):
+    def _set_flag(self, address: int, bit_position: int, new_value: int):
         """
         Change specified flag bit in register F.
         :param address: Address to write in memory
         :param bit_position: Bit to change
         :param new_value: New value for specified bit
         """
-        interrupt_flag_byte = self.cpu.memory.read_8bit(address)
+        interrupt_flag_byte = self.gb.memory.read_8bit(address)
         new_value = int(new_value)  # True == 1; False == 0
         mask = 1 << bit_position
         if (interrupt_flag_byte & mask) != (new_value << bit_position):  # If current value != new_value, flip current
             interrupt_flag_byte = interrupt_flag_byte ^ mask
-            self.cpu.memory.write_8bit(address,interrupt_flag_byte)
+            self.gb.memory.write_8bit(address,interrupt_flag_byte)
 
-    def set_v_blank_requested_flag(self,new_value):
+    def set_v_blank_requested_flag(self, new_value: int):
         """ Set V-Blank interrupt requested flag """
         self._set_flag(self.REQUESTS_FLAG_ADDRESS,0,new_value)
 
-    def set_lcd_stat_requested_flag(self,new_value):
+    def set_lcd_stat_requested_flag(self, new_value: int):
         """ Set LCD STAT interrupt requested flag """
         self._set_flag(self.REQUESTS_FLAG_ADDRESS,1,new_value)
 
-    def set_timer_requested_flag(self,new_value):
+    def set_timer_requested_flag(self, new_value: int):
         """ Set Timer interrupt requested flag """
         self._set_flag(self.REQUESTS_FLAG_ADDRESS,2,new_value)
 
-    def set_serial_requested_flag(self,new_value):
+    def set_serial_requested_flag(self, new_value: int):
         """ Set Serial interrupt requested flag """
         self._set_flag(self.REQUESTS_FLAG_ADDRESS,3,new_value)
 
-    def set_joypad_requested_flag(self,new_value):
+    def set_joypad_requested_flag(self, new_value: int):
         """ Set Joypad interrupt requested flag """
         self._set_flag(self.REQUESTS_FLAG_ADDRESS,4,new_value)
 
-    def set_v_blank_enabled_flag(self, new_value):
+    def set_v_blank_enabled_flag(self,  new_value: int):
         """ Set V-Blank interrupt enabled flag """
         self._set_flag(self.ENABLED_FLAG_ADDRESS,0,new_value)
 
-    def set_lcd_stat_enabled_flag(self, new_value):
+    def set_lcd_stat_enabled_flag(self,  new_value: int):
         """ Set LCD STAT interrupt enabled flag """
         self._set_flag(self.ENABLED_FLAG_ADDRESS,1,new_value)
 
-    def set_timer_enabled_flag(self, new_value):
+    def set_timer_enabled_flag(self,  new_value: int):
         """ Set Timer interrupt enabled flag """
         self._set_flag(self.ENABLED_FLAG_ADDRESS,2,new_value)
 
-    def set_serial_enabled_flag(self, new_value):
+    def set_serial_enabled_flag(self,  new_value: int):
         """ Set Serial interrupt enabled flag """
         self._set_flag(self.ENABLED_FLAG_ADDRESS,3,new_value)
 
-    def set_joypad_enabled_flag(self, new_value):
+    def set_joypad_enabled_flag(self,  new_value: int):
         """ Set Joypad interrupt enabled flag """
         self._set_flag(self.ENABLED_FLAG_ADDRESS,4,new_value)
 
@@ -210,15 +218,16 @@ class Interrupts:
 
     def _push_current_address_to_stack(self):
         """ Push current address to stack so game knows where to return to after handling interrupt """
-        self.cpu.register.SP = (self.cpu.register.SP - 2) & 0xFFFF  # Increase stack
-        self.cpu.memory.write_16bit(self.cpu.register.SP, self.cpu.register.PC)  # Store PC into new stack element
+        self.gb.cpu.register.SP = (self.gb.cpu.register.SP - 2) & 0xFFFF  # Increase stack
+        self.gb.memory.write_16bit(
+            self.gb.cpu.register.SP, self.gb.cpu.register.PC)  # Store PC into new stack element
 
     def debug(self):
         """
         Prints debug info to console.
         """
-        requests_byte = "{:08b}".format(self.cpu.memory.read_8bit(self.REQUESTS_FLAG_ADDRESS))
-        enabled_byte = "{:08b}".format(self.cpu.memory.read_8bit(self.ENABLED_FLAG_ADDRESS))
-        self.cpu.logger.debug("IEM: %s\tRequests(IF@FF0F): %s\tEnabled(IE@FFFF): %s\tEnable_next: %s\tDisable_next: %s",
-                              self.IME,requests_byte,enabled_byte,self.enable_IME_after_next_instruction,
-                              self.disable_IME_after_next_instruction)
+        requests_byte = "{:08b}".format(self.gb.memory.read_8bit(self.REQUESTS_FLAG_ADDRESS))
+        enabled_byte = "{:08b}".format(self.gb.memory.read_8bit(self.ENABLED_FLAG_ADDRESS))
+        self.logger.debug("IEM: %s\tRequests(IF@FF0F): %s\tEnabled(IE@FFFF): %s\tEnable_next: %s\tDisable_next: %s",
+                          self.IME,requests_byte,enabled_byte,self.enable_IME_after_next_instruction,
+                          self.disable_IME_after_next_instruction)

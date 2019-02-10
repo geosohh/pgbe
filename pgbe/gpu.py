@@ -1,42 +1,53 @@
 """
-Video function
+Game Boy GPU
+
+Drawing begins on the top left, and is done one line at a time.
+
+See:
+- https://realboyemulator.files.wordpress.com/2013/01/gbcpuman.pdf
+- http://imrannazar.com/GameBoy-Emulation-in-JavaScript:-GPU-Timings
+- http://imrannazar.com/GameBoy-Emulation-in-JavaScript:-Graphics
 """
-
-
 import pyglet
+import logging
 
 
 class GPU:
-    """
-    Game Boy GPU
+    """ GB GPU + screen drawing """
 
-    Drawing begins on the top left, and is done one line at a time.
+    # Helper values
+    RGB_SIZE = 3  # R, G and B = 3
+    DISPLAY_COLORS = {0: (255, 255, 255),
+                      1: (192, 192, 192),
+                      2: (96, 96, 96),
+                      3: (0, 0, 0)}  # colors displayed by the Game Boy
 
-    See:
-    - https://realboyemulator.files.wordpress.com/2013/01/gbcpuman.pdf
-    - http://imrannazar.com/GameBoy-Emulation-in-JavaScript:-GPU-Timings
-    """
-
+    # GB Memory addresses
     LCD_STAT_IO_ADDRESS = 0xFF41  # also called STAT
     SCROLL_Y_ADDRESS = 0xFF42  # also called SCY
     SCROLL_X_ADDRESS = 0xFF43  # also called SCX
     LCD_Y_COORDINATE_ADDRESS = 0xFF44  # also called LY
     BACKGROUND_PALETTE_DATA_ADDRESS = 0xFF47  # also called BGP
 
-    DISPLAY_COLORS = {0:(255,255,255), 1:(192,192,192), 2:(96,96,96), 3:(0,0,0)}  # colors displayed by the game boy
+    def __init__(self, gb):
+        """
+        :type gb: gb.GB
+        """
+        # Communication with other components
+        self.gb = gb
 
-    def __init__(self,cpu):
-        self.cpu = cpu  # To access/modify gpu-related memory
+        # State initialization
         self.cpu_cycles = 0  # Used as a unit of measurement for gpu timing
-
         self.tile_data_set = self._init_tile_set(255)
-        self.tile_image_set = self._init_tile_set(None)
+        self.tile_image_set = self._init_tile_set(None)  # TODO: Is it OK to use None? Maybe use 0 instead?
         self.outdated_tile_image = self._init_outdated_tile_images()
         self._update_tile_images()
-
         self.set_lcd_controller_mode(2)
 
-    def update(self,cpu_cycles_spent):
+        # Logger
+        self.logger = logging.getLogger("pgbe")
+
+    def update(self, cpu_cycles_spent: int):
         """
         Executed after each instruction. Update the status of gpu and makes the required changes.
 
@@ -90,7 +101,7 @@ class GPU:
 
     # Tile set
     @staticmethod
-    def _init_tile_set(init_value):
+    def _init_tile_set(init_value: int = None):
         """
         Create data structure to store tile data.
         :param init_value: Value used to initialize all tiles
@@ -116,7 +127,7 @@ class GPU:
             blank_tile_set[0].add(t)
         return blank_tile_set
 
-    def update_tile_set(self,set_index):
+    def update_tile_set(self, set_index: int):
         """
         Update all tiles from the given tile set. Used after loading a save state.
         :param set_index: Tile set to be updated.
@@ -125,7 +136,7 @@ class GPU:
             for line_index in range(8):
                 self._update_tile(set_index,tile_index,line_index)
 
-    def update_tile_at_address(self,address):
+    def update_tile_at_address(self, address: int):
         """
         Given a memory address in VRAM, calculate which tile has been modified and request it to be updated.
         :param address:
@@ -134,11 +145,11 @@ class GPU:
         set_index = 1 if address <= 0x8BFF else 0
         offset = 0x8000 if set_index == 1 else 0x8800
         address -= offset
-        tile_index = address / 16  # 16 == 2*8 -> number_of_bytes_per_line * lines_in_a_tile
-        line_index = (address - (tile_index * 16)) / 2
+        tile_index = int(address / 16)  # 16 == 2*8 -> number_of_bytes_per_line * lines_in_a_tile
+        line_index = int((address - (tile_index * 16)) / 2)
         self._update_tile(set_index,tile_index,line_index)
 
-    def _update_tile(self,set_index, tile_index, line_index):
+    def _update_tile(self, set_index: int, tile_index: int, line_index: int):
         """
         Update the emulator's tile data. Called after the VRAM memory is modified. The specified tile will be added to
         the list of outdated tiles, so that the tile image is generated again later.
@@ -150,8 +161,8 @@ class GPU:
         memory_offset = 0x8000 if set_index == 1 else 0x8800
         line_lsb_address = memory_offset + (tile_index*16) + (line_index*2)
         line_msb_address = line_lsb_address + 1
-        line_lsb = self.cpu.memory.read_8bit(line_lsb_address)
-        line_msb = self.cpu.memory.read_8bit(line_msb_address)
+        line_lsb = self.gb.memory.read_8bit(line_lsb_address)
+        line_msb = self.gb.memory.read_8bit(line_msb_address)
 
         if set_index == 0:  # tile_set contains a value from 0 to 255, but tile set 0 indexes are from -128 to 127
             tile_index -= 128
@@ -174,10 +185,10 @@ class GPU:
         for set_index in self.outdated_tile_image:
             for tile_index in self.outdated_tile_image[set_index]:
                 updated_tile = self.tile_data_set[set_index][tile_index]
-                rgb_tile = [0]*(len(updated_tile)*3)  # *3 == RGB
+                rgb_tile = [0]*(len(updated_tile)*self.RGB_SIZE)  # RGB, therefore size=3
                 for i in range(len(updated_tile)):
-                    rgb_i = i*3
-                    rgb_tile[rgb_i:rgb_i+3] = self._apply_palette_transformation(updated_tile[i])
+                    rgb_i = i*self.RGB_SIZE
+                    rgb_tile[rgb_i:rgb_i+self.RGB_SIZE] = self._apply_palette_transformation(updated_tile[i])
                 # noinspection PyCallingNonCallable,PyTypeChecker
                 raw_data = (pyglet.gl.GLubyte * len(rgb_tile))(*rgb_tile)
                 image_data = pyglet.image.ImageData(8,8,'RGB',raw_data)
@@ -186,14 +197,14 @@ class GPU:
     # STAT register
     def lcd_controller_mode(self):
         """ :return Current state of the LCD controller. Goes from 0 to 3. """
-        lcd_stat_byte = self.cpu.memory.read_8bit(self.LCD_STAT_IO_ADDRESS)
+        lcd_stat_byte = self.gb.memory.read_8bit(self.LCD_STAT_IO_ADDRESS)
         return lcd_stat_byte & 0b00000011
 
     def set_lcd_controller_mode(self,new_mode):
         """ Simulate display processing mode change """
-        lcd_stat_byte = self.cpu.memory.read_8bit(self.LCD_STAT_IO_ADDRESS)
+        lcd_stat_byte = self.gb.memory.read_8bit(self.LCD_STAT_IO_ADDRESS)
         new_lcd_stat_byte = (lcd_stat_byte & 0b11111100) | new_mode
-        self.cpu.memory.write_8bit(self.LCD_STAT_IO_ADDRESS,new_lcd_stat_byte)
+        self.gb.memory.write_8bit(self.LCD_STAT_IO_ADDRESS,new_lcd_stat_byte)
 
     # LY register
     def go_to_next_lcd_y_line(self):
@@ -201,12 +212,12 @@ class GPU:
         Simulate display processing line change.
         :return Number of the next line that will start processing now
         """
-        current_line = self.cpu.memory.read_8bit(self.LCD_Y_COORDINATE_ADDRESS)
+        current_line = self.gb.memory.read_8bit(self.LCD_Y_COORDINATE_ADDRESS)
         if current_line == 153:
             new_line = 0
         else:
             new_line = current_line + 1
-        self.cpu.memory.write_8bit(self.LCD_Y_COORDINATE_ADDRESS,new_line)
+        self.gb.memory.write_8bit(self.LCD_Y_COORDINATE_ADDRESS,new_line)
         return new_line
 
     # SCY register
@@ -215,7 +226,7 @@ class GPU:
         Used to scroll the background image, i.e. select the part of it that will be shown on screen.
         :return: Current Y offset
         """
-        return self.cpu.memory.read_8bit(self.SCROLL_Y_ADDRESS)
+        return self.gb.memory.read_8bit(self.SCROLL_Y_ADDRESS)
 
     # SCX register
     def scroll_x(self):
@@ -223,9 +234,9 @@ class GPU:
         Used to scroll the background image, i.e. select the part of it that will be shown on screen.
         :return: Current X offset
         """
-        return self.cpu.memory.read_8bit(self.SCROLL_X_ADDRESS)
+        return self.gb.memory.read_8bit(self.SCROLL_X_ADDRESS)
 
-    def _apply_palette_transformation(self, base_color):
+    def _apply_palette_transformation(self, base_color: int):
         """
         Converts the default color value from a pixel into the correct one based on the palette being applied.
         Bit 7-6 - Shade for Color Number 3
@@ -235,7 +246,7 @@ class GPU:
         The four possible gray shades are: 0=White, 1=Light gray, 2=Dark gray, 3=Black
         :return:  Tuple with correct color based on palette
         """
-        palette = self.cpu.memory.read_8bit(self.BACKGROUND_PALETTE_DATA_ADDRESS)
+        palette = self.gb.memory.read_8bit(self.BACKGROUND_PALETTE_DATA_ADDRESS)
         correct_color = (palette >> (base_color*2)) & 0b00000011
         return self.DISPLAY_COLORS[correct_color]
 
@@ -243,6 +254,6 @@ class GPU:
         """
         Prints debug info to console.
         """
-        current_lcd_line = self.cpu.memory.read_8bit(self.LCD_Y_COORDINATE_ADDRESS)
+        current_lcd_line = self.gb.memory.read_8bit(self.LCD_Y_COORDINATE_ADDRESS)
         mode = self.lcd_controller_mode()
-        self.cpu.logger.debug("Mode: %i\tLY(FF44): %i\tCycles: %i",mode,current_lcd_line,self.cpu_cycles)
+        self.logger.debug("Mode: %i\tLY(FF44): %i\tCycles: %i",mode,current_lcd_line,self.cpu_cycles)

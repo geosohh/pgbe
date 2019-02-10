@@ -1,33 +1,38 @@
 """
 Memory
+
+From 0x0000 to 0xFFFF (64kB), stored as a binary array.
+
+As in the cartridge, data in memory is also stored in little endian format (i.e. least significant byte first).
+
+The addresses E000-FE00 are an "echo" (i.e. copy) of the internal RAM (C000-DE00). Bytes written in one will
+appear in the other as well.
+
+See:
+- https://realboyemulator.files.wordpress.com/2013/01/gbcpuman.pdf - page 8
+- http://gameboy.mongenel.com/dmg/asmmemmap.html
+- http://gameboy.mongenel.com/dmg/lesson5.html
+- https://realboyemulator.wordpress.com/2013/01/02/the-nintendo-game-boy-part-3/
+- https://stackoverflow.com/questions/21639597/z80-register-endianness
 """
-
-
 import array
 import logging
 
 
 class Memory:
-    """
-    Memory
+    """ Memory """
 
-    From 0x0000 to 0xFFFF (64kB), stored as a binary array.
+    def __init__(self, gb):
+        """
+        :type gb: gb.GB
+        """
+        # Communication with other components
+        self.gb = gb
 
-    As in the cartridge, data in memory is also stored in little endian format (i.e. least significant byte first).
-
-    The addresses E000-FE00 are an "echo" (i.e. copy) of the internal RAM (C000-DE00). Bytes written in one will
-    appear in the other as well.
-
-    See:
-    - https://realboyemulator.files.wordpress.com/2013/01/gbcpuman.pdf - page 8
-    - http://gameboy.mongenel.com/dmg/asmmemmap.html
-    - http://gameboy.mongenel.com/dmg/lesson5.html
-    - https://realboyemulator.wordpress.com/2013/01/02/the-nintendo-game-boy-part-3/
-    - https://stackoverflow.com/questions/21639597/z80-register-endianness
-    """
-    def __init__(self,cpu):
-        self.cpu = cpu
+        # State initialization
         self._memory_map = self._generate_memory_map()
+
+        # Logger
         self.logger = logging.getLogger("pgbe")
 
     @staticmethod
@@ -41,7 +46,7 @@ class Memory:
         byte_array.extend((0x00,) * (0xFFFF + 1))
         return byte_array
 
-    def write_8bit(self,address,value):
+    def write_8bit(self, address: int, value: int):
         """
         Writes the given value at the given memory address.
         :param address: Address to write
@@ -59,9 +64,9 @@ class Memory:
             self._memory_map[address+0x2000] = value
         elif 0x8000 <= address <= 0x97FF:
             # A pixel in the tile set has been changed, so update the internal tile representation
-            self.cpu.gpu.update_tile_at_address(address)
+            self.gb.gpu.update_tile_at_address(address)
 
-    def write_16bit(self, address, value):
+    def write_16bit(self, address: int, value: int):
         """
         Writes 16-bit big-endian value at the given memory address. Memory is little-endian, so least significant byte
         goes at address, most significant byte goes at address+1.
@@ -73,7 +78,7 @@ class Memory:
         self.write_8bit(address, lsb)
         self.write_8bit(address+1, msb)
 
-    def read_8bit(self,address):
+    def read_8bit(self, address: int):
         """
         Reads 8-bit value from the given address in the memory.
         :param address: Memory address to read data from
@@ -81,7 +86,7 @@ class Memory:
         """
         return self._memory_map[address]
 
-    def read_16bit(self,address):
+    def read_16bit(self, address: int):
         """
         Reads 16-bit value from the given address in the memory. Least significant byte in address, most significant
         byte in address+1.

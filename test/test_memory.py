@@ -17,7 +17,9 @@ def memory():
     :return: new memory instance
     """
     from memory import Memory
-    return Memory()
+    from gb import GB
+    gb = GB()
+    return Memory(gb)  # To remove all memory initialization made by other components
 
 
 """

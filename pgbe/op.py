@@ -20,17 +20,18 @@ values have to be converted to Big-endian first.
 """
 
 
-def execute(cpu,opcode):
+def execute(gb, opcode: int):
     """
     Called by the CPU to execute an instruction.
     
-    :param cpu: CPU instance 
+    :param gb instance
+    :type gb: gb.GB
     :param opcode: Instruction to execute
     """
-    return _instruction_dict[opcode](cpu)
+    return _instruction_dict[opcode](gb)
 
 
-def get_big_endian_value(msb, lsb):
+def get_big_endian_value(msb: int, lsb: int):
     """
     Joins the two bytes received from the cartridge into a single, big-endian value.
 
@@ -41,7 +42,7 @@ def get_big_endian_value(msb, lsb):
     return (msb << 8) | lsb
 
 
-def get_little_endian_value(msb, lsb):
+def get_little_endian_value(msb: int, lsb: int):
     """
     Joins the two bytes received from the cartridge into a single, little-endian value.
 
@@ -52,7 +53,7 @@ def get_little_endian_value(msb, lsb):
     return (lsb << 8) | msb
 
 
-def convert_unsigned_integer_to_signed(value, bit_length=8):
+def convert_unsigned_integer_to_signed(value: int, bit_length: int = 8):
     """
     Python does not have an "unsigned" integer, but since its integer is "infinite", when converting hex/bin to int the
     value will be converted as if it was an unsigned hex/bin (e.g. int(0xFF) will return 255, not -1). This function
@@ -73,2100 +74,2097 @@ def convert_unsigned_integer_to_signed(value, bit_length=8):
 
 # OPCODES 0x
 # noinspection PyUnusedLocal
-def code_00(cpu):
+def code_00(gb):
     """ NOP - Does nothing """
     return 4
 
 
-def code_01(cpu):
+def code_01(gb):
     """ LD BC,d16 - Stores given 16-bit value at BC """
-    lsb = cpu.read_next_byte_from_cartridge()
-    msb = cpu.read_next_byte_from_cartridge()
+    lsb = gb.cpu.read_next_byte_from_cartridge()
+    msb = gb.cpu.read_next_byte_from_cartridge()
     d16 = get_big_endian_value(msb, lsb)
-    cpu.register.set_bc(d16)
+    gb.cpu.register.set_bc(d16)
     return 12
 
 
-def code_02(cpu):
+def code_02(gb):
     """ LD (BC),A - Stores reg at the address in BC """
-    a16 = cpu.register.get_bc()
-    cpu.memory.write_8bit(a16,cpu.register.A)
+    a16 = gb.cpu.register.get_bc()
+    gb.memory.write_8bit(a16,gb.cpu.register.A)
     return 8
 
 
-def code_03(cpu):
+def code_03(gb):
     """ INC BC - BC=BC+1 """
-    cpu.register.set_bc((cpu.register.get_bc() + 1) & 0xFFFF)
+    gb.cpu.register.set_bc((gb.cpu.register.get_bc() + 1) & 0xFFFF)
     return 8
 
 
-def code_04(cpu):
+def code_04(gb):
     """ INC B - B=B+1 """
-    cpu.register.B = (cpu.register.B + 1) & 0xFF
-    cpu.register.set_z_flag(cpu.register.B == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag((cpu.register.B & 0x0F) == 0)
+    gb.cpu.register.B = (gb.cpu.register.B + 1) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.B == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag((gb.cpu.register.B & 0x0F) == 0)
     return 4
 
 
-def code_05(cpu):
+def code_05(gb):
     """ DEC B - B=B-1 """
-    cpu.register.B = (cpu.register.B - 1) & 0xFF
-    cpu.register.set_z_flag(cpu.register.B == 0)
-    cpu.register.set_n_flag(True)
-    cpu.register.set_h_flag((cpu.register.B & 0x0F) == 0x0F)
+    gb.cpu.register.B = (gb.cpu.register.B - 1) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.B == 0)
+    gb.cpu.register.set_n_flag(True)
+    gb.cpu.register.set_h_flag((gb.cpu.register.B & 0x0F) == 0x0F)
     return 4
 
 
-def code_06(cpu):
+def code_06(gb):
     """ LD B,d8 """
-    d8 = cpu.read_next_byte_from_cartridge()
-    cpu.register.B = d8
+    d8 = gb.cpu.read_next_byte_from_cartridge()
+    gb.cpu.register.B = d8
     return 8
 
 
-def code_07(cpu):
+def code_07(gb):
     """ RLCA - Copy register A bit 7 to Carry flag, then rotate register A left """
-    bit_7 = cpu.register.A >> 7
-    cpu.register.A = ((cpu.register.A << 1) + bit_7) & 0xFF
-    cpu.register.set_z_flag(cpu.register.A == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(bit_7)
+    bit_7 = gb.cpu.register.A >> 7
+    gb.cpu.register.A = ((gb.cpu.register.A << 1) + bit_7) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.A == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(bit_7)
     return 4
 
 
-def code_08(cpu):
+def code_08(gb):
     """ LD (a16),SP - Set SP value into address (a16) """
-    lsb = cpu.read_next_byte_from_cartridge()
-    msb = cpu.read_next_byte_from_cartridge()
+    lsb = gb.cpu.read_next_byte_from_cartridge()
+    msb = gb.cpu.read_next_byte_from_cartridge()
     a16 = get_big_endian_value(msb, lsb)
-    cpu.memory.write_16bit(a16,cpu.register.SP)
+    gb.memory.write_16bit(a16,gb.cpu.register.SP)
     return 20
 
 
-def code_09(cpu):
+def code_09(gb):
     """ ADD HL,BC - HL=HL+BC """
-    result = cpu.register.get_hl() + cpu.register.get_bc()
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(((cpu.register.get_hl() & 0x0FFF) + (cpu.register.get_bc() & 0x0FFF)) > 0x0FFF)
-    cpu.register.set_c_flag(result > 0xFFFF)
-    cpu.register.set_hl(result & 0xFFFF)
+    result = gb.cpu.register.get_hl() + gb.cpu.register.get_bc()
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(((gb.cpu.register.get_hl() & 0x0FFF) + (gb.cpu.register.get_bc() & 0x0FFF)) > 0x0FFF)
+    gb.cpu.register.set_c_flag(result > 0xFFFF)
+    gb.cpu.register.set_hl(result & 0xFFFF)
     return 8
 
 
-def code_0a(cpu):
+def code_0a(gb):
     """ LD A,(BC) - Load (value at the address in BC) to the register """
-    d8 = cpu.memory.read_8bit(cpu.register.get_bc())
-    cpu.register.A = d8
+    d8 = gb.memory.read_8bit(gb.cpu.register.get_bc())
+    gb.cpu.register.A = d8
     return 8
 
 
-def code_0b(cpu):
+def code_0b(gb):
     """ DEC BC - BC=BC-1 """
-    cpu.register.set_bc((cpu.register.get_bc() - 1) & 0xFFFF)
+    gb.cpu.register.set_bc((gb.cpu.register.get_bc() - 1) & 0xFFFF)
     return 8
 
 
-def code_0c(cpu):
+def code_0c(gb):
     """ INC C - C=C+1 """
-    cpu.register.C = (cpu.register.C + 1) & 0xFF
-    cpu.register.set_z_flag(cpu.register.C == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag((cpu.register.C & 0x0F) == 0)
+    gb.cpu.register.C = (gb.cpu.register.C + 1) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.C == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag((gb.cpu.register.C & 0x0F) == 0)
     return 4
 
 
-def code_0d(cpu):
+def code_0d(gb):
     """ DEC C - C=C-1 """
-    cpu.register.C = (cpu.register.C - 1) & 0xFF
-    cpu.register.set_z_flag(cpu.register.C == 0)
-    cpu.register.set_n_flag(True)
-    cpu.register.set_h_flag((cpu.register.C & 0x0F) == 0x0F)
+    gb.cpu.register.C = (gb.cpu.register.C - 1) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.C == 0)
+    gb.cpu.register.set_n_flag(True)
+    gb.cpu.register.set_h_flag((gb.cpu.register.C & 0x0F) == 0x0F)
     return 4
 
 
-def code_0e(cpu):
+def code_0e(gb):
     """ LD C,d8 """
-    d8 = cpu.read_next_byte_from_cartridge()
-    cpu.register.C = d8
+    d8 = gb.cpu.read_next_byte_from_cartridge()
+    gb.cpu.register.C = d8
     return 8
 
 
-def code_0f(cpu):
+def code_0f(gb):
     """ RRCA - Copy register A bit 0 to Carry flag, then rotate register A right """
-    bit_0 = cpu.register.A & 0b00000001
-    cpu.register.A = ((bit_0 << 7) + (cpu.register.A >> 1)) & 0xFF
-    cpu.register.set_z_flag(cpu.register.A == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(bit_0)
+    bit_0 = gb.cpu.register.A & 0b00000001
+    gb.cpu.register.A = ((bit_0 << 7) + (gb.cpu.register.A >> 1)) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.A == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(bit_0)
     return 4
 
 
 # OPCODES 1x
-def code_10(cpu):
+def code_10(gb):
     """
     STOP - Switch Game Boy into VERY low power standby mode. Halt CPU and LCD display until a button is pressed
     See: http://gbdev.gg8.se/wiki/articles/Reducing_Power_Consumption
     """
-    cpu.stopped = True
+    gb.cpu.stopped = True
     return 4
 
 
-def code_11(cpu):
+def code_11(gb):
     """ LD DE,d16 - Stores given 16-bit value at DE """
-    lsb = cpu.read_next_byte_from_cartridge()
-    msb = cpu.read_next_byte_from_cartridge()
+    lsb = gb.cpu.read_next_byte_from_cartridge()
+    msb = gb.cpu.read_next_byte_from_cartridge()
     d16 = get_big_endian_value(msb, lsb)
-    cpu.register.set_de(d16)
+    gb.cpu.register.set_de(d16)
     return 12
 
 
-def code_12(cpu):
+def code_12(gb):
     """ LD (DE),A - Stores reg at the address in DE """
-    a16 = cpu.register.get_de()
-    cpu.memory.write_8bit(a16, cpu.register.A)
+    a16 = gb.cpu.register.get_de()
+    gb.memory.write_8bit(a16, gb.cpu.register.A)
     return 8
 
 
-def code_13(cpu):
+def code_13(gb):
     """ INC DE - DE=DE+1 """
-    cpu.register.set_de((cpu.register.get_de() + 1) & 0xFFFF)
+    gb.cpu.register.set_de((gb.cpu.register.get_de() + 1) & 0xFFFF)
     return 8
 
 
-def code_14(cpu):
+def code_14(gb):
     """ INC D - D=D+1 """
-    cpu.register.D = (cpu.register.D + 1) & 0xFF
-    cpu.register.set_z_flag(cpu.register.D == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag((cpu.register.D & 0x0F) == 0)
+    gb.cpu.register.D = (gb.cpu.register.D + 1) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.D == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag((gb.cpu.register.D & 0x0F) == 0)
     return 4
 
 
-def code_15(cpu):
+def code_15(gb):
     """ DEC D - D=D-1 """
-    cpu.register.D = (cpu.register.D - 1) & 0xFF
-    cpu.register.set_z_flag(cpu.register.D == 0)
-    cpu.register.set_n_flag(True)
-    cpu.register.set_h_flag((cpu.register.D & 0x0F) == 0x0F)
+    gb.cpu.register.D = (gb.cpu.register.D - 1) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.D == 0)
+    gb.cpu.register.set_n_flag(True)
+    gb.cpu.register.set_h_flag((gb.cpu.register.D & 0x0F) == 0x0F)
     return 4
 
 
-def code_16(cpu):
+def code_16(gb):
     """ LD D,d8 """
-    d8 = cpu.read_next_byte_from_cartridge()
-    cpu.register.D = d8
+    d8 = gb.cpu.read_next_byte_from_cartridge()
+    gb.cpu.register.D = d8
     return 8
 
 
-def code_17(cpu):
+def code_17(gb):
     """ RLA - Copy register A bit 7 to temp, replace A bit 7 with Carry flag, rotate A left, copy temp to Carry flag """
-    bit_7 = cpu.register.A >> 7
-    cpu.register.A = ((cpu.register.A << 1) + cpu.register.get_c_flag()) & 0xFF
-    cpu.register.set_z_flag(cpu.register.A == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(bit_7)
+    bit_7 = gb.cpu.register.A >> 7
+    gb.cpu.register.A = ((gb.cpu.register.A << 1) + gb.cpu.register.get_c_flag()) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.A == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(bit_7)
     return 4
 
 
-def code_18(cpu):
+def code_18(gb):
     """ JP r8 - make the command at address (current address + r8) the next to be executed (r8 is signed) """
-    r8 = cpu.read_next_byte_from_cartridge()
+    r8 = gb.cpu.read_next_byte_from_cartridge()
     r8 = convert_unsigned_integer_to_signed(r8)
-    cpu.register.PC = (cpu.register.PC + r8) & 0xFFFF
+    gb.cpu.register.PC = (gb.cpu.register.PC + r8) & 0xFFFF
     return 12
 
 
-def code_19(cpu):
+def code_19(gb):
     """ ADD HL,DE - HL=HL+DE """
-    result = cpu.register.get_hl() + cpu.register.get_de()
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(((cpu.register.get_hl() & 0x0FFF) + (cpu.register.get_de() & 0x0FFF)) > 0x0FFF)
-    cpu.register.set_c_flag(result > 0xFFFF)
-    cpu.register.set_hl(result & 0xFFFF)
+    result = gb.cpu.register.get_hl() + gb.cpu.register.get_de()
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(((gb.cpu.register.get_hl() & 0x0FFF) + (gb.cpu.register.get_de() & 0x0FFF)) > 0x0FFF)
+    gb.cpu.register.set_c_flag(result > 0xFFFF)
+    gb.cpu.register.set_hl(result & 0xFFFF)
     return 8
 
 
-def code_1a(cpu):
+def code_1a(gb):
     """ LD A,(DE) - Load reg with the value at the address in DE """
-    d8 = cpu.memory.read_8bit(cpu.register.get_de())
-    cpu.register.A = d8
+    d8 = gb.memory.read_8bit(gb.cpu.register.get_de())
+    gb.cpu.register.A = d8
     return 8
 
 
-def code_1b(cpu):
+def code_1b(gb):
     """ DEC DE - DE=DE-1 """
-    cpu.register.set_de((cpu.register.get_de() - 1) & 0xFFFF)
+    gb.cpu.register.set_de((gb.cpu.register.get_de() - 1) & 0xFFFF)
     return 8
 
 
-def code_1c(cpu):
+def code_1c(gb):
     """ INC E - E=E+1 """
-    cpu.register.E = (cpu.register.E + 1) & 0xFF
-    cpu.register.set_z_flag(cpu.register.E == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag((cpu.register.E & 0x0F) == 0)
+    gb.cpu.register.E = (gb.cpu.register.E + 1) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.E == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag((gb.cpu.register.E & 0x0F) == 0)
     return 4
 
 
-def code_1d(cpu):
+def code_1d(gb):
     """ DEC E - E=E-1 """
-    cpu.register.E = (cpu.register.E - 1) & 0xFF
-    cpu.register.set_z_flag(cpu.register.E == 0)
-    cpu.register.set_n_flag(True)
-    cpu.register.set_h_flag((cpu.register.E & 0x0F) == 0x0F)
+    gb.cpu.register.E = (gb.cpu.register.E - 1) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.E == 0)
+    gb.cpu.register.set_n_flag(True)
+    gb.cpu.register.set_h_flag((gb.cpu.register.E & 0x0F) == 0x0F)
     return 4
 
 
-def code_1e(cpu):
+def code_1e(gb):
     """ LD E,d8 """
-    d8 = cpu.read_next_byte_from_cartridge()
-    cpu.register.E = d8
+    d8 = gb.cpu.read_next_byte_from_cartridge()
+    gb.cpu.register.E = d8
     return 8
 
 
-def code_1f(cpu):
+def code_1f(gb):
     """ RRA - Copy register A bit 0 to temp, replace A bit 0 w/ Carry flag, rotate A right, copy temp to Carry flag """
-    bit_0 = cpu.register.A & 0b00000001
-    cpu.register.A = ((cpu.register.get_c_flag() << 7) + (cpu.register.A >> 1)) & 0xFF
-    cpu.register.set_z_flag(cpu.register.A == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(bit_0)
+    bit_0 = gb.cpu.register.A & 0b00000001
+    gb.cpu.register.A = ((gb.cpu.register.get_c_flag() << 7) + (gb.cpu.register.A >> 1)) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.A == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(bit_0)
     return 4
 
 
 # OPCODES 2x
-def code_20(cpu):
+def code_20(gb):
     """ JR NZ,r8 - If flag Z is reset, add r8 to current address and jump to it """
-    r8 = cpu.read_next_byte_from_cartridge()  # Has to be read even if it is not going to be used
-    if not cpu.register.get_z_flag():
+    r8 = gb.cpu.read_next_byte_from_cartridge()  # Has to be read even if it is not going to be used
+    if not gb.cpu.register.get_z_flag():
         r8 = convert_unsigned_integer_to_signed(r8)
-        cpu.register.PC = (cpu.register.PC + r8) & 0xFFFF
+        gb.cpu.register.PC = (gb.cpu.register.PC + r8) & 0xFFFF
         return 12
     return 8
 
 
-def code_21(cpu):
+def code_21(gb):
     """ LD HL,d16 - Stores given 16-bit value at HL """
-    lsb = cpu.read_next_byte_from_cartridge()
-    msb = cpu.read_next_byte_from_cartridge()
+    lsb = gb.cpu.read_next_byte_from_cartridge()
+    msb = gb.cpu.read_next_byte_from_cartridge()
     d16 = get_big_endian_value(msb,lsb)
-    cpu.register.set_hl(d16)
+    gb.cpu.register.set_hl(d16)
     return 12
 
 
-def code_22(cpu):
+def code_22(gb):
     """ LD (HL+),A or LD (HLI),A or LDI (HL),A - Put value at A into address HL. Increment HL """
-    cpu.memory.write_8bit(cpu.register.get_hl(),cpu.register.A)
-    cpu.register.set_hl((cpu.register.get_hl() + 1) & 0xFFFF)
+    gb.memory.write_8bit(gb.cpu.register.get_hl(),gb.cpu.register.A)
+    gb.cpu.register.set_hl((gb.cpu.register.get_hl() + 1) & 0xFFFF)
     return 8
 
 
-def code_23(cpu):
+def code_23(gb):
     """ INC HL - HL=HL+1 """
-    cpu.register.set_hl((cpu.register.get_hl() + 1) & 0xFFFF)
+    gb.cpu.register.set_hl((gb.cpu.register.get_hl() + 1) & 0xFFFF)
     return 8
 
 
-def code_24(cpu):
+def code_24(gb):
     """ INC H - H=H+1 """
-    cpu.register.H = (cpu.register.H + 1) & 0xFF
-    cpu.register.set_z_flag(cpu.register.H == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag((cpu.register.H & 0x0F) == 0)
+    gb.cpu.register.H = (gb.cpu.register.H + 1) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.H == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag((gb.cpu.register.H & 0x0F) == 0)
     return 4
 
 
-def code_25(cpu):
+def code_25(gb):
     """ DEC H - H=H-1 """
-    cpu.register.H = (cpu.register.H - 1) & 0xFF
-    cpu.register.set_z_flag(cpu.register.H == 0)
-    cpu.register.set_n_flag(True)
-    cpu.register.set_h_flag((cpu.register.H & 0x0F) == 0x0F)
+    gb.cpu.register.H = (gb.cpu.register.H - 1) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.H == 0)
+    gb.cpu.register.set_n_flag(True)
+    gb.cpu.register.set_h_flag((gb.cpu.register.H & 0x0F) == 0x0F)
     return 4
 
 
-def code_26(cpu):
+def code_26(gb):
     """ LD H,d8 """
-    d8 = cpu.read_next_byte_from_cartridge()
-    cpu.register.H = d8
+    d8 = gb.cpu.read_next_byte_from_cartridge()
+    gb.cpu.register.H = d8
     return 8
 
 
-def code_27(cpu):
+def code_27(gb):
     """
     DAA - Adjust value in register A for Binary Coded Decimal representation
     See:  http://gbdev.gg8.se/wiki/articles/DAA
     """
-    n_flag = cpu.register.get_n_flag()
-    h_flag = cpu.register.get_h_flag()
-    c_flag = cpu.register.get_c_flag()
+    n_flag = gb.cpu.register.get_n_flag()
+    h_flag = gb.cpu.register.get_h_flag()
+    c_flag = gb.cpu.register.get_c_flag()
     if n_flag:
         if c_flag:
-            cpu.register.A = (cpu.register.A - 0x60) & 0xFF
+            gb.cpu.register.A = (gb.cpu.register.A - 0x60) & 0xFF
         if h_flag:
-            cpu.register.A = (cpu.register.A - 0x06) & 0xFF
+            gb.cpu.register.A = (gb.cpu.register.A - 0x06) & 0xFF
     else:
-        if c_flag or cpu.register.A > 0x99:
-            cpu.register.A = (cpu.register.A + 0x60) & 0xFF
-            cpu.register.set_c_flag(True)
-        if h_flag or (cpu.register.A & 0x0F) > 0x09:
-            cpu.register.A = (cpu.register.A + 0x06) & 0xFF
+        if c_flag or gb.cpu.register.A > 0x99:
+            gb.cpu.register.A = (gb.cpu.register.A + 0x60) & 0xFF
+            gb.cpu.register.set_c_flag(True)
+        if h_flag or (gb.cpu.register.A & 0x0F) > 0x09:
+            gb.cpu.register.A = (gb.cpu.register.A + 0x06) & 0xFF
 
-    cpu.register.set_z_flag(cpu.register.A == 0)
-    cpu.register.set_h_flag(False)
+    gb.cpu.register.set_z_flag(gb.cpu.register.A == 0)
+    gb.cpu.register.set_h_flag(False)
     return 4
 
 
-def code_28(cpu):
+def code_28(gb):
     """ JR Z,r8 - If flag Z is set, add r8 to current address and jump to it """
-    r8 = cpu.read_next_byte_from_cartridge()  # Has to be read even if it is not going to be used
-    if cpu.register.get_z_flag():
+    r8 = gb.cpu.read_next_byte_from_cartridge()  # Has to be read even if it is not going to be used
+    if gb.cpu.register.get_z_flag():
         r8 = convert_unsigned_integer_to_signed(r8)
-        cpu.register.PC = (cpu.register.PC + r8) & 0xFFFF
+        gb.cpu.register.PC = (gb.cpu.register.PC + r8) & 0xFFFF
         return 12
     return 8
 
 
-def code_29(cpu):
+def code_29(gb):
     """ ADD HL,HL - HL=HL+HL """
-    result = cpu.register.get_hl() * 2
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(((cpu.register.get_hl() & 0x0FFF) * 2) > 0x0FFF)
-    cpu.register.set_c_flag(result > 0xFFFF)
-    cpu.register.set_hl(result & 0xFFFF)
+    result = gb.cpu.register.get_hl() * 2
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(((gb.cpu.register.get_hl() & 0x0FFF) * 2) > 0x0FFF)
+    gb.cpu.register.set_c_flag(result > 0xFFFF)
+    gb.cpu.register.set_hl(result & 0xFFFF)
     return 8
 
 
-def code_2a(cpu):
+def code_2a(gb):
     """ LD A,(HL+) or LD A,(HLI) or LDI A,(HL) - Put value at address HL into A. Increment HL """
-    cpu.register.A = cpu.memory.read_8bit(cpu.register.get_hl())
-    cpu.register.set_hl((cpu.register.get_hl() + 1) & 0xFFFF)
+    gb.cpu.register.A = gb.memory.read_8bit(gb.cpu.register.get_hl())
+    gb.cpu.register.set_hl((gb.cpu.register.get_hl() + 1) & 0xFFFF)
     return 8
 
 
-def code_2b(cpu):
+def code_2b(gb):
     """ DEC HL - HL=HL-1 """
-    cpu.register.set_hl((cpu.register.get_hl() - 1) & 0xFFFF)
+    gb.cpu.register.set_hl((gb.cpu.register.get_hl() - 1) & 0xFFFF)
     return 8
 
 
-def code_2c(cpu):
+def code_2c(gb):
     """ INC L - L=L+1 """
-    cpu.register.L = (cpu.register.L + 1) & 0xFF
-    cpu.register.set_z_flag(cpu.register.L == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag((cpu.register.L & 0x0F) == 0)
+    gb.cpu.register.L = (gb.cpu.register.L + 1) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.L == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag((gb.cpu.register.L & 0x0F) == 0)
     return 4
 
 
-def code_2d(cpu):
+def code_2d(gb):
     """ DEC L - L=L-1 """
-    cpu.register.L = (cpu.register.L - 1) & 0xFF
-    cpu.register.set_z_flag(cpu.register.L == 0)
-    cpu.register.set_n_flag(True)
-    cpu.register.set_h_flag((cpu.register.L & 0x0F) == 0x0F)
+    gb.cpu.register.L = (gb.cpu.register.L - 1) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.L == 0)
+    gb.cpu.register.set_n_flag(True)
+    gb.cpu.register.set_h_flag((gb.cpu.register.L & 0x0F) == 0x0F)
     return 4
 
 
-def code_2e(cpu):
+def code_2e(gb):
     """ LD L,d8 """
-    d8 = cpu.read_next_byte_from_cartridge()
-    cpu.register.L = d8
+    d8 = gb.cpu.read_next_byte_from_cartridge()
+    gb.cpu.register.L = d8
     return 8
 
 
-def code_2f(cpu):
+def code_2f(gb):
     """ CPL - Logical complement of register A (i.e. flip all bits) """
-    cpu.register.A = (~ cpu.register.A) & 0xFF
-    cpu.register.set_n_flag(True)
-    cpu.register.set_h_flag(True)
+    gb.cpu.register.A = (~ gb.cpu.register.A) & 0xFF
+    gb.cpu.register.set_n_flag(True)
+    gb.cpu.register.set_h_flag(True)
     return 4
 
 
 # OPCODES 3x
-def code_30(cpu):
+def code_30(gb):
     """ JR NC,r8 - If flag C is reset, add r8 to current address and jump to it """
-    r8 = cpu.read_next_byte_from_cartridge()  # Has to be read even if it is not going to be used
-    if not cpu.register.get_c_flag():
+    r8 = gb.cpu.read_next_byte_from_cartridge()  # Has to be read even if it is not going to be used
+    if not gb.cpu.register.get_c_flag():
         r8 = convert_unsigned_integer_to_signed(r8)
-        cpu.register.PC = (cpu.register.PC + r8) & 0xFFFF
+        gb.cpu.register.PC = (gb.cpu.register.PC + r8) & 0xFFFF
         return 12
     return 8
 
 
-def code_31(cpu):
+def code_31(gb):
     """ LD SP,d16 - Stores given 16-bit value at SP """
-    lsb = cpu.read_next_byte_from_cartridge()
-    msb = cpu.read_next_byte_from_cartridge()
+    lsb = gb.cpu.read_next_byte_from_cartridge()
+    msb = gb.cpu.read_next_byte_from_cartridge()
     d16 = get_big_endian_value(msb, lsb)
-    cpu.register.SP = d16
+    gb.cpu.register.SP = d16
     return 12
 
 
-def code_32(cpu):
+def code_32(gb):
     """ LD (HL-),A or LD (HLD),A or LDD (HL),A - Put value at A into address HL. Decrement HL """
-    cpu.memory.write_8bit(cpu.register.get_hl(), cpu.register.A)
-    cpu.register.set_hl((cpu.register.get_hl() - 1) & 0xFFFF)
+    gb.memory.write_8bit(gb.cpu.register.get_hl(), gb.cpu.register.A)
+    gb.cpu.register.set_hl((gb.cpu.register.get_hl() - 1) & 0xFFFF)
     return 8
 
 
-def code_33(cpu):
+def code_33(gb):
     """ INC SP - SP=SP+1 """
-    cpu.register.SP = (cpu.register.SP + 1) & 0xFFFF
+    gb.cpu.register.SP = (gb.cpu.register.SP + 1) & 0xFFFF
     return 8
 
 
-def code_34(cpu):
+def code_34(gb):
     """ INC (HL) - (value at address HL)=(value at address HL)+1 """
-    current_value = cpu.memory.read_8bit(cpu.register.get_hl())
+    current_value = gb.memory.read_8bit(gb.cpu.register.get_hl())
     new_value = (current_value + 1) & 0xFF
-    cpu.memory.write_8bit(cpu.register.get_hl(), new_value)
-    cpu.register.set_z_flag(new_value == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag((new_value & 0x0F) == 0)
+    gb.memory.write_8bit(gb.cpu.register.get_hl(), new_value)
+    gb.cpu.register.set_z_flag(new_value == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag((new_value & 0x0F) == 0)
     return 12
 
 
-def code_35(cpu):
+def code_35(gb):
     """ DEC (HL) - (value at address HL)=(value at address HL)-1 """
-    current_value = cpu.memory.read_8bit(cpu.register.get_hl())
+    current_value = gb.memory.read_8bit(gb.cpu.register.get_hl())
     new_value = (current_value - 1) & 0xFF
-    cpu.memory.write_8bit(cpu.register.get_hl(), new_value)
-    cpu.register.set_z_flag(new_value == 0)
-    cpu.register.set_n_flag(True)
-    cpu.register.set_h_flag((new_value & 0x0F) == 0x0F)
+    gb.memory.write_8bit(gb.cpu.register.get_hl(), new_value)
+    gb.cpu.register.set_z_flag(new_value == 0)
+    gb.cpu.register.set_n_flag(True)
+    gb.cpu.register.set_h_flag((new_value & 0x0F) == 0x0F)
     return 12
 
 
-def code_36(cpu):
+def code_36(gb):
     """ LD (HL),d8 - Stores d8 at the address in HL """
-    d8 = cpu.read_next_byte_from_cartridge()
-    cpu.memory.write_8bit(cpu.register.get_hl(), d8)
+    d8 = gb.cpu.read_next_byte_from_cartridge()
+    gb.memory.write_8bit(gb.cpu.register.get_hl(), d8)
     return 12
 
 
-def code_37(cpu):
+def code_37(gb):
     """ SCF - Set carry flag """
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(True)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(True)
     return 4
 
 
-def code_38(cpu):
+def code_38(gb):
     """ JR C,r8 - If flag C is set, add r8 to current address and jump to it """
-    r8 = cpu.read_next_byte_from_cartridge()  # Has to be read even if it is not going to be used
-    if cpu.register.get_c_flag():
+    r8 = gb.cpu.read_next_byte_from_cartridge()  # Has to be read even if it is not going to be used
+    if gb.cpu.register.get_c_flag():
         r8 = convert_unsigned_integer_to_signed(r8)
-        cpu.register.PC = (cpu.register.PC + r8) & 0xFFFF
+        gb.cpu.register.PC = (gb.cpu.register.PC + r8) & 0xFFFF
         return 12
     return 8
 
 
-def code_39(cpu):
+def code_39(gb):
     """ ADD HL,SP - HL=HL+SP """
-    result = cpu.register.get_hl() + cpu.register.SP
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(((cpu.register.get_hl() & 0x0FFF) + (cpu.register.SP & 0x0FFF)) > 0x0FFF)
-    cpu.register.set_c_flag(result > 0xFFFF)
-    cpu.register.set_hl(result & 0xFFFF)
+    result = gb.cpu.register.get_hl() + gb.cpu.register.SP
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(((gb.cpu.register.get_hl() & 0x0FFF) + (gb.cpu.register.SP & 0x0FFF)) > 0x0FFF)
+    gb.cpu.register.set_c_flag(result > 0xFFFF)
+    gb.cpu.register.set_hl(result & 0xFFFF)
     return 8
 
 
-def code_3a(cpu):
+def code_3a(gb):
     """ LD A,(HL-) or LD A,(HLD) or LDD A,(HL) - Put value at address HL into A. Decrement HL """
-    cpu.register.A = cpu.memory.read_8bit(cpu.register.get_hl())
-    cpu.register.set_hl((cpu.register.get_hl() - 1) & 0xFFFF)
+    gb.cpu.register.A = gb.memory.read_8bit(gb.cpu.register.get_hl())
+    gb.cpu.register.set_hl((gb.cpu.register.get_hl() - 1) & 0xFFFF)
     return 8
 
 
-def code_3b(cpu):
+def code_3b(gb):
     """ DEC SP - SP=SP-1 """
-    cpu.register.SP = (cpu.register.SP - 1) & 0xFFFF
+    gb.cpu.register.SP = (gb.cpu.register.SP - 1) & 0xFFFF
     return 8
 
 
-def code_3c(cpu):
+def code_3c(gb):
     """ INC A - A=A+1 """
-    cpu.register.A = (cpu.register.A + 1) & 0xFF
-    cpu.register.set_z_flag(cpu.register.A == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag((cpu.register.A & 0x0F) == 0)
+    gb.cpu.register.A = (gb.cpu.register.A + 1) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.A == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag((gb.cpu.register.A & 0x0F) == 0)
     return 4
 
 
-def code_3d(cpu):
+def code_3d(gb):
     """ DEC A - A=A-1 """
-    cpu.register.A = (cpu.register.A - 1) & 0xFF
-    cpu.register.set_z_flag(cpu.register.A == 0)
-    cpu.register.set_n_flag(True)
-    cpu.register.set_h_flag((cpu.register.A & 0x0F) == 0x0F)
+    gb.cpu.register.A = (gb.cpu.register.A - 1) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.A == 0)
+    gb.cpu.register.set_n_flag(True)
+    gb.cpu.register.set_h_flag((gb.cpu.register.A & 0x0F) == 0x0F)
     return 4
 
 
-def code_3e(cpu):
+def code_3e(gb):
     """ LD A,d8 """
-    d8 = cpu.read_next_byte_from_cartridge()
-    cpu.register.A = d8
+    d8 = gb.cpu.read_next_byte_from_cartridge()
+    gb.cpu.register.A = d8
     return 8
 
 
-def code_3f(cpu):
+def code_3f(gb):
     """ CCF - Invert carry flag """
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(not cpu.register.get_c_flag())
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(not gb.cpu.register.get_c_flag())
     return 4
 
 
 # OPCODES 4x
 # noinspection PyUnusedLocal
-def code_40(cpu):
+def code_40(gb):
     """ LD B,B (...why?) """
     return 4
 
 
-def code_41(cpu):
+def code_41(gb):
     """ LD B,C """
-    cpu.register.B = cpu.register.C
+    gb.cpu.register.B = gb.cpu.register.C
     return 4
 
 
-def code_42(cpu):
+def code_42(gb):
     """ LD B,D """
-    cpu.register.B = cpu.register.D
+    gb.cpu.register.B = gb.cpu.register.D
     return 4
 
 
-def code_43(cpu):
+def code_43(gb):
     """ LD B,E """
-    cpu.register.B = cpu.register.E
+    gb.cpu.register.B = gb.cpu.register.E
     return 4
 
 
-def code_44(cpu):
+def code_44(gb):
     """ LD B,H """
-    cpu.register.B = cpu.register.H
+    gb.cpu.register.B = gb.cpu.register.H
     return 4
 
 
-def code_45(cpu):
+def code_45(gb):
     """ LD B,L """
-    cpu.register.B = cpu.register.L
+    gb.cpu.register.B = gb.cpu.register.L
     return 4
 
 
-def code_46(cpu):
+def code_46(gb):
     """ LD B,(HL) - Load reg with the value at the address in HL """
-    cpu.register.B = cpu.memory.read_8bit(cpu.register.get_hl())
+    gb.cpu.register.B = gb.memory.read_8bit(gb.cpu.register.get_hl())
     return 8
 
 
-def code_47(cpu):
+def code_47(gb):
     """ LD B,A """
-    cpu.register.B = cpu.register.A
+    gb.cpu.register.B = gb.cpu.register.A
     return 4
 
 
-def code_48(cpu):
+def code_48(gb):
     """ LD C,B """
-    cpu.register.C = cpu.register.B
+    gb.cpu.register.C = gb.cpu.register.B
     return 4
 
 
 # noinspection PyUnusedLocal
-def code_49(cpu):
+def code_49(gb):
     """ LD C,C (...why?) """
     return 4
 
 
-def code_4a(cpu):
+def code_4a(gb):
     """ LD C,D """
-    cpu.register.C = cpu.register.D
+    gb.cpu.register.C = gb.cpu.register.D
     return 4
 
 
-def code_4b(cpu):
+def code_4b(gb):
     """ LD C,E """
-    cpu.register.C = cpu.register.E
+    gb.cpu.register.C = gb.cpu.register.E
     return 4
 
 
-def code_4c(cpu):
+def code_4c(gb):
     """ LD C,H """
-    cpu.register.C = cpu.register.H
+    gb.cpu.register.C = gb.cpu.register.H
     return 4
 
 
-def code_4d(cpu):
+def code_4d(gb):
     """ LD C,L """
-    cpu.register.C = cpu.register.L
+    gb.cpu.register.C = gb.cpu.register.L
     return 4
 
 
-def code_4e(cpu):
+def code_4e(gb):
     """ LD C,(HL) - Load reg with the value at the address in HL """
-    cpu.register.C = cpu.memory.read_8bit(cpu.register.get_hl())
+    gb.cpu.register.C = gb.memory.read_8bit(gb.cpu.register.get_hl())
     return 8
 
 
-def code_4f(cpu):
+def code_4f(gb):
     """ LD C,A """
-    cpu.register.C = cpu.register.A
+    gb.cpu.register.C = gb.cpu.register.A
     return 4
 
 
 # OPCODES 5x
-def code_50(cpu):
+def code_50(gb):
     """ LD D,B """
-    cpu.register.D = cpu.register.B
+    gb.cpu.register.D = gb.cpu.register.B
     return 4
 
 
-def code_51(cpu):
+def code_51(gb):
     """ LD D,C """
-    cpu.register.D = cpu.register.C
+    gb.cpu.register.D = gb.cpu.register.C
     return 4
 
 
 # noinspection PyUnusedLocal
-def code_52(cpu):
+def code_52(gb):
     """ LD D,D (...why?) """
     return 4
 
 
-def code_53(cpu):
+def code_53(gb):
     """ LD D,E """
-    cpu.register.D = cpu.register.E
+    gb.cpu.register.D = gb.cpu.register.E
     return 4
 
 
-def code_54(cpu):
+def code_54(gb):
     """ LD D,H """
-    cpu.register.D = cpu.register.H
+    gb.cpu.register.D = gb.cpu.register.H
     return 4
 
 
-def code_55(cpu):
+def code_55(gb):
     """ LD D,L """
-    cpu.register.D = cpu.register.L
+    gb.cpu.register.D = gb.cpu.register.L
     return 4
 
 
-def code_56(cpu):
+def code_56(gb):
     """ LD D,(HL) - Load reg with the value at the address in HL """
-    cpu.register.D = cpu.memory.read_8bit(cpu.register.get_hl())
+    gb.cpu.register.D = gb.memory.read_8bit(gb.cpu.register.get_hl())
     return 8
 
 
-def code_57(cpu):
+def code_57(gb):
     """ LD D,A """
-    cpu.register.D = cpu.register.A
+    gb.cpu.register.D = gb.cpu.register.A
     return 4
 
 
-def code_58(cpu):
+def code_58(gb):
     """ LD E,B """
-    cpu.register.E = cpu.register.B
+    gb.cpu.register.E = gb.cpu.register.B
     return 4
 
 
-def code_59(cpu):
+def code_59(gb):
     """ LD E,C """
-    cpu.register.E = cpu.register.C
+    gb.cpu.register.E = gb.cpu.register.C
     return 4
 
 
-def code_5a(cpu):
+def code_5a(gb):
     """ LD E,D """
-    cpu.register.E = cpu.register.D
+    gb.cpu.register.E = gb.cpu.register.D
     return 4
 
 
 # noinspection PyUnusedLocal
-def code_5b(cpu):
+def code_5b(gb):
     """ LD E,E (...why?) """
     return 4
 
 
-def code_5c(cpu):
+def code_5c(gb):
     """ LD E,H """
-    cpu.register.E = cpu.register.H
+    gb.cpu.register.E = gb.cpu.register.H
     return 4
 
 
-def code_5d(cpu):
+def code_5d(gb):
     """ LD E,L """
-    cpu.register.E = cpu.register.L
+    gb.cpu.register.E = gb.cpu.register.L
     return 4
 
 
-def code_5e(cpu):
+def code_5e(gb):
     """ LD E,(HL) - Load reg with the value at the address in HL """
-    cpu.register.E = cpu.memory.read_8bit(cpu.register.get_hl())
+    gb.cpu.register.E = gb.memory.read_8bit(gb.cpu.register.get_hl())
     return 8
 
 
-def code_5f(cpu):
+def code_5f(gb):
     """ LD E,A """
-    cpu.register.E = cpu.register.A
+    gb.cpu.register.E = gb.cpu.register.A
     return 4
 
 
 # OPCODES 6x
-def code_60(cpu):
+def code_60(gb):
     """ LD H,B """
-    cpu.register.H = cpu.register.B
+    gb.cpu.register.H = gb.cpu.register.B
     return 4
 
 
-def code_61(cpu):
+def code_61(gb):
     """ LD H,C """
-    cpu.register.H = cpu.register.C
+    gb.cpu.register.H = gb.cpu.register.C
     return 4
 
 
-def code_62(cpu):
+def code_62(gb):
     """ LD H,D """
-    cpu.register.H = cpu.register.D
+    gb.cpu.register.H = gb.cpu.register.D
     return 4
 
 
-def code_63(cpu):
+def code_63(gb):
     """ LD H,E """
-    cpu.register.H = cpu.register.E
+    gb.cpu.register.H = gb.cpu.register.E
     return 4
 
 
 # noinspection PyUnusedLocal
-def code_64(cpu):
+def code_64(gb):
     """ LD H,H (...why?) """
     return 4
 
 
-def code_65(cpu):
+def code_65(gb):
     """ LD H,L """
-    cpu.register.H = cpu.register.L
+    gb.cpu.register.H = gb.cpu.register.L
     return 4
 
 
-def code_66(cpu):
+def code_66(gb):
     """ LD H,(HL) - Load reg with the value at the address in HL """
-    cpu.register.H = cpu.memory.read_8bit(cpu.register.get_hl())
+    gb.cpu.register.H = gb.memory.read_8bit(gb.cpu.register.get_hl())
     return 8
 
 
-def code_67(cpu):
+def code_67(gb):
     """ LD H,A """
-    cpu.register.H = cpu.register.A
+    gb.cpu.register.H = gb.cpu.register.A
     return 4
 
 
-def code_68(cpu):
+def code_68(gb):
     """ LD L,B """
-    cpu.register.L = cpu.register.B
+    gb.cpu.register.L = gb.cpu.register.B
     return 4
 
 
-def code_69(cpu):
+def code_69(gb):
     """ LD L,C """
-    cpu.register.L = cpu.register.C
+    gb.cpu.register.L = gb.cpu.register.C
     return 4
 
 
-def code_6a(cpu):
+def code_6a(gb):
     """ LD L,D """
-    cpu.register.L = cpu.register.D
+    gb.cpu.register.L = gb.cpu.register.D
     return 4
 
 
-def code_6b(cpu):
+def code_6b(gb):
     """ LD L,E """
-    cpu.register.L = cpu.register.E
+    gb.cpu.register.L = gb.cpu.register.E
     return 4
 
 
-def code_6c(cpu):
+def code_6c(gb):
     """ LD L,H """
-    cpu.register.L = cpu.register.H
+    gb.cpu.register.L = gb.cpu.register.H
     return 4
 
 
 # noinspection PyUnusedLocal
-def code_6d(cpu):
+def code_6d(gb):
     """ LD L,L (...why?) """
     return 4
 
 
-def code_6e(cpu):
+def code_6e(gb):
     """ LD L,(HL) - Load reg with the value at the address in HL """
-    cpu.register.L = cpu.memory.read_8bit(cpu.register.get_hl())
+    gb.cpu.register.L = gb.memory.read_8bit(gb.cpu.register.get_hl())
     return 8
 
 
-def code_6f(cpu):
+def code_6f(gb):
     """ LD L,A """
-    cpu.register.L = cpu.register.A
+    gb.cpu.register.L = gb.cpu.register.A
     return 4
 
 
 # OPCODES 7x
-def code_70(cpu):
+def code_70(gb):
     """ LD (HL),B - Stores reg at the address in HL """
-    cpu.memory.write_8bit(cpu.register.get_hl(), cpu.register.B)
+    gb.memory.write_8bit(gb.cpu.register.get_hl(), gb.cpu.register.B)
     return 8
 
 
-def code_71(cpu):
+def code_71(gb):
     """ LD (HL),C - Stores reg at the address in HL """
-    cpu.memory.write_8bit(cpu.register.get_hl(), cpu.register.C)
+    gb.memory.write_8bit(gb.cpu.register.get_hl(), gb.cpu.register.C)
     return 8
 
 
-def code_72(cpu):
+def code_72(gb):
     """ LD (HL),D - Stores reg at the address in HL """
-    cpu.memory.write_8bit(cpu.register.get_hl(), cpu.register.D)
+    gb.memory.write_8bit(gb.cpu.register.get_hl(), gb.cpu.register.D)
     return 8
 
 
-def code_73(cpu):
+def code_73(gb):
     """ LD (HL),E - Stores reg at the address in HL """
-    cpu.memory.write_8bit(cpu.register.get_hl(), cpu.register.E)
+    gb.memory.write_8bit(gb.cpu.register.get_hl(), gb.cpu.register.E)
     return 8
 
 
-def code_74(cpu):
+def code_74(gb):
     """ LD (HL),H - Stores reg at the address in HL """
-    cpu.memory.write_8bit(cpu.register.get_hl(), cpu.register.H)
+    gb.memory.write_8bit(gb.cpu.register.get_hl(), gb.cpu.register.H)
     return 8
 
 
-def code_75(cpu):
+def code_75(gb):
     """ LD (HL),L - Stores reg at the address in HL """
-    cpu.memory.write_8bit(cpu.register.get_hl(), cpu.register.L)
+    gb.memory.write_8bit(gb.cpu.register.get_hl(), gb.cpu.register.L)
     return 8
 
 
-def code_76(cpu):
+def code_76(gb):
     """
     HALT - Power down CPU (by stopping the system clock) until an interrupt occurs
     See: http://gbdev.gg8.se/wiki/articles/Reducing_Power_Consumption
     """
-    cpu.halted = True
+    gb.cpu.halted = True
     return 4
 
 
-def code_77(cpu):
+def code_77(gb):
     """ LD (HL),A - Stores reg at the address in HL """
-    cpu.memory.write_8bit(cpu.register.get_hl(), cpu.register.A)
+    gb.memory.write_8bit(gb.cpu.register.get_hl(), gb.cpu.register.A)
     return 8
 
 
-def code_78(cpu):
+def code_78(gb):
     """ LD A,B """
-    cpu.register.A = cpu.register.B
+    gb.cpu.register.A = gb.cpu.register.B
     return 4
 
 
-def code_79(cpu):
+def code_79(gb):
     """ LD A,C """
-    cpu.register.A = cpu.register.C
+    gb.cpu.register.A = gb.cpu.register.C
     return 4
 
 
-def code_7a(cpu):
+def code_7a(gb):
     """ LD A,D """
-    cpu.register.A = cpu.register.D
+    gb.cpu.register.A = gb.cpu.register.D
     return 4
 
 
-def code_7b(cpu):
+def code_7b(gb):
     """ LD A,E """
-    cpu.register.A = cpu.register.E
+    gb.cpu.register.A = gb.cpu.register.E
     return 4
 
 
-def code_7c(cpu):
+def code_7c(gb):
     """ LD A,H """
-    cpu.register.A = cpu.register.H
+    gb.cpu.register.A = gb.cpu.register.H
     return 4
 
 
-def code_7d(cpu):
+def code_7d(gb):
     """ LD A,L """
-    cpu.register.A = cpu.register.L
+    gb.cpu.register.A = gb.cpu.register.L
     return 4
 
 
-def code_7e(cpu):
+def code_7e(gb):
     """ LD A,(HL) - Load reg with the value at the address in HL """
-    cpu.register.A = cpu.memory.read_8bit(cpu.register.get_hl())
+    gb.cpu.register.A = gb.memory.read_8bit(gb.cpu.register.get_hl())
     return 8
 
 
 # noinspection PyUnusedLocal
-def code_7f(cpu):
+def code_7f(gb):
     """ LD A,A (...why?) """
     return 4
 
 
 # OPCODES 8x
-def code_80(cpu):
+def code_80(gb):
     """ ADD A,B - A=A+B """
-    result = cpu.register.A + cpu.register.B
-    cpu.register.set_z_flag((result & 0xFF) == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(((cpu.register.A & 0x0F) + (cpu.register.B & 0x0F)) > 0x0F)
-    cpu.register.set_c_flag(result > 0xFF)
-    cpu.register.A = result & 0xFF
+    result = gb.cpu.register.A + gb.cpu.register.B
+    gb.cpu.register.set_z_flag((result & 0xFF) == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(((gb.cpu.register.A & 0x0F) + (gb.cpu.register.B & 0x0F)) > 0x0F)
+    gb.cpu.register.set_c_flag(result > 0xFF)
+    gb.cpu.register.A = result & 0xFF
     return 4
 
 
-def code_81(cpu):
+def code_81(gb):
     """ ADD A,C - A=A+C """
-    result = cpu.register.A + cpu.register.C
-    cpu.register.set_z_flag((result & 0xFF) == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(((cpu.register.A & 0x0F) + (cpu.register.C & 0x0F)) > 0x0F)
-    cpu.register.set_c_flag(result > 0xFF)
-    cpu.register.A = result & 0xFF
+    result = gb.cpu.register.A + gb.cpu.register.C
+    gb.cpu.register.set_z_flag((result & 0xFF) == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(((gb.cpu.register.A & 0x0F) + (gb.cpu.register.C & 0x0F)) > 0x0F)
+    gb.cpu.register.set_c_flag(result > 0xFF)
+    gb.cpu.register.A = result & 0xFF
     return 4
 
 
-def code_82(cpu):
+def code_82(gb):
     """ ADD A,D - A=A+D """
-    result = cpu.register.A + cpu.register.D
-    cpu.register.set_z_flag((result & 0xFF) == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(((cpu.register.A & 0x0F) + (cpu.register.D & 0x0F)) > 0x0F)
-    cpu.register.set_c_flag(result > 0xFF)
-    cpu.register.A = result & 0xFF
+    result = gb.cpu.register.A + gb.cpu.register.D
+    gb.cpu.register.set_z_flag((result & 0xFF) == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(((gb.cpu.register.A & 0x0F) + (gb.cpu.register.D & 0x0F)) > 0x0F)
+    gb.cpu.register.set_c_flag(result > 0xFF)
+    gb.cpu.register.A = result & 0xFF
     return 4
 
 
-def code_83(cpu):
+def code_83(gb):
     """ ADD A,E - A=A+E """
-    result = cpu.register.A + cpu.register.E
-    cpu.register.set_z_flag((result & 0xFF) == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(((cpu.register.A & 0x0F) + (cpu.register.E & 0x0F)) > 0x0F)
-    cpu.register.set_c_flag(result > 0xFF)
-    cpu.register.A = result & 0xFF
+    result = gb.cpu.register.A + gb.cpu.register.E
+    gb.cpu.register.set_z_flag((result & 0xFF) == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(((gb.cpu.register.A & 0x0F) + (gb.cpu.register.E & 0x0F)) > 0x0F)
+    gb.cpu.register.set_c_flag(result > 0xFF)
+    gb.cpu.register.A = result & 0xFF
     return 4
 
 
-def code_84(cpu):
+def code_84(gb):
     """ ADD A,H - A=A+H """
-    result = cpu.register.A + cpu.register.H
-    cpu.register.set_z_flag((result & 0xFF) == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(((cpu.register.A & 0x0F) + (cpu.register.H & 0x0F)) > 0x0F)
-    cpu.register.set_c_flag(result > 0xFF)
-    cpu.register.A = result & 0xFF
+    result = gb.cpu.register.A + gb.cpu.register.H
+    gb.cpu.register.set_z_flag((result & 0xFF) == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(((gb.cpu.register.A & 0x0F) + (gb.cpu.register.H & 0x0F)) > 0x0F)
+    gb.cpu.register.set_c_flag(result > 0xFF)
+    gb.cpu.register.A = result & 0xFF
     return 4
 
 
-def code_85(cpu):
+def code_85(gb):
     """ ADD A,L - A=A+L """
-    result = cpu.register.A + cpu.register.L
-    cpu.register.set_z_flag((result & 0xFF) == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(((cpu.register.A & 0x0F) + (cpu.register.L & 0x0F)) > 0x0F)
-    cpu.register.set_c_flag(result > 0xFF)
-    cpu.register.A = result & 0xFF
+    result = gb.cpu.register.A + gb.cpu.register.L
+    gb.cpu.register.set_z_flag((result & 0xFF) == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(((gb.cpu.register.A & 0x0F) + (gb.cpu.register.L & 0x0F)) > 0x0F)
+    gb.cpu.register.set_c_flag(result > 0xFF)
+    gb.cpu.register.A = result & 0xFF
     return 4
 
 
-def code_86(cpu):
+def code_86(gb):
     """ ADD A,(HL) - A=A+(value at address HL) """
-    mem_hl = cpu.memory.read_8bit(cpu.register.get_hl())
-    result = cpu.register.A + mem_hl
-    cpu.register.set_z_flag((result & 0xFF) == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(((cpu.register.A & 0x0F) + (mem_hl & 0x0F)) > 0x0F)
-    cpu.register.set_c_flag(result > 0xFF)
-    cpu.register.A = result & 0xFF
+    mem_hl = gb.memory.read_8bit(gb.cpu.register.get_hl())
+    result = gb.cpu.register.A + mem_hl
+    gb.cpu.register.set_z_flag((result & 0xFF) == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(((gb.cpu.register.A & 0x0F) + (mem_hl & 0x0F)) > 0x0F)
+    gb.cpu.register.set_c_flag(result > 0xFF)
+    gb.cpu.register.A = result & 0xFF
     return 8
 
 
-def code_87(cpu):
+def code_87(gb):
     """ ADD A,A - A=A+A """
-    result = cpu.register.A + cpu.register.A
-    cpu.register.set_z_flag((result & 0xFF) == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(((cpu.register.A & 0x0F) + (cpu.register.A & 0x0F)) > 0x0F)
-    cpu.register.set_c_flag(result > 0xFF)
-    cpu.register.A = result & 0xFF
+    result = gb.cpu.register.A + gb.cpu.register.A
+    gb.cpu.register.set_z_flag((result & 0xFF) == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(((gb.cpu.register.A & 0x0F) + (gb.cpu.register.A & 0x0F)) > 0x0F)
+    gb.cpu.register.set_c_flag(result > 0xFF)
+    gb.cpu.register.A = result & 0xFF
     return 4
 
 
-def code_88(cpu):
+def code_88(gb):
     """ ADC A,B - A=A+B+carry_flag (yes, '+carry_flag' is just +1 or +0) """
-    carry_flag = cpu.register.get_c_flag()
-    result = cpu.register.A + cpu.register.B + carry_flag
-    cpu.register.set_z_flag((result & 0xFF) == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(((cpu.register.A & 0x0F) + (cpu.register.B & 0x0F) + carry_flag) > 0x0F)
-    cpu.register.set_c_flag(result > 0xFF)
-    cpu.register.A = result & 0xFF
+    carry_flag = gb.cpu.register.get_c_flag()
+    result = gb.cpu.register.A + gb.cpu.register.B + carry_flag
+    gb.cpu.register.set_z_flag((result & 0xFF) == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(((gb.cpu.register.A & 0x0F) + (gb.cpu.register.B & 0x0F) + carry_flag) > 0x0F)
+    gb.cpu.register.set_c_flag(result > 0xFF)
+    gb.cpu.register.A = result & 0xFF
     return 4
 
 
-def code_89(cpu):
+def code_89(gb):
     """ ADC A,C - A=A+C+carry_flag (yes, '+carry_flag' is just +1 or +0) """
-    carry_flag = cpu.register.get_c_flag()
-    result = cpu.register.A + cpu.register.C + carry_flag
-    cpu.register.set_z_flag((result & 0xFF) == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(((cpu.register.A & 0x0F) + (cpu.register.C & 0x0F) + carry_flag) > 0x0F)
-    cpu.register.set_c_flag(result > 0xFF)
-    cpu.register.A = result & 0xFF
+    carry_flag = gb.cpu.register.get_c_flag()
+    result = gb.cpu.register.A + gb.cpu.register.C + carry_flag
+    gb.cpu.register.set_z_flag((result & 0xFF) == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(((gb.cpu.register.A & 0x0F) + (gb.cpu.register.C & 0x0F) + carry_flag) > 0x0F)
+    gb.cpu.register.set_c_flag(result > 0xFF)
+    gb.cpu.register.A = result & 0xFF
     return 4
 
 
-def code_8a(cpu):
+def code_8a(gb):
     """ ADC A,D - A=A+D+carry_flag (yes, '+carry_flag' is just +1 or +0) """
-    carry_flag = cpu.register.get_c_flag()
-    result = cpu.register.A + cpu.register.D + carry_flag
-    cpu.register.set_z_flag((result & 0xFF) == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(((cpu.register.A & 0x0F) + (cpu.register.D & 0x0F) + carry_flag) > 0x0F)
-    cpu.register.set_c_flag(result > 0xFF)
-    cpu.register.A = result & 0xFF
+    carry_flag = gb.cpu.register.get_c_flag()
+    result = gb.cpu.register.A + gb.cpu.register.D + carry_flag
+    gb.cpu.register.set_z_flag((result & 0xFF) == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(((gb.cpu.register.A & 0x0F) + (gb.cpu.register.D & 0x0F) + carry_flag) > 0x0F)
+    gb.cpu.register.set_c_flag(result > 0xFF)
+    gb.cpu.register.A = result & 0xFF
     return 4
 
 
-def code_8b(cpu):
+def code_8b(gb):
     """ ADC A,E - A=A+E+carry_flag (yes, '+carry_flag' is just +1 or +0) """
-    carry_flag = cpu.register.get_c_flag()
-    result = cpu.register.A + cpu.register.E + carry_flag
-    cpu.register.set_z_flag((result & 0xFF) == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(((cpu.register.A & 0x0F) + (cpu.register.E & 0x0F) + carry_flag) > 0x0F)
-    cpu.register.set_c_flag(result > 0xFF)
-    cpu.register.A = result & 0xFF
+    carry_flag = gb.cpu.register.get_c_flag()
+    result = gb.cpu.register.A + gb.cpu.register.E + carry_flag
+    gb.cpu.register.set_z_flag((result & 0xFF) == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(((gb.cpu.register.A & 0x0F) + (gb.cpu.register.E & 0x0F) + carry_flag) > 0x0F)
+    gb.cpu.register.set_c_flag(result > 0xFF)
+    gb.cpu.register.A = result & 0xFF
     return 4
 
 
-def code_8c(cpu):
+def code_8c(gb):
     """ ADC A,H - A=A+H+carry_flag (yes, '+carry_flag' is just +1 or +0) """
-    carry_flag = cpu.register.get_c_flag()
-    result = cpu.register.A + cpu.register.H + carry_flag
-    cpu.register.set_z_flag((result & 0xFF) == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(((cpu.register.A & 0x0F) + (cpu.register.H & 0x0F) + carry_flag) > 0x0F)
-    cpu.register.set_c_flag(result > 0xFF)
-    cpu.register.A = result & 0xFF
+    carry_flag = gb.cpu.register.get_c_flag()
+    result = gb.cpu.register.A + gb.cpu.register.H + carry_flag
+    gb.cpu.register.set_z_flag((result & 0xFF) == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(((gb.cpu.register.A & 0x0F) + (gb.cpu.register.H & 0x0F) + carry_flag) > 0x0F)
+    gb.cpu.register.set_c_flag(result > 0xFF)
+    gb.cpu.register.A = result & 0xFF
     return 4
 
 
-def code_8d(cpu):
+def code_8d(gb):
     """ ADC A,L - A=A+L+carry_flag (yes, '+carry_flag' is just +1 or +0) """
-    carry_flag = cpu.register.get_c_flag()
-    result = cpu.register.A + cpu.register.L + carry_flag
-    cpu.register.set_z_flag((result & 0xFF) == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(((cpu.register.A & 0x0F) + (cpu.register.L & 0x0F) + carry_flag) > 0x0F)
-    cpu.register.set_c_flag(result > 0xFF)
-    cpu.register.A = result & 0xFF
+    carry_flag = gb.cpu.register.get_c_flag()
+    result = gb.cpu.register.A + gb.cpu.register.L + carry_flag
+    gb.cpu.register.set_z_flag((result & 0xFF) == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(((gb.cpu.register.A & 0x0F) + (gb.cpu.register.L & 0x0F) + carry_flag) > 0x0F)
+    gb.cpu.register.set_c_flag(result > 0xFF)
+    gb.cpu.register.A = result & 0xFF
     return 4
 
 
-def code_8e(cpu):
+def code_8e(gb):
     """ ADC A,(HL) - A=A+(value at address HL)+carry_flag (yes, '+carry_flag' is just +1 or +0) """
-    carry_flag = cpu.register.get_c_flag()
-    mem_hl = cpu.memory.read_8bit(cpu.register.get_hl())
-    result = cpu.register.A + mem_hl + carry_flag
-    cpu.register.set_z_flag((result & 0xFF) == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(((cpu.register.A & 0x0F) + (mem_hl & 0x0F) + carry_flag) > 0x0F)
-    cpu.register.set_c_flag(result > 0xFF)
-    cpu.register.A = result & 0xFF
+    carry_flag = gb.cpu.register.get_c_flag()
+    mem_hl = gb.memory.read_8bit(gb.cpu.register.get_hl())
+    result = gb.cpu.register.A + mem_hl + carry_flag
+    gb.cpu.register.set_z_flag((result & 0xFF) == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(((gb.cpu.register.A & 0x0F) + (mem_hl & 0x0F) + carry_flag) > 0x0F)
+    gb.cpu.register.set_c_flag(result > 0xFF)
+    gb.cpu.register.A = result & 0xFF
     return 8
 
 
-def code_8f(cpu):
+def code_8f(gb):
     """ ADC A,A - A=A+A+carry_flag (yes, '+carry_flag' is just +1 or +0) """
-    carry_flag = cpu.register.get_c_flag()
-    result = cpu.register.A + cpu.register.A + carry_flag
-    cpu.register.set_z_flag((result & 0xFF) == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(((cpu.register.A & 0x0F) + (cpu.register.A & 0x0F) + carry_flag) > 0x0F)
-    cpu.register.set_c_flag(result > 0xFF)
-    cpu.register.A = result & 0xFF
+    carry_flag = gb.cpu.register.get_c_flag()
+    result = gb.cpu.register.A + gb.cpu.register.A + carry_flag
+    gb.cpu.register.set_z_flag((result & 0xFF) == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(((gb.cpu.register.A & 0x0F) + (gb.cpu.register.A & 0x0F) + carry_flag) > 0x0F)
+    gb.cpu.register.set_c_flag(result > 0xFF)
+    gb.cpu.register.A = result & 0xFF
     return 4
 
 
 # OPCODES 9x
-def code_90(cpu):
+def code_90(gb):
     """ SUB A,B - A=A-B """
-    result = (cpu.register.A - cpu.register.B) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
-    cpu.register.set_z_flag((result & 0xFF) == 0)
-    cpu.register.set_n_flag(True)
-    cpu.register.set_h_flag((cpu.register.B & 0x0F) > (cpu.register.A & 0x0F))
-    cpu.register.set_c_flag(cpu.register.B > cpu.register.A)
-    cpu.register.A = result
+    result = (gb.cpu.register.A - gb.cpu.register.B) & 0xFF  # '& 0xFF' = convert signed integer to unsigned
+    gb.cpu.register.set_z_flag((result & 0xFF) == 0)
+    gb.cpu.register.set_n_flag(True)
+    gb.cpu.register.set_h_flag((gb.cpu.register.B & 0x0F) > (gb.cpu.register.A & 0x0F))
+    gb.cpu.register.set_c_flag(gb.cpu.register.B > gb.cpu.register.A)
+    gb.cpu.register.A = result
     return 4
 
 
-def code_91(cpu):
+def code_91(gb):
     """ SUB A,C - A=A-C """
-    result = (cpu.register.A - cpu.register.C) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
-    cpu.register.set_z_flag((result & 0xFF) == 0)
-    cpu.register.set_n_flag(True)
-    cpu.register.set_h_flag((cpu.register.C & 0x0F) > (cpu.register.A & 0x0F))
-    cpu.register.set_c_flag(cpu.register.C > cpu.register.A)
-    cpu.register.A = result
+    result = (gb.cpu.register.A - gb.cpu.register.C) & 0xFF  # '& 0xFF' = convert signed integer to unsigned
+    gb.cpu.register.set_z_flag((result & 0xFF) == 0)
+    gb.cpu.register.set_n_flag(True)
+    gb.cpu.register.set_h_flag((gb.cpu.register.C & 0x0F) > (gb.cpu.register.A & 0x0F))
+    gb.cpu.register.set_c_flag(gb.cpu.register.C > gb.cpu.register.A)
+    gb.cpu.register.A = result
     return 4
 
 
-def code_92(cpu):
+def code_92(gb):
     """ SUB A,D - A=A-D """
-    result = (cpu.register.A - cpu.register.D) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
-    cpu.register.set_z_flag((result & 0xFF) == 0)
-    cpu.register.set_n_flag(True)
-    cpu.register.set_h_flag((cpu.register.D & 0x0F) > (cpu.register.A & 0x0F))
-    cpu.register.set_c_flag(cpu.register.D > cpu.register.A)
-    cpu.register.A = result
+    result = (gb.cpu.register.A - gb.cpu.register.D) & 0xFF  # '& 0xFF' = convert signed integer to unsigned
+    gb.cpu.register.set_z_flag((result & 0xFF) == 0)
+    gb.cpu.register.set_n_flag(True)
+    gb.cpu.register.set_h_flag((gb.cpu.register.D & 0x0F) > (gb.cpu.register.A & 0x0F))
+    gb.cpu.register.set_c_flag(gb.cpu.register.D > gb.cpu.register.A)
+    gb.cpu.register.A = result
     return 4
 
 
-def code_93(cpu):
+def code_93(gb):
     """ SUB A,E - A=A-E """
-    result = (cpu.register.A - cpu.register.E) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
-    cpu.register.set_z_flag((result & 0xFF) == 0)
-    cpu.register.set_n_flag(True)
-    cpu.register.set_h_flag((cpu.register.E & 0x0F) > (cpu.register.A & 0x0F))
-    cpu.register.set_c_flag(cpu.register.E > cpu.register.A)
-    cpu.register.A = result
+    result = (gb.cpu.register.A - gb.cpu.register.E) & 0xFF  # '& 0xFF' = convert signed integer to unsigned
+    gb.cpu.register.set_z_flag((result & 0xFF) == 0)
+    gb.cpu.register.set_n_flag(True)
+    gb.cpu.register.set_h_flag((gb.cpu.register.E & 0x0F) > (gb.cpu.register.A & 0x0F))
+    gb.cpu.register.set_c_flag(gb.cpu.register.E > gb.cpu.register.A)
+    gb.cpu.register.A = result
     return 4
 
 
-def code_94(cpu):
+def code_94(gb):
     """ SUB A,H - A=A-H """
-    result = (cpu.register.A - cpu.register.H) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
-    cpu.register.set_z_flag((result & 0xFF) == 0)
-    cpu.register.set_n_flag(True)
-    cpu.register.set_h_flag((cpu.register.H & 0x0F) > (cpu.register.A & 0x0F))
-    cpu.register.set_c_flag(cpu.register.H > cpu.register.A)
-    cpu.register.A = result
+    result = (gb.cpu.register.A - gb.cpu.register.H) & 0xFF  # '& 0xFF' = convert signed integer to unsigned
+    gb.cpu.register.set_z_flag((result & 0xFF) == 0)
+    gb.cpu.register.set_n_flag(True)
+    gb.cpu.register.set_h_flag((gb.cpu.register.H & 0x0F) > (gb.cpu.register.A & 0x0F))
+    gb.cpu.register.set_c_flag(gb.cpu.register.H > gb.cpu.register.A)
+    gb.cpu.register.A = result
     return 4
 
 
-def code_95(cpu):
+def code_95(gb):
     """ SUB A,L - A=A-L """
-    result = (cpu.register.A - cpu.register.L) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
-    cpu.register.set_z_flag((result & 0xFF) == 0)
-    cpu.register.set_n_flag(True)
-    cpu.register.set_h_flag((cpu.register.L & 0x0F) > (cpu.register.A & 0x0F))
-    cpu.register.set_c_flag(cpu.register.L > cpu.register.A)
-    cpu.register.A = result
+    result = (gb.cpu.register.A - gb.cpu.register.L) & 0xFF  # '& 0xFF' = convert signed integer to unsigned
+    gb.cpu.register.set_z_flag((result & 0xFF) == 0)
+    gb.cpu.register.set_n_flag(True)
+    gb.cpu.register.set_h_flag((gb.cpu.register.L & 0x0F) > (gb.cpu.register.A & 0x0F))
+    gb.cpu.register.set_c_flag(gb.cpu.register.L > gb.cpu.register.A)
+    gb.cpu.register.A = result
     return 4
 
 
-def code_96(cpu):
+def code_96(gb):
     """ SUB A,(HL) - A=A-(value at address HL) """
-    mem_hl = cpu.memory.read_8bit(cpu.register.get_hl())
-    result = (cpu.register.A - mem_hl) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
-    cpu.register.set_z_flag((result & 0xFF) == 0)
-    cpu.register.set_n_flag(True)
-    cpu.register.set_h_flag((mem_hl & 0x0F) > (cpu.register.A & 0x0F))
-    cpu.register.set_c_flag(mem_hl > cpu.register.A)
-    cpu.register.A = result
+    mem_hl = gb.memory.read_8bit(gb.cpu.register.get_hl())
+    result = (gb.cpu.register.A - mem_hl) & 0xFF  # '& 0xFF' = convert signed integer to unsigned
+    gb.cpu.register.set_z_flag((result & 0xFF) == 0)
+    gb.cpu.register.set_n_flag(True)
+    gb.cpu.register.set_h_flag((mem_hl & 0x0F) > (gb.cpu.register.A & 0x0F))
+    gb.cpu.register.set_c_flag(mem_hl > gb.cpu.register.A)
+    gb.cpu.register.A = result
     return 8
 
 
-def code_97(cpu):
+def code_97(gb):
     """ SUB A,A - A=A-A """
-    cpu.register.set_z_flag(True)
-    cpu.register.set_n_flag(True)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(False)
-    cpu.register.A = 0x00  # A-A, therefore result is zero, always
+    gb.cpu.register.set_z_flag(True)
+    gb.cpu.register.set_n_flag(True)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(False)
+    gb.cpu.register.A = 0x00  # A-A, therefore result is zero, always
     return 4
 
 
-def code_98(cpu):
+def code_98(gb):
     """ SBC A,B - A=A-B-carry_flag (yes, '-carry_flag' is just -1 or -0) """
-    value = cpu.register.B + cpu.register.get_c_flag()
-    result = (cpu.register.A - value) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
-    cpu.register.set_z_flag((result & 0xFF) == 0)
-    cpu.register.set_n_flag(True)
-    cpu.register.set_h_flag((value & 0x0F) > (cpu.register.A & 0x0F))
-    cpu.register.set_c_flag(value > cpu.register.A)
-    cpu.register.A = result
+    value = gb.cpu.register.B + gb.cpu.register.get_c_flag()
+    result = (gb.cpu.register.A - value) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
+    gb.cpu.register.set_z_flag((result & 0xFF) == 0)
+    gb.cpu.register.set_n_flag(True)
+    gb.cpu.register.set_h_flag((value & 0x0F) > (gb.cpu.register.A & 0x0F))
+    gb.cpu.register.set_c_flag(value > gb.cpu.register.A)
+    gb.cpu.register.A = result
     return 4
 
 
-def code_99(cpu):
+def code_99(gb):
     """ SBC A,C - A=A-C-carry_flag (yes, '-carry_flag' is just -1 or -0) """
-    value = cpu.register.C + cpu.register.get_c_flag()
-    result = (cpu.register.A - value) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
-    cpu.register.set_z_flag((result & 0xFF) == 0)
-    cpu.register.set_n_flag(True)
-    cpu.register.set_h_flag((value & 0x0F) > (cpu.register.A & 0x0F))
-    cpu.register.set_c_flag(value > cpu.register.A)
-    cpu.register.A = result
+    value = gb.cpu.register.C + gb.cpu.register.get_c_flag()
+    result = (gb.cpu.register.A - value) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
+    gb.cpu.register.set_z_flag((result & 0xFF) == 0)
+    gb.cpu.register.set_n_flag(True)
+    gb.cpu.register.set_h_flag((value & 0x0F) > (gb.cpu.register.A & 0x0F))
+    gb.cpu.register.set_c_flag(value > gb.cpu.register.A)
+    gb.cpu.register.A = result
     return 4
 
 
-def code_9a(cpu):
+def code_9a(gb):
     """ SBC A,D - A=A-D-carry_flag (yes, '-carry_flag' is just -1 or -0) """
-    value = cpu.register.D + cpu.register.get_c_flag()
-    result = (cpu.register.A - value) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
-    cpu.register.set_z_flag((result & 0xFF) == 0)
-    cpu.register.set_n_flag(True)
-    cpu.register.set_h_flag((value & 0x0F) > (cpu.register.A & 0x0F))
-    cpu.register.set_c_flag(value > cpu.register.A)
-    cpu.register.A = result
+    value = gb.cpu.register.D + gb.cpu.register.get_c_flag()
+    result = (gb.cpu.register.A - value) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
+    gb.cpu.register.set_z_flag((result & 0xFF) == 0)
+    gb.cpu.register.set_n_flag(True)
+    gb.cpu.register.set_h_flag((value & 0x0F) > (gb.cpu.register.A & 0x0F))
+    gb.cpu.register.set_c_flag(value > gb.cpu.register.A)
+    gb.cpu.register.A = result
     return 4
 
 
-def code_9b(cpu):
+def code_9b(gb):
     """ SBC A,E - A=A-E-carry_flag (yes, '-carry_flag' is just -1 or -0) """
-    value = cpu.register.E + cpu.register.get_c_flag()
-    result = (cpu.register.A - value) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
-    cpu.register.set_z_flag((result & 0xFF) == 0)
-    cpu.register.set_n_flag(True)
-    cpu.register.set_h_flag((value & 0x0F) > (cpu.register.A & 0x0F))
-    cpu.register.set_c_flag(value > cpu.register.A)
-    cpu.register.A = result
+    value = gb.cpu.register.E + gb.cpu.register.get_c_flag()
+    result = (gb.cpu.register.A - value) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
+    gb.cpu.register.set_z_flag((result & 0xFF) == 0)
+    gb.cpu.register.set_n_flag(True)
+    gb.cpu.register.set_h_flag((value & 0x0F) > (gb.cpu.register.A & 0x0F))
+    gb.cpu.register.set_c_flag(value > gb.cpu.register.A)
+    gb.cpu.register.A = result
     return 4
 
 
-def code_9c(cpu):
+def code_9c(gb):
     """ SBC A,H - A=A-H-carry_flag (yes, '-carry_flag' is just -1 or -0) """
-    value = cpu.register.H + cpu.register.get_c_flag()
-    result = (cpu.register.A - value) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
-    cpu.register.set_z_flag((result & 0xFF) == 0)
-    cpu.register.set_n_flag(True)
-    cpu.register.set_h_flag((value & 0x0F) > (cpu.register.A & 0x0F))
-    cpu.register.set_c_flag(value > cpu.register.A)
-    cpu.register.A = result
+    value = gb.cpu.register.H + gb.cpu.register.get_c_flag()
+    result = (gb.cpu.register.A - value) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
+    gb.cpu.register.set_z_flag((result & 0xFF) == 0)
+    gb.cpu.register.set_n_flag(True)
+    gb.cpu.register.set_h_flag((value & 0x0F) > (gb.cpu.register.A & 0x0F))
+    gb.cpu.register.set_c_flag(value > gb.cpu.register.A)
+    gb.cpu.register.A = result
     return 4
 
 
-def code_9d(cpu):
+def code_9d(gb):
     """ SBC A,L - A=A-L-carry_flag (yes, '-carry_flag' is just -1 or -0) """
-    value = cpu.register.L + cpu.register.get_c_flag()
-    result = (cpu.register.A - value) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
-    cpu.register.set_z_flag((result & 0xFF) == 0)
-    cpu.register.set_n_flag(True)
-    cpu.register.set_h_flag((value & 0x0F) > (cpu.register.A & 0x0F))
-    cpu.register.set_c_flag(value > cpu.register.A)
-    cpu.register.A = result
+    value = gb.cpu.register.L + gb.cpu.register.get_c_flag()
+    result = (gb.cpu.register.A - value) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
+    gb.cpu.register.set_z_flag((result & 0xFF) == 0)
+    gb.cpu.register.set_n_flag(True)
+    gb.cpu.register.set_h_flag((value & 0x0F) > (gb.cpu.register.A & 0x0F))
+    gb.cpu.register.set_c_flag(value > gb.cpu.register.A)
+    gb.cpu.register.A = result
     return 4
 
 
-def code_9e(cpu):
+def code_9e(gb):
     """ SBC A,(HL) - A=A-(value at address HL)-carry_flag (yes, '-carry_flag' is just -1 or -0) """
-    mem_hl = cpu.memory.read_8bit(cpu.register.get_hl())
-    value = mem_hl + cpu.register.get_c_flag()
-    result = (cpu.register.A - value) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
-    cpu.register.set_z_flag((result & 0xFF) == 0)
-    cpu.register.set_n_flag(True)
-    cpu.register.set_h_flag((value & 0x0F) > (cpu.register.A & 0x0F))
-    cpu.register.set_c_flag(value > cpu.register.A)
-    cpu.register.A = result
+    mem_hl = gb.memory.read_8bit(gb.cpu.register.get_hl())
+    value = mem_hl + gb.cpu.register.get_c_flag()
+    result = (gb.cpu.register.A - value) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
+    gb.cpu.register.set_z_flag((result & 0xFF) == 0)
+    gb.cpu.register.set_n_flag(True)
+    gb.cpu.register.set_h_flag((value & 0x0F) > (gb.cpu.register.A & 0x0F))
+    gb.cpu.register.set_c_flag(value > gb.cpu.register.A)
+    gb.cpu.register.A = result
     return 8
 
 
-def code_9f(cpu):
+def code_9f(gb):
     """ SBC A,A - A=A-A-carry_flag (yes, '-carry_flag' is just -1 or -0) """
-    carry_flag = cpu.register.get_c_flag()
+    carry_flag = gb.cpu.register.get_c_flag()
     result = (-carry_flag) & 0xFF  # A-A-carry_flag, therefore result is -carry_flag, always
-    cpu.register.set_z_flag((result & 0xFF) == 0)
-    cpu.register.set_n_flag(True)
-    cpu.register.set_h_flag(carry_flag)
-    cpu.register.set_c_flag(carry_flag)
-    cpu.register.A = result
+    gb.cpu.register.set_z_flag((result & 0xFF) == 0)
+    gb.cpu.register.set_n_flag(True)
+    gb.cpu.register.set_h_flag(carry_flag)
+    gb.cpu.register.set_c_flag(carry_flag)
+    gb.cpu.register.A = result
     return 4
 
 
 # OPCODES Ax
-def code_a0(cpu):
+def code_a0(gb):
     """ AND B - A=Logical AND A with B """
-    cpu.register.A = cpu.register.A & cpu.register.B
-    cpu.register.set_z_flag(cpu.register.A == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
-    cpu.register.set_c_flag(False)
+    gb.cpu.register.A = gb.cpu.register.A & gb.cpu.register.B
+    gb.cpu.register.set_z_flag(gb.cpu.register.A == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
+    gb.cpu.register.set_c_flag(False)
     return 4
 
 
-def code_a1(cpu):
+def code_a1(gb):
     """ AND C - A=Logical AND A with C """
-    cpu.register.A = cpu.register.A & cpu.register.C
-    cpu.register.set_z_flag(cpu.register.A == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
-    cpu.register.set_c_flag(False)
+    gb.cpu.register.A = gb.cpu.register.A & gb.cpu.register.C
+    gb.cpu.register.set_z_flag(gb.cpu.register.A == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
+    gb.cpu.register.set_c_flag(False)
     return 4
 
 
-def code_a2(cpu):
+def code_a2(gb):
     """ AND D - A=Logical AND A with D """
-    cpu.register.A = cpu.register.A & cpu.register.D
-    cpu.register.set_z_flag(cpu.register.A == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
-    cpu.register.set_c_flag(False)
+    gb.cpu.register.A = gb.cpu.register.A & gb.cpu.register.D
+    gb.cpu.register.set_z_flag(gb.cpu.register.A == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
+    gb.cpu.register.set_c_flag(False)
     return 4
 
 
-def code_a3(cpu):
+def code_a3(gb):
     """ AND E - A=Logical AND A with E """
-    cpu.register.A = cpu.register.A & cpu.register.E
-    cpu.register.set_z_flag(cpu.register.A == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
-    cpu.register.set_c_flag(False)
+    gb.cpu.register.A = gb.cpu.register.A & gb.cpu.register.E
+    gb.cpu.register.set_z_flag(gb.cpu.register.A == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
+    gb.cpu.register.set_c_flag(False)
     return 4
 
 
-def code_a4(cpu):
+def code_a4(gb):
     """ AND H - A=Logical AND A with H """
-    cpu.register.A = cpu.register.A & cpu.register.H
-    cpu.register.set_z_flag(cpu.register.A == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
-    cpu.register.set_c_flag(False)
+    gb.cpu.register.A = gb.cpu.register.A & gb.cpu.register.H
+    gb.cpu.register.set_z_flag(gb.cpu.register.A == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
+    gb.cpu.register.set_c_flag(False)
     return 4
 
 
-def code_a5(cpu):
+def code_a5(gb):
     """ AND L - A=Logical AND A with L """
-    cpu.register.A = cpu.register.A & cpu.register.L
-    cpu.register.set_z_flag(cpu.register.A == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
-    cpu.register.set_c_flag(False)
+    gb.cpu.register.A = gb.cpu.register.A & gb.cpu.register.L
+    gb.cpu.register.set_z_flag(gb.cpu.register.A == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
+    gb.cpu.register.set_c_flag(False)
     return 4
 
 
-def code_a6(cpu):
+def code_a6(gb):
     """ AND (HL) - A=Logical AND A with (value at address HL) """
-    cpu.register.A = cpu.register.A & cpu.memory.read_8bit(cpu.register.get_hl())
-    cpu.register.set_z_flag(cpu.register.A == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
-    cpu.register.set_c_flag(False)
+    gb.cpu.register.A = gb.cpu.register.A & gb.memory.read_8bit(gb.cpu.register.get_hl())
+    gb.cpu.register.set_z_flag(gb.cpu.register.A == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
+    gb.cpu.register.set_c_flag(False)
     return 8
 
 
-def code_a7(cpu):
+def code_a7(gb):
     """ AND A - A=Logical AND A with A (why?) """
-    # cpu.register.A = cpu.register.A & cpu.register.A -- result is A=A, therefore useless
-    cpu.register.set_z_flag(cpu.register.A == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
-    cpu.register.set_c_flag(False)
+    # gb.cpu.register.A = gb.cpu.register.A & gb.cpu.register.A -- result is A=A, therefore useless
+    gb.cpu.register.set_z_flag(gb.cpu.register.A == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
+    gb.cpu.register.set_c_flag(False)
     return 4
 
 
-def code_a8(cpu):
+def code_a8(gb):
     """ XOR B - A=Logical XOR A with B """
-    cpu.register.A = cpu.register.A ^ cpu.register.B
-    cpu.register.set_z_flag(cpu.register.A == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(False)
+    gb.cpu.register.A = gb.cpu.register.A ^ gb.cpu.register.B
+    gb.cpu.register.set_z_flag(gb.cpu.register.A == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(False)
     return 4
 
 
-def code_a9(cpu):
+def code_a9(gb):
     """ XOR C - A=Logical XOR A with C """
-    cpu.register.A = cpu.register.A ^ cpu.register.C
-    cpu.register.set_z_flag(cpu.register.A == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(False)
+    gb.cpu.register.A = gb.cpu.register.A ^ gb.cpu.register.C
+    gb.cpu.register.set_z_flag(gb.cpu.register.A == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(False)
     return 4
 
 
-def code_aa(cpu):
+def code_aa(gb):
     """ XOR D - A=Logical XOR A with D """
-    cpu.register.A = cpu.register.A ^ cpu.register.D
-    cpu.register.set_z_flag(cpu.register.A == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(False)
+    gb.cpu.register.A = gb.cpu.register.A ^ gb.cpu.register.D
+    gb.cpu.register.set_z_flag(gb.cpu.register.A == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(False)
     return 4
 
 
-def code_ab(cpu):
+def code_ab(gb):
     """ XOR E - A=Logical XOR A with E """
-    cpu.register.A = cpu.register.A ^ cpu.register.E
-    cpu.register.set_z_flag(cpu.register.A == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(False)
+    gb.cpu.register.A = gb.cpu.register.A ^ gb.cpu.register.E
+    gb.cpu.register.set_z_flag(gb.cpu.register.A == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(False)
     return 4
 
 
-def code_ac(cpu):
+def code_ac(gb):
     """ XOR H - A=Logical XOR A with H """
-    cpu.register.A = cpu.register.A ^ cpu.register.H
-    cpu.register.set_z_flag(cpu.register.A == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(False)
+    gb.cpu.register.A = gb.cpu.register.A ^ gb.cpu.register.H
+    gb.cpu.register.set_z_flag(gb.cpu.register.A == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(False)
     return 4
 
 
-def code_ad(cpu):
+def code_ad(gb):
     """ XOR L - A=Logical XOR A with L """
-    cpu.register.A = cpu.register.A ^ cpu.register.L
-    cpu.register.set_z_flag(cpu.register.A == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(False)
+    gb.cpu.register.A = gb.cpu.register.A ^ gb.cpu.register.L
+    gb.cpu.register.set_z_flag(gb.cpu.register.A == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(False)
     return 4
 
 
-def code_ae(cpu):
+def code_ae(gb):
     """ XOR (HL) - A=Logical XOR A with (value at address HL) """
-    cpu.register.A = cpu.register.A ^ cpu.memory.read_8bit(cpu.register.get_hl())
-    cpu.register.set_z_flag(cpu.register.A == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(False)
+    gb.cpu.register.A = gb.cpu.register.A ^ gb.memory.read_8bit(gb.cpu.register.get_hl())
+    gb.cpu.register.set_z_flag(gb.cpu.register.A == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(False)
     return 8
 
 
-def code_af(cpu):
+def code_af(gb):
     """ XOR A - A=Logical XOR A with A """
-    cpu.register.A = 0
-    cpu.register.set_z_flag(True)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(False)
+    gb.cpu.register.A = 0
+    gb.cpu.register.set_z_flag(True)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(False)
     return 4
 
 
 # OPCODES Bx
-def code_b0(cpu):
+def code_b0(gb):
     """ OR B - A=Logical OR A with B """
-    cpu.register.A = cpu.register.A | cpu.register.B
-    cpu.register.set_z_flag(cpu.register.A == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(False)
+    gb.cpu.register.A = gb.cpu.register.A | gb.cpu.register.B
+    gb.cpu.register.set_z_flag(gb.cpu.register.A == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(False)
     return 4
 
 
-def code_b1(cpu):
+def code_b1(gb):
     """ OR C - A=Logical OR A with C """
-    cpu.register.A = cpu.register.A | cpu.register.C
-    cpu.register.set_z_flag(cpu.register.A == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(False)
+    gb.cpu.register.A = gb.cpu.register.A | gb.cpu.register.C
+    gb.cpu.register.set_z_flag(gb.cpu.register.A == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(False)
     return 4
 
 
-def code_b2(cpu):
+def code_b2(gb):
     """ OR D - A=Logical OR A with D """
-    cpu.register.A = cpu.register.A | cpu.register.D
-    cpu.register.set_z_flag(cpu.register.A == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(False)
+    gb.cpu.register.A = gb.cpu.register.A | gb.cpu.register.D
+    gb.cpu.register.set_z_flag(gb.cpu.register.A == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(False)
     return 4
 
 
-def code_b3(cpu):
+def code_b3(gb):
     """ OR E - A=Logical OR A with E """
-    cpu.register.A = cpu.register.A | cpu.register.E
-    cpu.register.set_z_flag(cpu.register.A == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(False)
+    gb.cpu.register.A = gb.cpu.register.A | gb.cpu.register.E
+    gb.cpu.register.set_z_flag(gb.cpu.register.A == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(False)
     return 4
 
 
-def code_b4(cpu):
+def code_b4(gb):
     """ OR H - A=Logical OR A with H """
-    cpu.register.A = cpu.register.A | cpu.register.H
-    cpu.register.set_z_flag(cpu.register.A == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(False)
+    gb.cpu.register.A = gb.cpu.register.A | gb.cpu.register.H
+    gb.cpu.register.set_z_flag(gb.cpu.register.A == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(False)
     return 4
 
 
-def code_b5(cpu):
+def code_b5(gb):
     """ OR L - A=Logical OR A with L """
-    cpu.register.A = cpu.register.A | cpu.register.L
-    cpu.register.set_z_flag(cpu.register.A == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(False)
+    gb.cpu.register.A = gb.cpu.register.A | gb.cpu.register.L
+    gb.cpu.register.set_z_flag(gb.cpu.register.A == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(False)
     return 4
 
 
-def code_b6(cpu):
+def code_b6(gb):
     """ OR (HL) - A=Logical OR A with (value at address HL) """
-    cpu.register.A = cpu.register.A | cpu.memory.read_8bit(cpu.register.get_hl())
-    cpu.register.set_z_flag(cpu.register.A == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(False)
+    gb.cpu.register.A = gb.cpu.register.A | gb.memory.read_8bit(gb.cpu.register.get_hl())
+    gb.cpu.register.set_z_flag(gb.cpu.register.A == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(False)
     return 8
 
 
-def code_b7(cpu):
+def code_b7(gb):
     """ OR L - A=Logical OR A with A (why?) """
-    # cpu.register.A = cpu.register.A | cpu.register.A -- result is A=A, therefore useless
-    cpu.register.set_z_flag(cpu.register.A == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(False)
+    # gb.cpu.register.A = gb.cpu.register.A | gb.cpu.register.A -- result is A=A, therefore useless
+    gb.cpu.register.set_z_flag(gb.cpu.register.A == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(False)
     return 4
 
 
-def code_b8(cpu):
+def code_b8(gb):
     """ CP A,B - same as SUB A,B but throw the result away, only set flags """
-    cpu.register.set_z_flag(cpu.register.A == cpu.register.B)
-    cpu.register.set_n_flag(True)
-    cpu.register.set_h_flag((cpu.register.B & 0x0F) > (cpu.register.A & 0x0F))
-    cpu.register.set_c_flag(cpu.register.B > cpu.register.A)
+    gb.cpu.register.set_z_flag(gb.cpu.register.A == gb.cpu.register.B)
+    gb.cpu.register.set_n_flag(True)
+    gb.cpu.register.set_h_flag((gb.cpu.register.B & 0x0F) > (gb.cpu.register.A & 0x0F))
+    gb.cpu.register.set_c_flag(gb.cpu.register.B > gb.cpu.register.A)
     return 4
 
 
-def code_b9(cpu):
+def code_b9(gb):
     """ CP A,C - same as SUB A,C but throw the result away, only set flags """
-    cpu.register.set_z_flag(cpu.register.A == cpu.register.C)
-    cpu.register.set_n_flag(True)
-    cpu.register.set_h_flag((cpu.register.C & 0x0F) > (cpu.register.A & 0x0F))
-    cpu.register.set_c_flag(cpu.register.C > cpu.register.A)
+    gb.cpu.register.set_z_flag(gb.cpu.register.A == gb.cpu.register.C)
+    gb.cpu.register.set_n_flag(True)
+    gb.cpu.register.set_h_flag((gb.cpu.register.C & 0x0F) > (gb.cpu.register.A & 0x0F))
+    gb.cpu.register.set_c_flag(gb.cpu.register.C > gb.cpu.register.A)
     return 4
 
 
-def code_ba(cpu):
+def code_ba(gb):
     """ CP A,D - same as SUB A,D but throw the result away, only set flags """
-    cpu.register.set_z_flag(cpu.register.A == cpu.register.D)
-    cpu.register.set_n_flag(True)
-    cpu.register.set_h_flag((cpu.register.D & 0x0F) > (cpu.register.A & 0x0F))
-    cpu.register.set_c_flag(cpu.register.D > cpu.register.A)
+    gb.cpu.register.set_z_flag(gb.cpu.register.A == gb.cpu.register.D)
+    gb.cpu.register.set_n_flag(True)
+    gb.cpu.register.set_h_flag((gb.cpu.register.D & 0x0F) > (gb.cpu.register.A & 0x0F))
+    gb.cpu.register.set_c_flag(gb.cpu.register.D > gb.cpu.register.A)
     return 4
 
 
-def code_bb(cpu):
+def code_bb(gb):
     """ CP A,E - same as SUB A,E but throw the result away, only set flags """
-    cpu.register.set_z_flag(cpu.register.A == cpu.register.E)
-    cpu.register.set_n_flag(True)
-    cpu.register.set_h_flag((cpu.register.E & 0x0F) > (cpu.register.A & 0x0F))
-    cpu.register.set_c_flag(cpu.register.E > cpu.register.A)
+    gb.cpu.register.set_z_flag(gb.cpu.register.A == gb.cpu.register.E)
+    gb.cpu.register.set_n_flag(True)
+    gb.cpu.register.set_h_flag((gb.cpu.register.E & 0x0F) > (gb.cpu.register.A & 0x0F))
+    gb.cpu.register.set_c_flag(gb.cpu.register.E > gb.cpu.register.A)
     return 4
 
 
-def code_bc(cpu):
+def code_bc(gb):
     """ CP A,H - same as SUB A,H but throw the result away, only set flags """
-    cpu.register.set_z_flag(cpu.register.A == cpu.register.H)
-    cpu.register.set_n_flag(True)
-    cpu.register.set_h_flag((cpu.register.H & 0x0F) > (cpu.register.A & 0x0F))
-    cpu.register.set_c_flag(cpu.register.H > cpu.register.A)
+    gb.cpu.register.set_z_flag(gb.cpu.register.A == gb.cpu.register.H)
+    gb.cpu.register.set_n_flag(True)
+    gb.cpu.register.set_h_flag((gb.cpu.register.H & 0x0F) > (gb.cpu.register.A & 0x0F))
+    gb.cpu.register.set_c_flag(gb.cpu.register.H > gb.cpu.register.A)
     return 4
 
 
-def code_bd(cpu):
+def code_bd(gb):
     """ CP A,L - same as SUB A,L but throw the result away, only set flags """
-    cpu.register.set_z_flag(cpu.register.A == cpu.register.L)
-    cpu.register.set_n_flag(True)
-    cpu.register.set_h_flag((cpu.register.L & 0x0F) > (cpu.register.A & 0x0F))
-    cpu.register.set_c_flag(cpu.register.L > cpu.register.A)
+    gb.cpu.register.set_z_flag(gb.cpu.register.A == gb.cpu.register.L)
+    gb.cpu.register.set_n_flag(True)
+    gb.cpu.register.set_h_flag((gb.cpu.register.L & 0x0F) > (gb.cpu.register.A & 0x0F))
+    gb.cpu.register.set_c_flag(gb.cpu.register.L > gb.cpu.register.A)
     return 4
 
 
-def code_be(cpu):
+def code_be(gb):
     """ CP A,(HL) - same as SUB A,(HL) but throw the result away, only set flags """
-    mem_hl = cpu.memory.read_8bit(cpu.register.get_hl())
-    cpu.register.set_z_flag(cpu.register.A == mem_hl)
-    cpu.register.set_n_flag(True)
-    cpu.register.set_h_flag((mem_hl & 0x0F) > (cpu.register.A & 0x0F))
-    cpu.register.set_c_flag(mem_hl > cpu.register.A)
+    mem_hl = gb.memory.read_8bit(gb.cpu.register.get_hl())
+    gb.cpu.register.set_z_flag(gb.cpu.register.A == mem_hl)
+    gb.cpu.register.set_n_flag(True)
+    gb.cpu.register.set_h_flag((mem_hl & 0x0F) > (gb.cpu.register.A & 0x0F))
+    gb.cpu.register.set_c_flag(mem_hl > gb.cpu.register.A)
     return 8
 
 
-def code_bf(cpu):
+def code_bf(gb):
     """ CP A,A - same as SUB A,A but throw the result away, only set flags """
-    cpu.register.set_z_flag(True)
-    cpu.register.set_n_flag(True)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(False)
+    gb.cpu.register.set_z_flag(True)
+    gb.cpu.register.set_n_flag(True)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(False)
     return 4
 
 
 # OPCODES Cx
-def code_c0(cpu):
+def code_c0(gb):
     """ RET NZ - Return if flag Z is reset """
-    if not cpu.register.get_z_flag():
-        code_c9(cpu)
-        return 20
+    if not gb.cpu.register.get_z_flag():
+        code_c9(gb)
+        return 20  # Yes, ignore cycle count from C9
     return 8
 
 
-def code_c1(cpu):
+def code_c1(gb):
     """ POP BC - Copy 16-bit value from stack (i.e. SP address) into BC, then increment SP by 2 """
-    lsb = cpu.memory.read_8bit(cpu.register.SP)
-    msb = cpu.memory.read_8bit(cpu.register.SP + 1)
-    cpu.register.set_bc(get_big_endian_value(msb,lsb))
-    cpu.register.SP = (cpu.register.SP + 2) & 0xFFFF
+    lsb = gb.memory.read_8bit(gb.cpu.register.SP)
+    msb = gb.memory.read_8bit(gb.cpu.register.SP + 1)
+    gb.cpu.register.set_bc(get_big_endian_value(msb,lsb))
+    gb.cpu.register.SP = (gb.cpu.register.SP + 2) & 0xFFFF
     return 12
 
 
-def code_c2(cpu):
+def code_c2(gb):
     """ JP NZ,a16 - Jump to address a16 if Z flag is reset """
-    lsb = cpu.read_next_byte_from_cartridge()
-    msb = cpu.read_next_byte_from_cartridge()
+    lsb = gb.cpu.read_next_byte_from_cartridge()
+    msb = gb.cpu.read_next_byte_from_cartridge()
     a16 = get_big_endian_value(msb,lsb)
-    if not cpu.register.get_z_flag():
-        cpu.register.PC = a16
+    if not gb.cpu.register.get_z_flag():
+        gb.cpu.register.PC = a16
         return 16
     return 12
 
 
-def code_c3(cpu):
+def code_c3(gb):
     """ JP a16 - Jump to address a16 """
-    lsb = cpu.read_next_byte_from_cartridge()
-    msb = cpu.read_next_byte_from_cartridge()
+    lsb = gb.cpu.read_next_byte_from_cartridge()
+    msb = gb.cpu.read_next_byte_from_cartridge()
     a16 = get_big_endian_value(msb,lsb)
-    cpu.register.PC = a16
+    gb.cpu.register.PC = a16
     return 16
 
 
-def code_c4(cpu):
+def code_c4(gb):
     """ CALL NZ,a16 - Call address a16 if flag Z is reset """
-    lsb = cpu.read_next_byte_from_cartridge()
-    msb = cpu.read_next_byte_from_cartridge()
+    lsb = gb.cpu.read_next_byte_from_cartridge()
+    msb = gb.cpu.read_next_byte_from_cartridge()
     a16 = get_big_endian_value(msb,lsb)
-    if not cpu.register.get_z_flag():
-        cpu.register.SP = (cpu.register.SP - 2) & 0xFFFF
-        cpu.memory.write_16bit(cpu.register.SP, cpu.register.PC)
-        cpu.register.PC = a16
+    if not gb.cpu.register.get_z_flag():
+        gb.cpu.register.SP = (gb.cpu.register.SP - 2) & 0xFFFF
+        gb.memory.write_16bit(gb.cpu.register.SP, gb.cpu.register.PC)
+        gb.cpu.register.PC = a16
         return 24
     return 12
 
 
-def code_c5(cpu):
+def code_c5(gb):
     """ PUSH BC - Decrement SP by 2 then push BC value onto stack (i.e. SP address) """
-    cpu.register.SP = (cpu.register.SP - 2) & 0xFFFF
-    cpu.memory.write_16bit(cpu.register.SP, cpu.register.get_bc())
+    gb.cpu.register.SP = (gb.cpu.register.SP - 2) & 0xFFFF
+    gb.memory.write_16bit(gb.cpu.register.SP, gb.cpu.register.get_bc())
     return 16
 
 
-def code_c6(cpu):
+def code_c6(gb):
     """ ADD A,d8 - A=A+d8 """
-    d8 = cpu.read_next_byte_from_cartridge()
-    result = cpu.register.A + d8
-    cpu.register.set_z_flag((result & 0xFF) == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(((cpu.register.A & 0x0F) + (d8 & 0x0F)) > 0x0F)
-    cpu.register.set_c_flag(result > 0xFF)
-    cpu.register.A = result & 0xFF
+    d8 = gb.cpu.read_next_byte_from_cartridge()
+    result = gb.cpu.register.A + d8
+    gb.cpu.register.set_z_flag((result & 0xFF) == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(((gb.cpu.register.A & 0x0F) + (d8 & 0x0F)) > 0x0F)
+    gb.cpu.register.set_c_flag(result > 0xFF)
+    gb.cpu.register.A = result & 0xFF
     return 8
 
 
-def code_c7(cpu):
+def code_c7(gb):
     """ RST 00H - Push present address onto stack, jump to address $0000 + 00H """
-    cpu.register.SP = (cpu.register.SP - 2) & 0xFFFF  # Increase stack
-    cpu.memory.write_16bit(cpu.register.SP, cpu.register.PC)  # Store PC into new stack element
-    cpu.register.PC = 0x0000
+    gb.cpu.register.SP = (gb.cpu.register.SP - 2) & 0xFFFF  # Increase stack
+    gb.memory.write_16bit(gb.cpu.register.SP, gb.cpu.register.PC)  # Store PC into new stack element
+    gb.cpu.register.PC = 0x0000
     return 16
 
 
-def code_c8(cpu):
+def code_c8(gb):
     """ RET Z - Return if flag Z is set """
-    if cpu.register.get_z_flag():
-        code_c9(cpu)
-        return 20
+    if gb.cpu.register.get_z_flag():
+        code_c9(gb)
+        return 20  # Yes, ignore cycle count from C9
     return 8
 
 
-def code_c9(cpu):
+def code_c9(gb):
     """ RET - Pop two bytes from stack and jump to that address """
     # Stack starts at FFFE and grows in inverse order (FFFD, FFFC, etc), and data is stored in little endian,
     # therefore (SP) contains lsb and (SP+1) contains msb.
-    return_address_lsb = cpu.memory.read_8bit(cpu.register.SP)
-    return_address_msb = cpu.memory.read_8bit(cpu.register.SP + 1)
-    cpu.register.PC = get_big_endian_value(return_address_msb, return_address_lsb)
-    cpu.register.SP = (cpu.register.SP + 2) & 0xFFFF
+    return_address_lsb = gb.memory.read_8bit(gb.cpu.register.SP)
+    return_address_msb = gb.memory.read_8bit(gb.cpu.register.SP + 1)
+    gb.cpu.register.PC = get_big_endian_value(return_address_msb, return_address_lsb)
+    gb.cpu.register.SP = (gb.cpu.register.SP + 2) & 0xFFFF
     return 16
 
 
-def code_ca(cpu):
+def code_ca(gb):
     """ JP Z,a16 - Jump to address a16 if Z flag is set """
-    lsb = cpu.read_next_byte_from_cartridge()
-    msb = cpu.read_next_byte_from_cartridge()
+    lsb = gb.cpu.read_next_byte_from_cartridge()
+    msb = gb.cpu.read_next_byte_from_cartridge()
     a16 = get_big_endian_value(msb, lsb)
-    if cpu.register.get_z_flag():
-        cpu.register.PC = a16
+    if gb.cpu.register.get_z_flag():
+        gb.cpu.register.PC = a16
         return 16
     return 12
 
 
-def code_cb(cpu):
+def code_cb(gb):
     """ PREFIX CB - Prefix for accessing the extra CB functions """
-    opcode = cpu.read_next_byte_from_cartridge()
-    print("Executing CB {:02X} ".format(opcode))
-    return 4 + _instruction_cb_dict[opcode](cpu)
+    opcode = gb.cpu.read_next_byte_from_cartridge()
+    return 4 + _instruction_cb_dict[opcode](gb)
 
 
-def code_cc(cpu):
+def code_cc(gb):
     """ CALL Z,a16 - Call address a16 if flag Z is set """
-    lsb = cpu.read_next_byte_from_cartridge()
-    msb = cpu.read_next_byte_from_cartridge()
+    lsb = gb.cpu.read_next_byte_from_cartridge()
+    msb = gb.cpu.read_next_byte_from_cartridge()
     a16 = get_big_endian_value(msb, lsb)
-    if cpu.register.get_z_flag():
-        cpu.register.SP = (cpu.register.SP - 2) & 0xFFFF
-        cpu.memory.write_16bit(cpu.register.SP, cpu.register.PC)
-        cpu.register.PC = a16
+    if gb.cpu.register.get_z_flag():
+        gb.cpu.register.SP = (gb.cpu.register.SP - 2) & 0xFFFF
+        gb.memory.write_16bit(gb.cpu.register.SP, gb.cpu.register.PC)
+        gb.cpu.register.PC = a16
         return 24
     return 12
 
 
-def code_cd(cpu):
+def code_cd(gb):
     """ CALL a16 - Push address of next instruction onto stack then jump to address a16 """
-    lsb = cpu.read_next_byte_from_cartridge()
-    msb = cpu.read_next_byte_from_cartridge()
+    lsb = gb.cpu.read_next_byte_from_cartridge()
+    msb = gb.cpu.read_next_byte_from_cartridge()
     a16 = get_big_endian_value(msb, lsb)
-    cpu.register.SP = (cpu.register.SP - 2) & 0xFFFF
-    cpu.memory.write_16bit(cpu.register.SP, cpu.register.PC)
-    cpu.register.PC = a16
+    gb.cpu.register.SP = (gb.cpu.register.SP - 2) & 0xFFFF
+    gb.memory.write_16bit(gb.cpu.register.SP, gb.cpu.register.PC)
+    gb.cpu.register.PC = a16
     return 24
 
 
-def code_ce(cpu):
+def code_ce(gb):
     """ ADC A,d8 - A=A+d8+carry_flag (yes, '+carry_flag' is just +1 or +0) """
-    d8 = cpu.read_next_byte_from_cartridge()
-    carry_flag = cpu.register.get_c_flag()
-    result = cpu.register.A + d8 + carry_flag
-    cpu.register.set_z_flag((result & 0xFF) == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(((cpu.register.A & 0x0F) + (d8 & 0x0F) + carry_flag) > 0x0F)
-    cpu.register.set_c_flag(result > 0xFF)
-    cpu.register.A = result & 0xFF
+    d8 = gb.cpu.read_next_byte_from_cartridge()
+    carry_flag = gb.cpu.register.get_c_flag()
+    result = gb.cpu.register.A + d8 + carry_flag
+    gb.cpu.register.set_z_flag((result & 0xFF) == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(((gb.cpu.register.A & 0x0F) + (d8 & 0x0F) + carry_flag) > 0x0F)
+    gb.cpu.register.set_c_flag(result > 0xFF)
+    gb.cpu.register.A = result & 0xFF
     return 8
 
 
-def code_cf(cpu):
+def code_cf(gb):
     """ RST 08H - Push present address onto stack, jump to address $0000 + 08H """
-    cpu.register.SP = (cpu.register.SP - 2) & 0xFFFF  # Increase stack
-    cpu.memory.write_16bit(cpu.register.SP, cpu.register.PC)  # Store PC into new stack element
-    cpu.register.PC = 0x0008
+    gb.cpu.register.SP = (gb.cpu.register.SP - 2) & 0xFFFF  # Increase stack
+    gb.memory.write_16bit(gb.cpu.register.SP, gb.cpu.register.PC)  # Store PC into new stack element
+    gb.cpu.register.PC = 0x0008
     return 16
 
 
 # OPCODES Dx
-def code_d0(cpu):
+def code_d0(gb):
     """ RET NC - Return if flag C is reset """
-    if not cpu.register.get_c_flag():
-        code_c9(cpu)
-        return 20
+    if not gb.cpu.register.get_c_flag():
+        return 4 + code_c9(gb)
     return 8
 
 
-def code_d1(cpu):
+def code_d1(gb):
     """ POP DE - Copy 16-bit value from stack (i.e. SP address) into DE, then increment SP by 2 """
-    lsb = cpu.memory.read_8bit(cpu.register.SP)
-    msb = cpu.memory.read_8bit(cpu.register.SP + 1)
-    cpu.register.set_de(get_big_endian_value(msb, lsb))
-    cpu.register.SP = (cpu.register.SP + 2) & 0xFFFF
+    lsb = gb.memory.read_8bit(gb.cpu.register.SP)
+    msb = gb.memory.read_8bit(gb.cpu.register.SP + 1)
+    gb.cpu.register.set_de(get_big_endian_value(msb, lsb))
+    gb.cpu.register.SP = (gb.cpu.register.SP + 2) & 0xFFFF
     return 12
 
 
-def code_d2(cpu):
+def code_d2(gb):
     """ JP NC,a16 - Jump to address a16 if C flag is reset """
-    lsb = cpu.read_next_byte_from_cartridge()
-    msb = cpu.read_next_byte_from_cartridge()
+    lsb = gb.cpu.read_next_byte_from_cartridge()
+    msb = gb.cpu.read_next_byte_from_cartridge()
     a16 = get_big_endian_value(msb, lsb)
-    if not cpu.register.get_c_flag():
-        cpu.register.PC = a16
+    if not gb.cpu.register.get_c_flag():
+        gb.cpu.register.PC = a16
         return 16
     return 12
 
 
 # noinspection PyUnusedLocal
-def code_d3(cpu):
+def code_d3(gb):
     """ Unused opcode """
     return 0
 
 
-def code_d4(cpu):
+def code_d4(gb):
     """ CALL NC,a16 - Call address a16 if flag C is reset """
-    lsb = cpu.read_next_byte_from_cartridge()
-    msb = cpu.read_next_byte_from_cartridge()
+    lsb = gb.cpu.read_next_byte_from_cartridge()
+    msb = gb.cpu.read_next_byte_from_cartridge()
     a16 = get_big_endian_value(msb, lsb)
-    if not cpu.register.get_c_flag():
-        cpu.register.SP = (cpu.register.SP - 2) & 0xFFFF
-        cpu.memory.write_16bit(cpu.register.SP, cpu.register.PC)
-        cpu.register.PC = a16
+    if not gb.cpu.register.get_c_flag():
+        gb.cpu.register.SP = (gb.cpu.register.SP - 2) & 0xFFFF
+        gb.memory.write_16bit(gb.cpu.register.SP, gb.cpu.register.PC)
+        gb.cpu.register.PC = a16
         return 24
     return 12
 
 
-def code_d5(cpu):
+def code_d5(gb):
     """ PUSH DE - Decrement SP by 2 then push DE value onto stack (i.e. SP address) """
-    cpu.register.SP = (cpu.register.SP - 2) & 0xFFFF
-    cpu.memory.write_16bit(cpu.register.SP, cpu.register.get_de())
+    gb.cpu.register.SP = (gb.cpu.register.SP - 2) & 0xFFFF
+    gb.memory.write_16bit(gb.cpu.register.SP, gb.cpu.register.get_de())
     return 16
 
 
-def code_d6(cpu):
+def code_d6(gb):
     """ SUB A,d8 - A=A-d8 """
-    d8 = cpu.read_next_byte_from_cartridge()
-    result = (cpu.register.A - d8) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
-    cpu.register.set_z_flag((result & 0xFF) == 0)
-    cpu.register.set_n_flag(True)
-    cpu.register.set_h_flag((d8 & 0x0F) > (cpu.register.A & 0x0F))
-    cpu.register.set_c_flag(d8 > cpu.register.A)
-    cpu.register.A = result
+    d8 = gb.cpu.read_next_byte_from_cartridge()
+    result = (gb.cpu.register.A - d8) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
+    gb.cpu.register.set_z_flag((result & 0xFF) == 0)
+    gb.cpu.register.set_n_flag(True)
+    gb.cpu.register.set_h_flag((d8 & 0x0F) > (gb.cpu.register.A & 0x0F))
+    gb.cpu.register.set_c_flag(d8 > gb.cpu.register.A)
+    gb.cpu.register.A = result
     return 8
 
 
-def code_d7(cpu):
+def code_d7(gb):
     """ RST 10H - Push present address onto stack, jump to address $0000 + 10H """
-    cpu.register.SP = (cpu.register.SP - 2) & 0xFFFF  # Increase stack
-    cpu.memory.write_16bit(cpu.register.SP, cpu.register.PC)  # Store PC into new stack element
-    cpu.register.PC = 0x0010
+    gb.cpu.register.SP = (gb.cpu.register.SP - 2) & 0xFFFF  # Increase stack
+    gb.memory.write_16bit(gb.cpu.register.SP, gb.cpu.register.PC)  # Store PC into new stack element
+    gb.cpu.register.PC = 0x0010
     return 16
 
 
-def code_d8(cpu):
+def code_d8(gb):
     """ RET C - Return if flag C is set """
-    if cpu.register.get_c_flag():
-        code_c9(cpu)
-        return 20
+    if gb.cpu.register.get_c_flag():
+        return 4 + code_c9(gb)
     return 8
 
 
-def code_d9(cpu):
+def code_d9(gb):
     """ RETI - Pop two bytes from stack and jump to that address then enable interrupts  - same as EI + RET """
-    code_c9(cpu)
+    code_c9(gb)
     # Interrupt update will execute next. EI enables interrupts after next instruction, but since the next instruction
     # has already been executed (RET), interrupts must be enabled now. For the sake of keeping equal to EI and DI,
-    # interrupts will be enabled at the interrupt update step and not here.
+    # interrupts will be enabled at the interrupt update step and not here (see: Interrupts.update()).
     return 16
 
 
-def code_da(cpu):
+def code_da(gb):
     """ JP C,a16 - Jump to address a16 if C flag is set """
-    lsb = cpu.read_next_byte_from_cartridge()
-    msb = cpu.read_next_byte_from_cartridge()
+    lsb = gb.cpu.read_next_byte_from_cartridge()
+    msb = gb.cpu.read_next_byte_from_cartridge()
     a16 = get_big_endian_value(msb, lsb)
-    if cpu.register.get_c_flag():
-        cpu.register.PC = a16
+    if gb.cpu.register.get_c_flag():
+        gb.cpu.register.PC = a16
         return 16
     return 12
 
 
 # noinspection PyUnusedLocal
-def code_db(cpu):
+def code_db(gb):
     """ Unused opcode """
     return 0
 
 
-def code_dc(cpu):
+def code_dc(gb):
     """ CALL C,a16 - Call address a16 if flag C is set """
-    lsb = cpu.read_next_byte_from_cartridge()
-    msb = cpu.read_next_byte_from_cartridge()
+    lsb = gb.cpu.read_next_byte_from_cartridge()
+    msb = gb.cpu.read_next_byte_from_cartridge()
     a16 = get_big_endian_value(msb, lsb)
-    if cpu.register.get_c_flag():
-        cpu.register.SP = (cpu.register.SP - 2) & 0xFFFF
-        cpu.memory.write_16bit(cpu.register.SP, cpu.register.PC)
-        cpu.register.PC = a16
+    if gb.cpu.register.get_c_flag():
+        gb.cpu.register.SP = (gb.cpu.register.SP - 2) & 0xFFFF
+        gb.memory.write_16bit(gb.cpu.register.SP, gb.cpu.register.PC)
+        gb.cpu.register.PC = a16
         return 24
     return 12
 
 
 # noinspection PyUnusedLocal
-def code_dd(cpu):
+def code_dd(gb):
     """ Unused opcode """
     return 0
 
 
-def code_de(cpu):
+def code_de(gb):
     """ SBC A,d8 - A=A-d8-carry_flag (yes, '-carry_flag' is just -1 or -0) """
-    d8 = cpu.read_next_byte_from_cartridge()
-    value = d8 + cpu.register.get_c_flag()
-    result = (cpu.register.A - value) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
-    cpu.register.set_z_flag((result & 0xFF) == 0)
-    cpu.register.set_n_flag(True)
-    cpu.register.set_h_flag((value & 0x0F) > (cpu.register.A & 0x0F))
-    cpu.register.set_c_flag(value > cpu.register.A)
-    cpu.register.A = result
+    d8 = gb.cpu.read_next_byte_from_cartridge()
+    value = d8 + gb.cpu.register.get_c_flag()
+    result = (gb.cpu.register.A - value) & 0xFF  # '& 0xFF' is necessary to convert signed integer to unsigned
+    gb.cpu.register.set_z_flag((result & 0xFF) == 0)
+    gb.cpu.register.set_n_flag(True)
+    gb.cpu.register.set_h_flag((value & 0x0F) > (gb.cpu.register.A & 0x0F))
+    gb.cpu.register.set_c_flag(value > gb.cpu.register.A)
+    gb.cpu.register.A = result
     return 8
 
 
-def code_df(cpu):
+def code_df(gb):
     """ RST 18H - Push present address onto stack, jump to address $0000 + 18H """
-    cpu.register.SP = (cpu.register.SP - 2) & 0xFFFF  # Increase stack
-    cpu.memory.write_16bit(cpu.register.SP, cpu.register.PC)  # Store PC into new stack element
-    cpu.register.PC = 0x0018
+    gb.cpu.register.SP = (gb.cpu.register.SP - 2) & 0xFFFF  # Increase stack
+    gb.memory.write_16bit(gb.cpu.register.SP, gb.cpu.register.PC)  # Store PC into new stack element
+    gb.cpu.register.PC = 0x0018
     return 16
 
 
 # OPCODES Ex
-def code_e0(cpu):
+def code_e0(gb):
     """ LDH (d8),A or LD ($FF00+d8),A - Put A into address ($FF00 + d8) """
-    d8 = cpu.read_next_byte_from_cartridge()
+    d8 = gb.cpu.read_next_byte_from_cartridge()
     address = (0xFF00 + d8) & 0xFFFF
-    cpu.memory.write_8bit(address,cpu.register.A)
+    gb.memory.write_8bit(address,gb.cpu.register.A)
     return 12
 
 
-def code_e1(cpu):
+def code_e1(gb):
     """ POP HL - Copy 16-bit value from stack (i.e. SP address) into HL, then increment SP by 2 """
-    lsb = cpu.memory.read_8bit(cpu.register.SP)
-    msb = cpu.memory.read_8bit(cpu.register.SP + 1)
-    cpu.register.set_hl(get_big_endian_value(msb, lsb))
-    cpu.register.SP = (cpu.register.SP + 2) & 0xFFFF
+    lsb = gb.memory.read_8bit(gb.cpu.register.SP)
+    msb = gb.memory.read_8bit(gb.cpu.register.SP + 1)
+    gb.cpu.register.set_hl(get_big_endian_value(msb, lsb))
+    gb.cpu.register.SP = (gb.cpu.register.SP + 2) & 0xFFFF
     return 12
 
 
-def code_e2(cpu):
+def code_e2(gb):
     """ LD (C),A or LD ($FF00+C),A - Put A into address ($FF00 + register C) """
-    address = (0xFF00 + cpu.register.C) & 0xFFFF
-    cpu.memory.write_8bit(address, cpu.register.A)
+    address = (0xFF00 + gb.cpu.register.C) & 0xFFFF
+    gb.memory.write_8bit(address, gb.cpu.register.A)
     return 8
 
 
 # noinspection PyUnusedLocal
-def code_e3(cpu):
+def code_e3(gb):
     """ Unused opcode """
     return 0
 
 
 # noinspection PyUnusedLocal
-def code_e4(cpu):
+def code_e4(gb):
     """ Unused opcode """
     return 0
 
 
-def code_e5(cpu):
+def code_e5(gb):
     """ PUSH HL - Decrement SP by 2 then push HL value onto stack (i.e. SP address) """
-    cpu.register.SP = (cpu.register.SP - 2) & 0xFFFF
-    cpu.memory.write_16bit(cpu.register.SP, cpu.register.get_hl())
+    gb.cpu.register.SP = (gb.cpu.register.SP - 2) & 0xFFFF
+    gb.memory.write_16bit(gb.cpu.register.SP, gb.cpu.register.get_hl())
     return 16
 
 
-def code_e6(cpu):
+def code_e6(gb):
     """ AND d8 - A=Logical AND A with d8 """
-    d8 = cpu.read_next_byte_from_cartridge()
-    cpu.register.A = cpu.register.A & d8
-    cpu.register.set_z_flag(cpu.register.A == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
-    cpu.register.set_c_flag(False)
+    d8 = gb.cpu.read_next_byte_from_cartridge()
+    gb.cpu.register.A = gb.cpu.register.A & d8
+    gb.cpu.register.set_z_flag(gb.cpu.register.A == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
+    gb.cpu.register.set_c_flag(False)
     return 8
 
 
-def code_e7(cpu):
+def code_e7(gb):
     """ RST 20H - Push present address onto stack, jump to address $0000 + 20H """
-    cpu.register.SP = (cpu.register.SP - 2) & 0xFFFF  # Increase stack
-    cpu.memory.write_16bit(cpu.register.SP, cpu.register.PC)  # Store PC into new stack element
-    cpu.register.PC = 0x0020
+    gb.cpu.register.SP = (gb.cpu.register.SP - 2) & 0xFFFF  # Increase stack
+    gb.memory.write_16bit(gb.cpu.register.SP, gb.cpu.register.PC)  # Store PC into new stack element
+    gb.cpu.register.PC = 0x0020
     return 16
 
 
-def code_e8(cpu):
+def code_e8(gb):
     """ ADD SP,r8 - SP=SP+r8 (r8 is a signed value) """
-    r8 = cpu.read_next_byte_from_cartridge()
+    r8 = gb.cpu.read_next_byte_from_cartridge()
     r8 = convert_unsigned_integer_to_signed(r8)
-    result = cpu.register.SP + r8
-    cpu.register.set_z_flag(False)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(((cpu.register.SP & 0x0F) + (r8 & 0x0F)) > 0x0F)
-    cpu.register.set_c_flag(result > 0xFFFF)
-    cpu.register.SP = result & 0xFFFF
+    result = gb.cpu.register.SP + r8
+    gb.cpu.register.set_z_flag(False)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(((gb.cpu.register.SP & 0x0F) + (r8 & 0x0F)) > 0x0F)
+    gb.cpu.register.set_c_flag(result > 0xFFFF)
+    gb.cpu.register.SP = result & 0xFFFF
     return 16
 
 
-def code_e9(cpu):
+def code_e9(gb):
     """ JP (HL) - Jump to address contained in HL """
-    cpu.register.PC = cpu.memory.read_16bit(cpu.register.get_hl())
+    gb.cpu.register.PC = gb.memory.read_16bit(gb.cpu.register.get_hl())
     return 4
 
 
-def code_ea(cpu):
+def code_ea(gb):
     """ LD (a16),A - Stores reg at the address in a16 (least significant byte first) """
-    lsb = cpu.read_next_byte_from_cartridge()
-    msb = cpu.read_next_byte_from_cartridge()
+    lsb = gb.cpu.read_next_byte_from_cartridge()
+    msb = gb.cpu.read_next_byte_from_cartridge()
     a16 = get_big_endian_value(msb,lsb)
-    cpu.memory.write_8bit(a16,cpu.register.A)
+    gb.memory.write_8bit(a16,gb.cpu.register.A)
     return 16
 
 
 # noinspection PyUnusedLocal
-def code_eb(cpu):
+def code_eb(gb):
     """ Unused opcode """
     return 0
 
 
 # noinspection PyUnusedLocal
-def code_ec(cpu):
+def code_ec(gb):
     """ Unused opcode """
     return 0
 
 
 # noinspection PyUnusedLocal
-def code_ed(cpu):
+def code_ed(gb):
     """ Unused opcode """
     return 0
 
 
-def code_ee(cpu):
+def code_ee(gb):
     """ XOR d8 - A=Logical XOR A with d8 """
-    d8 = cpu.read_next_byte_from_cartridge()
-    cpu.register.A = cpu.register.A ^ d8
-    cpu.register.set_z_flag(cpu.register.A == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(False)
+    d8 = gb.cpu.read_next_byte_from_cartridge()
+    gb.cpu.register.A = gb.cpu.register.A ^ d8
+    gb.cpu.register.set_z_flag(gb.cpu.register.A == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(False)
     return 8
 
 
-def code_ef(cpu):
+def code_ef(gb):
     """ RST 28H - Push present address onto stack, jump to address $0000 + 28H """
-    cpu.register.SP = (cpu.register.SP - 2) & 0xFFFF  # Increase stack
-    cpu.memory.write_16bit(cpu.register.SP, cpu.register.PC)  # Store PC into new stack element
-    cpu.register.PC = 0x0028
+    gb.cpu.register.SP = (gb.cpu.register.SP - 2) & 0xFFFF  # Increase stack
+    gb.memory.write_16bit(gb.cpu.register.SP, gb.cpu.register.PC)  # Store PC into new stack element
+    gb.cpu.register.PC = 0x0028
     return 16
 
 
 # OPCODES Fx
-def code_f0(cpu):
+def code_f0(gb):
     """ LDH A,(d8) or LD A,($FF00+d8) - Put value at address ($FF00 + d8) into A """
-    d8 = cpu.read_next_byte_from_cartridge()
+    d8 = gb.cpu.read_next_byte_from_cartridge()
     address = (0xFF00 + d8) & 0xFFFF
-    cpu.register.A = cpu.memory.read_8bit(address)
+    gb.cpu.register.A = gb.memory.read_8bit(address)
     return 12
 
 
-def code_f1(cpu):
+def code_f1(gb):
     """ POP AF - Copy 16-bit value from stack (i.e. SP address) into AF, then increment SP by 2 """
-    lsb = cpu.memory.read_8bit(cpu.register.SP)
-    msb = cpu.memory.read_8bit(cpu.register.SP + 1)
-    cpu.register.set_af(get_big_endian_value(msb, lsb))
-    cpu.register.SP = (cpu.register.SP + 2) & 0xFFFF
+    lsb = gb.memory.read_8bit(gb.cpu.register.SP)
+    msb = gb.memory.read_8bit(gb.cpu.register.SP + 1)
+    gb.cpu.register.set_af(get_big_endian_value(msb, lsb))
+    gb.cpu.register.SP = (gb.cpu.register.SP + 2) & 0xFFFF
     return 12
 
 
-def code_f2(cpu):
+def code_f2(gb):
     """ LD A,(C) or LD A,($FF00+C) - Put value at address ($FF00 + register C) into A """
-    address = (0xFF00 + cpu.register.C) & 0xFFFF
-    cpu.register.A = cpu.memory.read_8bit(address)
+    address = (0xFF00 + gb.cpu.register.C) & 0xFFFF
+    gb.cpu.register.A = gb.memory.read_8bit(address)
     return 8
 
 
 # noinspection PyUnusedLocal
-def code_f3(cpu):
+def code_f3(gb):
     """ DI - Disable interrupts AFTER THE NEXT INSTRUCTION IS EXECUTED """
     # Interrupt update will execute next. Since the disable is only after the next instruction, the boolean
     # "disable_IME_after_next_instruction" will be set to true during the interrupt step and not here.
@@ -2174,67 +2172,67 @@ def code_f3(cpu):
 
 
 # noinspection PyUnusedLocal
-def code_f4(cpu):
+def code_f4(gb):
     """ Unused opcode """
     return 0
 
 
-def code_f5(cpu):
+def code_f5(gb):
     """ PUSH AF - Decrement SP by 2 then push AF value onto stack (i.e. SP address) """
-    cpu.register.SP = (cpu.register.SP - 2) & 0xFFFF
-    cpu.memory.write_16bit(cpu.register.SP, cpu.register.get_af())
+    gb.cpu.register.SP = (gb.cpu.register.SP - 2) & 0xFFFF
+    gb.memory.write_16bit(gb.cpu.register.SP, gb.cpu.register.get_af())
     return 16
 
 
-def code_f6(cpu):
+def code_f6(gb):
     """ OR d8 - A=Logical OR A with d8 """
-    d8 = cpu.read_next_byte_from_cartridge()
-    cpu.register.A = cpu.register.A | d8
-    cpu.register.set_z_flag(cpu.register.A == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(False)
+    d8 = gb.cpu.read_next_byte_from_cartridge()
+    gb.cpu.register.A = gb.cpu.register.A | d8
+    gb.cpu.register.set_z_flag(gb.cpu.register.A == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(False)
     return 8
 
 
-def code_f7(cpu):
+def code_f7(gb):
     """ RST 30H - Push present address onto stack, jump to address $0000 + 30H """
-    cpu.register.SP = (cpu.register.SP - 2) & 0xFFFF  # Increase stack
-    cpu.memory.write_16bit(cpu.register.SP, cpu.register.PC)  # Store PC into new stack element
-    cpu.register.PC = 0x0030
+    gb.cpu.register.SP = (gb.cpu.register.SP - 2) & 0xFFFF  # Increase stack
+    gb.memory.write_16bit(gb.cpu.register.SP, gb.cpu.register.PC)  # Store PC into new stack element
+    gb.cpu.register.PC = 0x0030
     return 16
 
 
-def code_f8(cpu):
+def code_f8(gb):
     """ LD HL,SP+d8 or LDHL SP,r8 - Put result of SP+r8 into HL (r8 is a signed value) """
-    r8 = cpu.read_next_byte_from_cartridge()
+    r8 = gb.cpu.read_next_byte_from_cartridge()
     r8 = convert_unsigned_integer_to_signed(r8)
-    result = cpu.register.SP + r8
-    cpu.register.set_z_flag(False)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(((cpu.register.SP & 0x0F) + (r8 & 0x0F)) > 0x0F)
-    cpu.register.set_c_flag(result > 0xFFFF)
-    cpu.register.set_hl(result & 0xFFFF)
+    result = gb.cpu.register.SP + r8
+    gb.cpu.register.set_z_flag(False)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(((gb.cpu.register.SP & 0x0F) + (r8 & 0x0F)) > 0x0F)
+    gb.cpu.register.set_c_flag(result > 0xFFFF)
+    gb.cpu.register.set_hl(result & 0xFFFF)
     return 12
 
 
-def code_f9(cpu):
+def code_f9(gb):
     """ LD SP,HL - Put HL value into SP """
-    cpu.register.SP = cpu.register.get_hl()
+    gb.cpu.register.SP = gb.cpu.register.get_hl()
     return 8
 
 
-def code_fa(cpu):
+def code_fa(gb):
     """ LD A,(a16) - Load reg with the value at the address in a16 """
-    lsb = cpu.read_next_byte_from_cartridge()
-    msb = cpu.read_next_byte_from_cartridge()
+    lsb = gb.cpu.read_next_byte_from_cartridge()
+    msb = gb.cpu.read_next_byte_from_cartridge()
     a16 = get_big_endian_value(msb, lsb)
-    cpu.register.A = cpu.memory.read_8bit(a16)
+    gb.cpu.register.A = gb.memory.read_8bit(a16)
     return 16
 
 
 # noinspection PyUnusedLocal
-def code_fb(cpu):
+def code_fb(gb):
     """ EI - Enable interrupts AFTER THE NEXT INSTRUCTION IS EXECUTED """
     # Interrupt update will execute next. Since the enable is only after the next instruction, the boolean
     # "enable_IME_after_next_instruction" will be set to true during the interrupt step and not here.
@@ -2242,32 +2240,32 @@ def code_fb(cpu):
 
 
 # noinspection PyUnusedLocal
-def code_fc(cpu):
+def code_fc(gb):
     """ Unused opcode """
     return 0
 
 
 # noinspection PyUnusedLocal
-def code_fd(cpu):
+def code_fd(gb):
     """ Unused opcode """
     return 0
 
 
-def code_fe(cpu):
+def code_fe(gb):
     """ CP A,d8 - same as SUB A,d8 but throw the result away, only set flags """
-    d8 = cpu.read_next_byte_from_cartridge()
-    cpu.register.set_z_flag(cpu.register.A == d8)
-    cpu.register.set_n_flag(True)
-    cpu.register.set_h_flag((d8 & 0x0F) > (cpu.register.A & 0x0F))
-    cpu.register.set_c_flag(d8 > cpu.register.A)
+    d8 = gb.cpu.read_next_byte_from_cartridge()
+    gb.cpu.register.set_z_flag(gb.cpu.register.A == d8)
+    gb.cpu.register.set_n_flag(True)
+    gb.cpu.register.set_h_flag((d8 & 0x0F) > (gb.cpu.register.A & 0x0F))
+    gb.cpu.register.set_c_flag(d8 > gb.cpu.register.A)
     return 8
 
 
-def code_ff(cpu):
+def code_ff(gb):
     """ RST 38H - Push present address onto stack, jump to address $0000 + 38H """
-    cpu.register.SP = (cpu.register.SP - 2) & 0xFFFF  # Increase stack
-    cpu.memory.write_16bit(cpu.register.SP, cpu.register.PC)  # Store PC into new stack element
-    cpu.register.PC = 0x0038
+    gb.cpu.register.SP = (gb.cpu.register.SP - 2) & 0xFFFF  # Increase stack
+    gb.memory.write_16bit(gb.cpu.register.SP, gb.cpu.register.PC)  # Store PC into new stack element
+    gb.cpu.register.PC = 0x0038
     return 16
 
 
@@ -2275,2126 +2273,2126 @@ def code_ff(cpu):
 
 
 # OPCODES CB 0x
-def code_cb_00(cpu):
+def code_cb_00(gb):
     """ RLC B - Copy register B bit 7 to Carry flag, then rotate register B left """
-    bit_7 = cpu.register.B >> 7
-    cpu.register.B = ((cpu.register.B << 1) + bit_7) & 0xFF
-    cpu.register.set_z_flag(cpu.register.B == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(bit_7)
+    bit_7 = gb.cpu.register.B >> 7
+    gb.cpu.register.B = ((gb.cpu.register.B << 1) + bit_7) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.B == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(bit_7)
     return 8
 
 
-def code_cb_01(cpu):
+def code_cb_01(gb):
     """ RLC C - Copy register C bit 7 to Carry flag, then rotate register C left """
-    bit_7 = cpu.register.C >> 7
-    cpu.register.C = ((cpu.register.C << 1) + bit_7) & 0xFF
-    cpu.register.set_z_flag(cpu.register.C == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(bit_7)
+    bit_7 = gb.cpu.register.C >> 7
+    gb.cpu.register.C = ((gb.cpu.register.C << 1) + bit_7) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.C == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(bit_7)
     return 8
 
 
-def code_cb_02(cpu):
+def code_cb_02(gb):
     """ RLC D - Copy register D bit 7 to Carry flag, then rotate register D left """
-    bit_7 = cpu.register.D >> 7
-    cpu.register.D = ((cpu.register.D << 1) + bit_7) & 0xFF
-    cpu.register.set_z_flag(cpu.register.D == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(bit_7)
+    bit_7 = gb.cpu.register.D >> 7
+    gb.cpu.register.D = ((gb.cpu.register.D << 1) + bit_7) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.D == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(bit_7)
     return 8
 
 
-def code_cb_03(cpu):
+def code_cb_03(gb):
     """ RLC E - Copy register E bit 7 to Carry flag, then rotate register E left """
-    bit_7 = cpu.register.E >> 7
-    cpu.register.E = ((cpu.register.E << 1) + bit_7) & 0xFF
-    cpu.register.set_z_flag(cpu.register.E == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(bit_7)
+    bit_7 = gb.cpu.register.E >> 7
+    gb.cpu.register.E = ((gb.cpu.register.E << 1) + bit_7) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.E == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(bit_7)
     return 8
 
 
-def code_cb_04(cpu):
+def code_cb_04(gb):
     """ RLC H - Copy register H bit 7 to Carry flag, then rotate register H left """
-    bit_7 = cpu.register.H >> 7
-    cpu.register.H = ((cpu.register.H << 1) + bit_7) & 0xFF
-    cpu.register.set_z_flag(cpu.register.H == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(bit_7)
+    bit_7 = gb.cpu.register.H >> 7
+    gb.cpu.register.H = ((gb.cpu.register.H << 1) + bit_7) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.H == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(bit_7)
     return 8
 
 
-def code_cb_05(cpu):
+def code_cb_05(gb):
     """ RLC L - Copy register L bit 7 to Carry flag, then rotate register L left """
-    bit_7 = cpu.register.L >> 7
-    cpu.register.L = ((cpu.register.L << 1) + bit_7) & 0xFF
-    cpu.register.set_z_flag(cpu.register.L == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(bit_7)
+    bit_7 = gb.cpu.register.L >> 7
+    gb.cpu.register.L = ((gb.cpu.register.L << 1) + bit_7) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.L == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(bit_7)
     return 8
 
 
-def code_cb_06(cpu):
+def code_cb_06(gb):
     """ RLC (HL) - Copy (value at address HL) bit 7 to Carry flag, then rotate (value at address HL) left """
-    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    value = gb.memory.read_8bit(gb.cpu.register.get_hl())
     bit_7 = value >> 7
     value = ((value << 1) + bit_7) & 0xFF
-    cpu.register.set_z_flag(value == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(bit_7)
-    cpu.memory.write_8bit(cpu.register.get_hl(),value)
+    gb.cpu.register.set_z_flag(value == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(bit_7)
+    gb.memory.write_8bit(gb.cpu.register.get_hl(),value)
     return 16
 
 
-def code_cb_07(cpu):
+def code_cb_07(gb):
     """ RLC A - Copy register A bit 7 to Carry flag, then rotate register A left """
-    code_07(cpu)  # Does exactly the same thing...
+    code_07(gb)  # Does exactly the same thing...
     return 8
 
 
-def code_cb_08(cpu):
+def code_cb_08(gb):
     """ RRC B - Copy register B bit 0 to Carry flag, then rotate register B right """
-    bit_0 = cpu.register.B & 0b00000001
-    cpu.register.B = ((bit_0 << 7) + (cpu.register.B >> 1)) & 0xFF
-    cpu.register.set_z_flag(cpu.register.B == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(bit_0)
+    bit_0 = gb.cpu.register.B & 0b00000001
+    gb.cpu.register.B = ((bit_0 << 7) + (gb.cpu.register.B >> 1)) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.B == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(bit_0)
     return 8
 
 
-def code_cb_09(cpu):
+def code_cb_09(gb):
     """ RRC C - Copy register C bit 0 to Carry flag, then rotate register C right """
-    bit_0 = cpu.register.C & 0b00000001
-    cpu.register.C = ((bit_0 << 7) + (cpu.register.C >> 1)) & 0xFF
-    cpu.register.set_z_flag(cpu.register.C == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(bit_0)
+    bit_0 = gb.cpu.register.C & 0b00000001
+    gb.cpu.register.C = ((bit_0 << 7) + (gb.cpu.register.C >> 1)) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.C == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(bit_0)
     return 8
 
 
-def code_cb_0a(cpu):
+def code_cb_0a(gb):
     """ RRC D - Copy register D bit 0 to Carry flag, then rotate register D right """
-    bit_0 = cpu.register.D & 0b00000001
-    cpu.register.D = ((bit_0 << 7) + (cpu.register.D >> 1)) & 0xFF
-    cpu.register.set_z_flag(cpu.register.D == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(bit_0)
+    bit_0 = gb.cpu.register.D & 0b00000001
+    gb.cpu.register.D = ((bit_0 << 7) + (gb.cpu.register.D >> 1)) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.D == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(bit_0)
     return 8
 
 
-def code_cb_0b(cpu):
+def code_cb_0b(gb):
     """ RRC E - Copy register E bit 0 to Carry flag, then rotate register E right """
-    bit_0 = cpu.register.E & 0b00000001
-    cpu.register.E = ((bit_0 << 7) + (cpu.register.E >> 1)) & 0xFF
-    cpu.register.set_z_flag(cpu.register.E == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(bit_0)
+    bit_0 = gb.cpu.register.E & 0b00000001
+    gb.cpu.register.E = ((bit_0 << 7) + (gb.cpu.register.E >> 1)) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.E == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(bit_0)
     return 8
 
 
-def code_cb_0c(cpu):
+def code_cb_0c(gb):
     """ RRC H - Copy register H bit 0 to Carry flag, then rotate register H right """
-    bit_0 = cpu.register.H & 0b00000001
-    cpu.register.H = ((bit_0 << 7) + (cpu.register.H >> 1)) & 0xFF
-    cpu.register.set_z_flag(cpu.register.H == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(bit_0)
+    bit_0 = gb.cpu.register.H & 0b00000001
+    gb.cpu.register.H = ((bit_0 << 7) + (gb.cpu.register.H >> 1)) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.H == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(bit_0)
     return 8
 
 
-def code_cb_0d(cpu):
+def code_cb_0d(gb):
     """ RRC L - Copy register L bit 0 to Carry flag, then rotate register L right """
-    bit_0 = cpu.register.L & 0b00000001
-    cpu.register.L = ((bit_0 << 7) + (cpu.register.L >> 1)) & 0xFF
-    cpu.register.set_z_flag(cpu.register.L == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(bit_0)
+    bit_0 = gb.cpu.register.L & 0b00000001
+    gb.cpu.register.L = ((bit_0 << 7) + (gb.cpu.register.L >> 1)) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.L == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(bit_0)
     return 8
 
 
-def code_cb_0e(cpu):
+def code_cb_0e(gb):
     """ RRC (HL) - Copy bit 0 to Carry flag, then rotate right """
-    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    value = gb.memory.read_8bit(gb.cpu.register.get_hl())
     bit_0 = value & 0b00000001
     value = ((bit_0 << 7) + (value >> 1)) & 0xFF
-    cpu.register.set_z_flag(value == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(bit_0)
-    cpu.memory.write_8bit(cpu.register.get_hl(),value)
+    gb.cpu.register.set_z_flag(value == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(bit_0)
+    gb.memory.write_8bit(gb.cpu.register.get_hl(),value)
     return 16
 
 
-def code_cb_0f(cpu):
+def code_cb_0f(gb):
     """ RRCA - Copy register A bit 0 to Carry flag, then rotate register A right """
-    code_0f(cpu)  # Does exactly the same thing...
+    code_0f(gb)  # Does exactly the same thing...
     return 8
 
 
 # OPCODES CB 1x
-def code_cb_10(cpu):
+def code_cb_10(gb):
     """ RL B - Copy register B bit 7 to temp, replace B bit 7 w/ Carry flag, rotate B left, copy temp to Carry flag """
-    bit_7 = cpu.register.B >> 7
-    cpu.register.B = ((cpu.register.B << 1) + cpu.register.get_c_flag()) & 0xFF
-    cpu.register.set_z_flag(cpu.register.B == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(bit_7)
+    bit_7 = gb.cpu.register.B >> 7
+    gb.cpu.register.B = ((gb.cpu.register.B << 1) + gb.cpu.register.get_c_flag()) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.B == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(bit_7)
     return 8
 
 
-def code_cb_11(cpu):
+def code_cb_11(gb):
     """ RL C - Copy register C bit 7 to temp, replace C bit 7 w/ Carry flag, rotate C left, copy temp to Carry flag """
-    bit_7 = cpu.register.C >> 7
-    cpu.register.C = ((cpu.register.C << 1) + cpu.register.get_c_flag()) & 0xFF
-    cpu.register.set_z_flag(cpu.register.C == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(bit_7)
+    bit_7 = gb.cpu.register.C >> 7
+    gb.cpu.register.C = ((gb.cpu.register.C << 1) + gb.cpu.register.get_c_flag()) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.C == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(bit_7)
     return 8
 
 
-def code_cb_12(cpu):
+def code_cb_12(gb):
     """ RL D - Copy register D bit 7 to temp, replace D bit 7 w/ Carry flag, rotate D left, copy temp to Carry flag """
-    bit_7 = cpu.register.D >> 7
-    cpu.register.D = ((cpu.register.D << 1) + cpu.register.get_c_flag()) & 0xFF
-    cpu.register.set_z_flag(cpu.register.D == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(bit_7)
+    bit_7 = gb.cpu.register.D >> 7
+    gb.cpu.register.D = ((gb.cpu.register.D << 1) + gb.cpu.register.get_c_flag()) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.D == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(bit_7)
     return 8
 
 
-def code_cb_13(cpu):
+def code_cb_13(gb):
     """ RL E - Copy register E bit 7 to temp, replace E bit 7 w/ Carry flag, rotate E left, copy temp to Carry flag """
-    bit_7 = cpu.register.E >> 7
-    cpu.register.E = ((cpu.register.E << 1) + cpu.register.get_c_flag()) & 0xFF
-    cpu.register.set_z_flag(cpu.register.E == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(bit_7)
+    bit_7 = gb.cpu.register.E >> 7
+    gb.cpu.register.E = ((gb.cpu.register.E << 1) + gb.cpu.register.get_c_flag()) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.E == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(bit_7)
     return 8
 
 
-def code_cb_14(cpu):
+def code_cb_14(gb):
     """ RL H - Copy register H bit 7 to temp, replace H bit 7 w/ Carry flag, rotate H left, copy temp to Carry flag """
-    bit_7 = cpu.register.H >> 7
-    cpu.register.H = ((cpu.register.H << 1) + cpu.register.get_c_flag()) & 0xFF
-    cpu.register.set_z_flag(cpu.register.H == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(bit_7)
+    bit_7 = gb.cpu.register.H >> 7
+    gb.cpu.register.H = ((gb.cpu.register.H << 1) + gb.cpu.register.get_c_flag()) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.H == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(bit_7)
     return 8
 
 
-def code_cb_15(cpu):
+def code_cb_15(gb):
     """ RL L - Copy register L bit 7 to temp, replace L bit 7 w/ Carry flag, rotate L left, copy temp to Carry flag """
-    bit_7 = cpu.register.L >> 7
-    cpu.register.L = ((cpu.register.L << 1) + cpu.register.get_c_flag()) & 0xFF
-    cpu.register.set_z_flag(cpu.register.L == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(bit_7)
+    bit_7 = gb.cpu.register.L >> 7
+    gb.cpu.register.L = ((gb.cpu.register.L << 1) + gb.cpu.register.get_c_flag()) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.L == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(bit_7)
     return 8
 
 
-def code_cb_16(cpu):
+def code_cb_16(gb):
     """ RL (HL) - Copy bit 7 to temp, replace bit 7 w/ Carry flag, rotate left, copy temp to Carry flag """
-    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    value = gb.memory.read_8bit(gb.cpu.register.get_hl())
     bit_7 = value >> 7
-    value = ((value << 1) + cpu.register.get_c_flag()) & 0xFF
-    cpu.register.set_z_flag(value == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(bit_7)
-    cpu.memory.write_8bit(cpu.register.get_hl(),value)
+    value = ((value << 1) + gb.cpu.register.get_c_flag()) & 0xFF
+    gb.cpu.register.set_z_flag(value == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(bit_7)
+    gb.memory.write_8bit(gb.cpu.register.get_hl(),value)
     return 16
 
 
-def code_cb_17(cpu):
+def code_cb_17(gb):
     """ RL A - Copy register A bit 7 to temp, replace A bit 7 w/ Carry flag, rotate A left, copy temp to Carry flag """
-    code_17(cpu)  # Does exactly the same thing...
+    code_17(gb)  # Does exactly the same thing...
     return 8
 
 
-def code_cb_18(cpu):
+def code_cb_18(gb):
     """ RR B - Copy register B bit 0 to temp, replace bit 0 w/ Carry flag, rotate right, copy temp to Carry flag """
-    bit_0 = cpu.register.B & 0b00000001
-    cpu.register.B = ((cpu.register.get_c_flag() << 7) + (cpu.register.B >> 1)) & 0xFF
-    cpu.register.set_z_flag(cpu.register.B == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(bit_0)
+    bit_0 = gb.cpu.register.B & 0b00000001
+    gb.cpu.register.B = ((gb.cpu.register.get_c_flag() << 7) + (gb.cpu.register.B >> 1)) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.B == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(bit_0)
     return 8
 
 
-def code_cb_19(cpu):
+def code_cb_19(gb):
     """ RR C - Copy register C bit 0 to temp, replace bit 0 w/ Carry flag, rotate right, copy temp to Carry flag """
-    bit_0 = cpu.register.C & 0b00000001
-    cpu.register.C = ((cpu.register.get_c_flag() << 7) + (cpu.register.C >> 1)) & 0xFF
-    cpu.register.set_z_flag(cpu.register.C == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(bit_0)
+    bit_0 = gb.cpu.register.C & 0b00000001
+    gb.cpu.register.C = ((gb.cpu.register.get_c_flag() << 7) + (gb.cpu.register.C >> 1)) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.C == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(bit_0)
     return 8
 
 
-def code_cb_1a(cpu):
+def code_cb_1a(gb):
     """ RR D - Copy register D bit 0 to temp, replace bit 0 w/ Carry flag, rotate right, copy temp to Carry flag """
-    bit_0 = cpu.register.D & 0b00000001
-    cpu.register.D = ((cpu.register.get_c_flag() << 7) + (cpu.register.D >> 1)) & 0xFF
-    cpu.register.set_z_flag(cpu.register.D == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(bit_0)
+    bit_0 = gb.cpu.register.D & 0b00000001
+    gb.cpu.register.D = ((gb.cpu.register.get_c_flag() << 7) + (gb.cpu.register.D >> 1)) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.D == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(bit_0)
     return 8
 
 
-def code_cb_1b(cpu):
+def code_cb_1b(gb):
     """ RR E - Copy register E bit 0 to temp, replace bit 0 w/ Carry flag, rotate right, copy temp to Carry flag """
-    bit_0 = cpu.register.E & 0b00000001
-    cpu.register.E = ((cpu.register.get_c_flag() << 7) + (cpu.register.E >> 1)) & 0xFF
-    cpu.register.set_z_flag(cpu.register.E == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(bit_0)
+    bit_0 = gb.cpu.register.E & 0b00000001
+    gb.cpu.register.E = ((gb.cpu.register.get_c_flag() << 7) + (gb.cpu.register.E >> 1)) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.E == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(bit_0)
     return 8
 
 
-def code_cb_1c(cpu):
+def code_cb_1c(gb):
     """ RR H - Copy register H bit 0 to temp, replace bit 0 w/ Carry flag, rotate right, copy temp to Carry flag """
-    bit_0 = cpu.register.H & 0b00000001
-    cpu.register.H = ((cpu.register.get_c_flag() << 7) + (cpu.register.H >> 1)) & 0xFF
-    cpu.register.set_z_flag(cpu.register.H == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(bit_0)
+    bit_0 = gb.cpu.register.H & 0b00000001
+    gb.cpu.register.H = ((gb.cpu.register.get_c_flag() << 7) + (gb.cpu.register.H >> 1)) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.H == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(bit_0)
     return 8
 
 
-def code_cb_1d(cpu):
+def code_cb_1d(gb):
     """ RR L - Copy register L bit 0 to temp, replace bit 0 w/ Carry flag, rotate right, copy temp to Carry flag """
-    bit_0 = cpu.register.L & 0b00000001
-    cpu.register.L = ((cpu.register.get_c_flag() << 7) + (cpu.register.L >> 1)) & 0xFF
-    cpu.register.set_z_flag(cpu.register.L == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(bit_0)
+    bit_0 = gb.cpu.register.L & 0b00000001
+    gb.cpu.register.L = ((gb.cpu.register.get_c_flag() << 7) + (gb.cpu.register.L >> 1)) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.L == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(bit_0)
     return 8
 
 
-def code_cb_1e(cpu):
+def code_cb_1e(gb):
     """ RR (HL) - Copy (HL) bit 0 to temp, replace bit 0 w/ Carry flag, rotate right, copy temp to Carry flag """
-    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    value = gb.memory.read_8bit(gb.cpu.register.get_hl())
     bit_0 = value & 0b00000001
-    value = ((cpu.register.get_c_flag() << 7) + (value >> 1)) & 0xFF
-    cpu.register.set_z_flag(value == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(bit_0)
-    cpu.memory.write_8bit(cpu.register.get_hl(),value)
+    value = ((gb.cpu.register.get_c_flag() << 7) + (value >> 1)) & 0xFF
+    gb.cpu.register.set_z_flag(value == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(bit_0)
+    gb.memory.write_8bit(gb.cpu.register.get_hl(),value)
     return 16
 
 
-def code_cb_1f(cpu):
+def code_cb_1f(gb):
     """ RRA - Copy register A bit 0 to temp, replace A bit 0 w/ Carry flag, rotate A right, copy temp to Carry flag """
-    code_1f(cpu)  # Does exactly the same thing...
+    code_1f(gb)  # Does exactly the same thing...
     return 8
 
 
 # OPCODES CB 2x
-def code_cb_20(cpu):
+def code_cb_20(gb):
     """ SLA B - Copy register B bit 7 to temp, replace B bit 7 w/ zero, rotate B left, copy temp to Carry flag """
-    bit_7 = cpu.register.B >> 7
-    cpu.register.B = (cpu.register.B << 1) & 0xFF
-    cpu.register.set_z_flag(cpu.register.B == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(bit_7)
+    bit_7 = gb.cpu.register.B >> 7
+    gb.cpu.register.B = (gb.cpu.register.B << 1) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.B == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(bit_7)
     return 8
 
 
-def code_cb_21(cpu):
+def code_cb_21(gb):
     """ SLA C - Copy register C bit 7 to temp, replace C bit 7 w/ zero, rotate C left, copy temp to Carry flag """
-    bit_7 = cpu.register.C >> 7
-    cpu.register.C = (cpu.register.C << 1) & 0xFF
-    cpu.register.set_z_flag(cpu.register.C == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(bit_7)
+    bit_7 = gb.cpu.register.C >> 7
+    gb.cpu.register.C = (gb.cpu.register.C << 1) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.C == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(bit_7)
     return 8
 
 
-def code_cb_22(cpu):
+def code_cb_22(gb):
     """ SLA D - Copy register D bit 7 to temp, replace D bit 7 w/ zero, rotate D left, copy temp to Carry flag """
-    bit_7 = cpu.register.D >> 7
-    cpu.register.D = (cpu.register.D << 1) & 0xFF
-    cpu.register.set_z_flag(cpu.register.D == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(bit_7)
+    bit_7 = gb.cpu.register.D >> 7
+    gb.cpu.register.D = (gb.cpu.register.D << 1) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.D == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(bit_7)
     return 8
 
 
-def code_cb_23(cpu):
+def code_cb_23(gb):
     """ SLA E - Copy register E bit 7 to temp, replace E bit 7 w/ zero, rotate E left, copy temp to Carry flag """
-    bit_7 = cpu.register.E >> 7
-    cpu.register.E = (cpu.register.E << 1) & 0xFF
-    cpu.register.set_z_flag(cpu.register.E == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(bit_7)
+    bit_7 = gb.cpu.register.E >> 7
+    gb.cpu.register.E = (gb.cpu.register.E << 1) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.E == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(bit_7)
     return 8
 
 
-def code_cb_24(cpu):
+def code_cb_24(gb):
     """ SLA H - Copy register H bit 7 to temp, replace H bit 7 w/ zero, rotate H left, copy temp to Carry flag """
-    bit_7 = cpu.register.H >> 7
-    cpu.register.H = (cpu.register.H << 1) & 0xFF
-    cpu.register.set_z_flag(cpu.register.H == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(bit_7)
+    bit_7 = gb.cpu.register.H >> 7
+    gb.cpu.register.H = (gb.cpu.register.H << 1) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.H == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(bit_7)
     return 8
 
 
-def code_cb_25(cpu):
+def code_cb_25(gb):
     """ SLA L - Copy register L bit 7 to temp, replace L bit 7 w/ zero, rotate L left, copy temp to Carry flag """
-    bit_7 = cpu.register.L >> 7
-    cpu.register.L = (cpu.register.L << 1) & 0xFF
-    cpu.register.set_z_flag(cpu.register.L == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(bit_7)
+    bit_7 = gb.cpu.register.L >> 7
+    gb.cpu.register.L = (gb.cpu.register.L << 1) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.L == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(bit_7)
     return 8
 
 
-def code_cb_26(cpu):
+def code_cb_26(gb):
     """ SLA (HL) - Copy bit 7 to temp, replace bit 7 w/ zero, rotate left, copy temp to Carry flag """
-    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    value = gb.memory.read_8bit(gb.cpu.register.get_hl())
     bit_7 = value >> 7
     value = (value << 1) & 0xFF
-    cpu.register.set_z_flag(value == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(bit_7)
-    cpu.memory.write_8bit(cpu.register.get_hl(), value)
+    gb.cpu.register.set_z_flag(value == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(bit_7)
+    gb.memory.write_8bit(gb.cpu.register.get_hl(), value)
     return 16
 
 
-def code_cb_27(cpu):
+def code_cb_27(gb):
     """ SLA A - Copy register A bit 7 to temp, replace A bit 7 w/ zero, rotate A left, copy temp to Carry flag """
-    bit_7 = cpu.register.A >> 7
-    cpu.register.A = (cpu.register.A << 1) & 0xFF
-    cpu.register.set_z_flag(cpu.register.A == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(bit_7)
+    bit_7 = gb.cpu.register.A >> 7
+    gb.cpu.register.A = (gb.cpu.register.A << 1) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.A == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(bit_7)
     return 8
 
 
-def code_cb_28(cpu):
+def code_cb_28(gb):
     """ SRA B - Copy bit 7 to temp, copy bit 0 to Carry flag, shift right, replace new bit 7 with temp """
-    bit_7 = cpu.register.B >> 7
-    bit_0 = cpu.register.B & 0b00000001
-    cpu.register.B = ((bit_7 << 7) + (cpu.register.B >> 1)) & 0xFF
-    cpu.register.set_z_flag(cpu.register.B == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(bit_0)
+    bit_7 = gb.cpu.register.B >> 7
+    bit_0 = gb.cpu.register.B & 0b00000001
+    gb.cpu.register.B = ((bit_7 << 7) + (gb.cpu.register.B >> 1)) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.B == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(bit_0)
     return 8
 
 
-def code_cb_29(cpu):
+def code_cb_29(gb):
     """ SRA C - Copy bit 7 to temp, copy bit 0 to Carry flag, shift right, replace new bit 7 with temp """
-    bit_7 = cpu.register.C >> 7
-    bit_0 = cpu.register.C & 0b00000001
-    cpu.register.C = ((bit_7 << 7) + (cpu.register.C >> 1)) & 0xFF
-    cpu.register.set_z_flag(cpu.register.C == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(bit_0)
+    bit_7 = gb.cpu.register.C >> 7
+    bit_0 = gb.cpu.register.C & 0b00000001
+    gb.cpu.register.C = ((bit_7 << 7) + (gb.cpu.register.C >> 1)) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.C == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(bit_0)
     return 8
 
 
-def code_cb_2a(cpu):
+def code_cb_2a(gb):
     """ SRA D - Copy bit 7 to temp, copy bit 0 to Carry flag, shift right, replace new bit 7 with temp """
-    bit_7 = cpu.register.D >> 7
-    bit_0 = cpu.register.D & 0b00000001
-    cpu.register.D = ((bit_7 << 7) + (cpu.register.D >> 1)) & 0xFF
-    cpu.register.set_z_flag(cpu.register.D == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(bit_0)
+    bit_7 = gb.cpu.register.D >> 7
+    bit_0 = gb.cpu.register.D & 0b00000001
+    gb.cpu.register.D = ((bit_7 << 7) + (gb.cpu.register.D >> 1)) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.D == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(bit_0)
     return 8
 
 
-def code_cb_2b(cpu):
+def code_cb_2b(gb):
     """ SRA E - Copy bit 7 to temp, copy bit 0 to Carry flag, shift right, replace new bit 7 with temp """
-    bit_7 = cpu.register.E >> 7
-    bit_0 = cpu.register.E & 0b00000001
-    cpu.register.E = ((bit_7 << 7) + (cpu.register.E >> 1)) & 0xFF
-    cpu.register.set_z_flag(cpu.register.E == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(bit_0)
+    bit_7 = gb.cpu.register.E >> 7
+    bit_0 = gb.cpu.register.E & 0b00000001
+    gb.cpu.register.E = ((bit_7 << 7) + (gb.cpu.register.E >> 1)) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.E == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(bit_0)
     return 8
 
 
-def code_cb_2c(cpu):
+def code_cb_2c(gb):
     """ SRA H - Copy bit 7 to temp, copy bit 0 to Carry flag, shift right, replace new bit 7 with temp """
-    bit_7 = cpu.register.H >> 7
-    bit_0 = cpu.register.H & 0b00000001
-    cpu.register.H = ((bit_7 << 7) + (cpu.register.H >> 1)) & 0xFF
-    cpu.register.set_z_flag(cpu.register.H == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(bit_0)
+    bit_7 = gb.cpu.register.H >> 7
+    bit_0 = gb.cpu.register.H & 0b00000001
+    gb.cpu.register.H = ((bit_7 << 7) + (gb.cpu.register.H >> 1)) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.H == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(bit_0)
     return 8
 
 
-def code_cb_2d(cpu):
+def code_cb_2d(gb):
     """ SRA L - Copy bit 7 to temp, copy bit 0 to Carry flag, shift right, replace new bit 7 with temp """
-    bit_7 = cpu.register.L >> 7
-    bit_0 = cpu.register.L & 0b00000001
-    cpu.register.L = ((bit_7 << 7) + (cpu.register.L >> 1)) & 0xFF
-    cpu.register.set_z_flag(cpu.register.L == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(bit_0)
+    bit_7 = gb.cpu.register.L >> 7
+    bit_0 = gb.cpu.register.L & 0b00000001
+    gb.cpu.register.L = ((bit_7 << 7) + (gb.cpu.register.L >> 1)) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.L == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(bit_0)
     return 8
 
 
-def code_cb_2e(cpu):
+def code_cb_2e(gb):
     """ SRA (HL) - Copy bit 7 to temp, copy bit 0 to Carry flag, shift right, replace new bit 7 with temp """
-    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    value = gb.memory.read_8bit(gb.cpu.register.get_hl())
     bit_7 = value >> 7
     bit_0 = value & 0b00000001
     value = ((bit_7 << 7) + (value >> 1)) & 0xFF
-    cpu.register.set_z_flag(value == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(bit_0)
-    cpu.memory.write_8bit(cpu.register.get_hl(), value)
+    gb.cpu.register.set_z_flag(value == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(bit_0)
+    gb.memory.write_8bit(gb.cpu.register.get_hl(), value)
     return 16
 
 
-def code_cb_2f(cpu):
+def code_cb_2f(gb):
     """ SRA A - Copy bit 7 to temp, copy bit 0 to Carry flag, shift right, replace new bit 7 with temp """
-    bit_7 = cpu.register.A >> 7
-    bit_0 = cpu.register.A & 0b00000001
-    cpu.register.A = ((bit_7 << 7) + (cpu.register.A >> 1)) & 0xFF
-    cpu.register.set_z_flag(cpu.register.A == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(bit_0)
+    bit_7 = gb.cpu.register.A >> 7
+    bit_0 = gb.cpu.register.A & 0b00000001
+    gb.cpu.register.A = ((bit_7 << 7) + (gb.cpu.register.A >> 1)) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.A == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(bit_0)
     return 8
 
 
 # OPCODES CB 3x
-def code_cb_30(cpu):
+def code_cb_30(gb):
     """ SWAP B - Swap upper and lower nibbles (nibble = 4 bits) """
-    lower_nibble = cpu.register.B & 0x0F
-    upper_nibble = (cpu.register.B >> 4) & 0x0F
-    cpu.register.B = (lower_nibble << 4) | upper_nibble
-    cpu.register.set_z_flag(cpu.register.B == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(False)
+    lower_nibble = gb.cpu.register.B & 0x0F
+    upper_nibble = (gb.cpu.register.B >> 4) & 0x0F
+    gb.cpu.register.B = (lower_nibble << 4) | upper_nibble
+    gb.cpu.register.set_z_flag(gb.cpu.register.B == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(False)
     return 8
 
 
-def code_cb_31(cpu):
+def code_cb_31(gb):
     """ SWAP C - Swap upper and lower nibbles (nibble = 4 bits) """
-    lower_nibble = cpu.register.C & 0x0F
-    upper_nibble = (cpu.register.C >> 4) & 0x0F
-    cpu.register.C = (lower_nibble << 4) | upper_nibble
-    cpu.register.set_z_flag(cpu.register.C == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(False)
+    lower_nibble = gb.cpu.register.C & 0x0F
+    upper_nibble = (gb.cpu.register.C >> 4) & 0x0F
+    gb.cpu.register.C = (lower_nibble << 4) | upper_nibble
+    gb.cpu.register.set_z_flag(gb.cpu.register.C == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(False)
     return 8
 
 
-def code_cb_32(cpu):
+def code_cb_32(gb):
     """ SWAP D - Swap upper and lower nibbles (nibble = 4 bits) """
-    lower_nibble = cpu.register.D & 0x0F
-    upper_nibble = (cpu.register.D >> 4) & 0x0F
-    cpu.register.D = (lower_nibble << 4) | upper_nibble
-    cpu.register.set_z_flag(cpu.register.D == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(False)
+    lower_nibble = gb.cpu.register.D & 0x0F
+    upper_nibble = (gb.cpu.register.D >> 4) & 0x0F
+    gb.cpu.register.D = (lower_nibble << 4) | upper_nibble
+    gb.cpu.register.set_z_flag(gb.cpu.register.D == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(False)
     return 8
 
 
-def code_cb_33(cpu):
+def code_cb_33(gb):
     """ SWAP E - Swap upper and lower nibbles (nibble = 4 bits) """
-    lower_nibble = cpu.register.E & 0x0F
-    upper_nibble = (cpu.register.E >> 4) & 0x0F
-    cpu.register.E = (lower_nibble << 4) | upper_nibble
-    cpu.register.set_z_flag(cpu.register.E == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(False)
+    lower_nibble = gb.cpu.register.E & 0x0F
+    upper_nibble = (gb.cpu.register.E >> 4) & 0x0F
+    gb.cpu.register.E = (lower_nibble << 4) | upper_nibble
+    gb.cpu.register.set_z_flag(gb.cpu.register.E == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(False)
     return 8
 
 
-def code_cb_34(cpu):
+def code_cb_34(gb):
     """ SWAP H - Swap upper and lower nibbles (nibble = 4 bits) """
-    lower_nibble = cpu.register.H & 0x0F
-    upper_nibble = (cpu.register.H >> 4) & 0x0F
-    cpu.register.H = (lower_nibble << 4) | upper_nibble
-    cpu.register.set_z_flag(cpu.register.H == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(False)
+    lower_nibble = gb.cpu.register.H & 0x0F
+    upper_nibble = (gb.cpu.register.H >> 4) & 0x0F
+    gb.cpu.register.H = (lower_nibble << 4) | upper_nibble
+    gb.cpu.register.set_z_flag(gb.cpu.register.H == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(False)
     return 8
 
 
-def code_cb_35(cpu):
+def code_cb_35(gb):
     """ SWAP L - Swap upper and lower nibbles (nibble = 4 bits) """
-    lower_nibble = cpu.register.L & 0x0F
-    upper_nibble = (cpu.register.L >> 4) & 0x0F
-    cpu.register.L = (lower_nibble << 4) | upper_nibble
-    cpu.register.set_z_flag(cpu.register.L == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(False)
+    lower_nibble = gb.cpu.register.L & 0x0F
+    upper_nibble = (gb.cpu.register.L >> 4) & 0x0F
+    gb.cpu.register.L = (lower_nibble << 4) | upper_nibble
+    gb.cpu.register.set_z_flag(gb.cpu.register.L == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(False)
     return 8
 
 
-def code_cb_36(cpu):
+def code_cb_36(gb):
     """ SWAP (HL) - Swap upper and lower nibbles (nibble = 4 bits) """
-    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    value = gb.memory.read_8bit(gb.cpu.register.get_hl())
     lower_nibble = value & 0x0F
     upper_nibble = (value >> 4) & 0x0F
     value = (lower_nibble << 4) | upper_nibble
-    cpu.register.set_z_flag(value == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(False)
-    cpu.memory.write_8bit(cpu.register.get_hl(), value)
+    gb.cpu.register.set_z_flag(value == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(False)
+    gb.memory.write_8bit(gb.cpu.register.get_hl(), value)
     return 16
 
 
-def code_cb_37(cpu):
+def code_cb_37(gb):
     """ SWAP A - Swap upper and lower nibbles (nibble = 4 bits) """
-    lower_nibble = cpu.register.A & 0x0F
-    upper_nibble = (cpu.register.A >> 4) & 0x0F
-    cpu.register.A = (lower_nibble << 4) | upper_nibble
-    cpu.register.set_z_flag(cpu.register.A == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(False)
+    lower_nibble = gb.cpu.register.A & 0x0F
+    upper_nibble = (gb.cpu.register.A >> 4) & 0x0F
+    gb.cpu.register.A = (lower_nibble << 4) | upper_nibble
+    gb.cpu.register.set_z_flag(gb.cpu.register.A == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(False)
     return 8
 
 
-def code_cb_38(cpu):
+def code_cb_38(gb):
     """ SRL B - Copy bit 7 to temp, copy bit 0 to Carry flag, shift right, replace new bit 7 with temp """
-    bit_0 = cpu.register.B & 0b00000001
-    cpu.register.B = (cpu.register.B >> 1) & 0xFF
-    cpu.register.set_z_flag(cpu.register.B == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(bit_0)
+    bit_0 = gb.cpu.register.B & 0b00000001
+    gb.cpu.register.B = (gb.cpu.register.B >> 1) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.B == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(bit_0)
     return 8
 
 
-def code_cb_39(cpu):
+def code_cb_39(gb):
     """ SRL C - Copy bit 7 to temp, copy bit 0 to Carry flag, shift right, replace new bit 7 with temp """
-    bit_0 = cpu.register.C & 0b00000001
-    cpu.register.C = (cpu.register.C >> 1) & 0xFF
-    cpu.register.set_z_flag(cpu.register.C == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(bit_0)
+    bit_0 = gb.cpu.register.C & 0b00000001
+    gb.cpu.register.C = (gb.cpu.register.C >> 1) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.C == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(bit_0)
     return 8
 
 
-def code_cb_3a(cpu):
+def code_cb_3a(gb):
     """ SRL D - Copy bit 7 to temp, copy bit 0 to Carry flag, shift right, replace new bit 7 with temp """
-    bit_0 = cpu.register.D & 0b00000001
-    cpu.register.D = (cpu.register.D >> 1) & 0xFF
-    cpu.register.set_z_flag(cpu.register.D == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(bit_0)
+    bit_0 = gb.cpu.register.D & 0b00000001
+    gb.cpu.register.D = (gb.cpu.register.D >> 1) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.D == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(bit_0)
     return 8
 
 
-def code_cb_3b(cpu):
+def code_cb_3b(gb):
     """ SRL E - Copy bit 7 to temp, copy bit 0 to Carry flag, shift right, replace new bit 7 with temp """
-    bit_0 = cpu.register.E & 0b00000001
-    cpu.register.E = (cpu.register.E >> 1) & 0xFF
-    cpu.register.set_z_flag(cpu.register.E == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(bit_0)
+    bit_0 = gb.cpu.register.E & 0b00000001
+    gb.cpu.register.E = (gb.cpu.register.E >> 1) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.E == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(bit_0)
     return 8
 
 
-def code_cb_3c(cpu):
+def code_cb_3c(gb):
     """ SRL H - Copy bit 7 to temp, copy bit 0 to Carry flag, shift right, replace new bit 7 with temp """
-    bit_0 = cpu.register.H & 0b00000001
-    cpu.register.H = (cpu.register.H >> 1) & 0xFF
-    cpu.register.set_z_flag(cpu.register.H == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(bit_0)
+    bit_0 = gb.cpu.register.H & 0b00000001
+    gb.cpu.register.H = (gb.cpu.register.H >> 1) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.H == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(bit_0)
     return 8
 
 
-def code_cb_3d(cpu):
+def code_cb_3d(gb):
     """ SRL L - Copy bit 7 to temp, copy bit 0 to Carry flag, shift right, replace new bit 7 with temp """
-    bit_0 = cpu.register.L & 0b00000001
-    cpu.register.L = (cpu.register.L >> 1) & 0xFF
-    cpu.register.set_z_flag(cpu.register.L == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(bit_0)
+    bit_0 = gb.cpu.register.L & 0b00000001
+    gb.cpu.register.L = (gb.cpu.register.L >> 1) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.L == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(bit_0)
     return 8
 
 
-def code_cb_3e(cpu):
+def code_cb_3e(gb):
     """ SRL (HL) - Copy bit 7 to temp, copy bit 0 to Carry flag, shift right, replace new bit 7 with temp """
-    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    value = gb.memory.read_8bit(gb.cpu.register.get_hl())
     bit_0 = value & 0b00000001
     value = (value >> 1) & 0xFF
-    cpu.register.set_z_flag(value == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(bit_0)
-    cpu.memory.write_8bit(cpu.register.get_hl(), value)
+    gb.cpu.register.set_z_flag(value == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(bit_0)
+    gb.memory.write_8bit(gb.cpu.register.get_hl(), value)
     return 16
 
 
-def code_cb_3f(cpu):
+def code_cb_3f(gb):
     """ SRL A - Copy bit 7 to temp, copy bit 0 to Carry flag, shift right, replace new bit 7 with temp """
-    bit_0 = cpu.register.A & 0b00000001
-    cpu.register.A = (cpu.register.A >> 1) & 0xFF
-    cpu.register.set_z_flag(cpu.register.A == 0)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(False)
-    cpu.register.set_c_flag(bit_0)
+    bit_0 = gb.cpu.register.A & 0b00000001
+    gb.cpu.register.A = (gb.cpu.register.A >> 1) & 0xFF
+    gb.cpu.register.set_z_flag(gb.cpu.register.A == 0)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(False)
+    gb.cpu.register.set_c_flag(bit_0)
     return 8
 
 
 # OPCODES CB 4x
-def code_cb_40(cpu):
+def code_cb_40(gb):
     """ BIT 0,B - Test what is the value of bit 0 """
-    bit_to_check = cpu.register.B & 0b00000001
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
+    bit_to_check = gb.cpu.register.B & 0b00000001
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
     return 8
 
 
-def code_cb_41(cpu):
+def code_cb_41(gb):
     """ BIT 0,C - Test what is the value of bit 0 """
-    bit_to_check = cpu.register.C & 0b00000001
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
+    bit_to_check = gb.cpu.register.C & 0b00000001
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
     return 8
 
 
-def code_cb_42(cpu):
+def code_cb_42(gb):
     """ BIT 0,D - Test what is the value of bit 0 """
-    bit_to_check = cpu.register.D & 0b00000001
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
+    bit_to_check = gb.cpu.register.D & 0b00000001
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
     return 8
 
 
-def code_cb_43(cpu):
+def code_cb_43(gb):
     """ BIT 0,E - Test what is the value of bit 0 """
-    bit_to_check = cpu.register.E & 0b00000001
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
+    bit_to_check = gb.cpu.register.E & 0b00000001
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
     return 8
 
 
-def code_cb_44(cpu):
+def code_cb_44(gb):
     """ BIT 0,H - Test what is the value of bit 0 """
-    bit_to_check = cpu.register.H & 0b00000001
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
+    bit_to_check = gb.cpu.register.H & 0b00000001
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
     return 8
 
 
-def code_cb_45(cpu):
+def code_cb_45(gb):
     """ BIT 0,L - Test what is the value of bit 0 """
-    bit_to_check = cpu.register.L & 0b00000001
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
+    bit_to_check = gb.cpu.register.L & 0b00000001
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
     return 8
 
 
-def code_cb_46(cpu):
+def code_cb_46(gb):
     """ BIT 0,(HL) - Test what is the value of bit 0 """
-    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    value = gb.memory.read_8bit(gb.cpu.register.get_hl())
     bit_to_check = value & 0b00000001
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
-    cpu.memory.write_8bit(cpu.register.get_hl(), value)
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
+    gb.memory.write_8bit(gb.cpu.register.get_hl(), value)
     return 16
 
 
-def code_cb_47(cpu):
+def code_cb_47(gb):
     """ BIT 0,A - Test what is the value of bit 0 """
-    bit_to_check = cpu.register.A & 0b00000001
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
+    bit_to_check = gb.cpu.register.A & 0b00000001
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
     return 8
 
 
-def code_cb_48(cpu):
+def code_cb_48(gb):
     """ BIT 1,B - Test what is the value of bit 1 """
-    bit_to_check = (cpu.register.B & 0b00000010) >> 1
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
+    bit_to_check = (gb.cpu.register.B & 0b00000010) >> 1
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
     return 8
 
 
-def code_cb_49(cpu):
+def code_cb_49(gb):
     """ BIT 1,C - Test what is the value of bit 1 """
-    bit_to_check = (cpu.register.C & 0b00000010) >> 1
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
+    bit_to_check = (gb.cpu.register.C & 0b00000010) >> 1
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
     return 8
 
 
-def code_cb_4a(cpu):
+def code_cb_4a(gb):
     """ BIT 1,D - Test what is the value of bit 1 """
-    bit_to_check = (cpu.register.D & 0b00000010) >> 1
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
+    bit_to_check = (gb.cpu.register.D & 0b00000010) >> 1
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
     return 8
 
 
-def code_cb_4b(cpu):
+def code_cb_4b(gb):
     """ BIT 1,E - Test what is the value of bit 1 """
-    bit_to_check = (cpu.register.E & 0b00000010) >> 1
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
+    bit_to_check = (gb.cpu.register.E & 0b00000010) >> 1
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
     return 8
 
 
-def code_cb_4c(cpu):
+def code_cb_4c(gb):
     """ BIT 1,H - Test what is the value of bit 1 """
-    bit_to_check = (cpu.register.H & 0b00000010) >> 1
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
+    bit_to_check = (gb.cpu.register.H & 0b00000010) >> 1
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
     return 8
 
 
-def code_cb_4d(cpu):
+def code_cb_4d(gb):
     """ BIT 1,L - Test what is the value of bit 1 """
-    bit_to_check = (cpu.register.L & 0b00000010) >> 1
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
+    bit_to_check = (gb.cpu.register.L & 0b00000010) >> 1
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
     return 8
 
 
-def code_cb_4e(cpu):
+def code_cb_4e(gb):
     """ BIT 1,(HL) - Test what is the value of bit 1 """
-    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    value = gb.memory.read_8bit(gb.cpu.register.get_hl())
     bit_to_check = (value & 0b00000010) >> 1
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
-    cpu.memory.write_8bit(cpu.register.get_hl(), value)
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
+    gb.memory.write_8bit(gb.cpu.register.get_hl(), value)
     return 16
 
 
-def code_cb_4f(cpu):
+def code_cb_4f(gb):
     """ BIT 1,A - Test what is the value of bit 1 """
-    bit_to_check = (cpu.register.A & 0b00000010) >> 1
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
+    bit_to_check = (gb.cpu.register.A & 0b00000010) >> 1
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
     return 8
 
 
 # OPCODES CB 5x
-def code_cb_50(cpu):
+def code_cb_50(gb):
     """ BIT 2,B - Test what is the value of bit 2 """
-    bit_to_check = (cpu.register.B & 0b00000100) >> 2
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
+    bit_to_check = (gb.cpu.register.B & 0b00000100) >> 2
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
     return 8
 
 
-def code_cb_51(cpu):
+def code_cb_51(gb):
     """ BIT 2,C - Test what is the value of bit 2 """
-    bit_to_check = (cpu.register.C & 0b00000100) >> 2
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
+    bit_to_check = (gb.cpu.register.C & 0b00000100) >> 2
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
     return 8
 
 
-def code_cb_52(cpu):
+def code_cb_52(gb):
     """ BIT 2,D - Test what is the value of bit 2 """
-    bit_to_check = (cpu.register.D & 0b00000100) >> 2
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
+    bit_to_check = (gb.cpu.register.D & 0b00000100) >> 2
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
     return 8
 
 
-def code_cb_53(cpu):
+def code_cb_53(gb):
     """ BIT 2,E - Test what is the value of bit 2 """
-    bit_to_check = (cpu.register.E & 0b00000100) >> 2
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
+    bit_to_check = (gb.cpu.register.E & 0b00000100) >> 2
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
     return 8
 
 
-def code_cb_54(cpu):
+def code_cb_54(gb):
     """ BIT 2,H - Test what is the value of bit 2 """
-    bit_to_check = (cpu.register.H & 0b00000100) >> 2
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
+    bit_to_check = (gb.cpu.register.H & 0b00000100) >> 2
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
     return 8
 
 
-def code_cb_55(cpu):
+def code_cb_55(gb):
     """ BIT 2,L - Test what is the value of bit 2 """
-    bit_to_check = (cpu.register.L & 0b00000100) >> 2
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
+    bit_to_check = (gb.cpu.register.L & 0b00000100) >> 2
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
     return 8
 
 
-def code_cb_56(cpu):
+def code_cb_56(gb):
     """ BIT 2,(HL) - Test what is the value of bit 2 """
-    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    value = gb.memory.read_8bit(gb.cpu.register.get_hl())
     bit_to_check = (value & 0b00000100) >> 2
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
-    cpu.memory.write_8bit(cpu.register.get_hl(), value)
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
+    gb.memory.write_8bit(gb.cpu.register.get_hl(), value)
     return 16
 
 
-def code_cb_57(cpu):
+def code_cb_57(gb):
     """ BIT 2,A - Test what is the value of bit 2 """
-    bit_to_check = (cpu.register.A & 0b00000100) >> 2
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
+    bit_to_check = (gb.cpu.register.A & 0b00000100) >> 2
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
     return 8
 
 
-def code_cb_58(cpu):
+def code_cb_58(gb):
     """ BIT 3,B - Test what is the value of bit 3 """
-    bit_to_check = (cpu.register.B & 0b00001000) >> 3
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
+    bit_to_check = (gb.cpu.register.B & 0b00001000) >> 3
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
     return 8
 
 
-def code_cb_59(cpu):
+def code_cb_59(gb):
     """ BIT 3,C - Test what is the value of bit 3 """
-    bit_to_check = (cpu.register.C & 0b00001000) >> 3
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
+    bit_to_check = (gb.cpu.register.C & 0b00001000) >> 3
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
     return 8
 
 
-def code_cb_5a(cpu):
+def code_cb_5a(gb):
     """ BIT 3,D - Test what is the value of bit 3 """
-    bit_to_check = (cpu.register.D & 0b00001000) >> 3
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
+    bit_to_check = (gb.cpu.register.D & 0b00001000) >> 3
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
     return 8
 
 
-def code_cb_5b(cpu):
+def code_cb_5b(gb):
     """ BIT 3,E - Test what is the value of bit 3 """
-    bit_to_check = (cpu.register.E & 0b00001000) >> 3
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
+    bit_to_check = (gb.cpu.register.E & 0b00001000) >> 3
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
     return 8
 
 
-def code_cb_5c(cpu):
+def code_cb_5c(gb):
     """ BIT 3,H - Test what is the value of bit 3 """
-    bit_to_check = (cpu.register.H & 0b00001000) >> 3
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
+    bit_to_check = (gb.cpu.register.H & 0b00001000) >> 3
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
     return 8
 
 
-def code_cb_5d(cpu):
+def code_cb_5d(gb):
     """ BIT 3,L - Test what is the value of bit 3 """
-    bit_to_check = (cpu.register.L & 0b00001000) >> 3
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
+    bit_to_check = (gb.cpu.register.L & 0b00001000) >> 3
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
     return 8
 
 
-def code_cb_5e(cpu):
+def code_cb_5e(gb):
     """ BIT 3,(HL) - Test what is the value of bit 3 """
-    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    value = gb.memory.read_8bit(gb.cpu.register.get_hl())
     bit_to_check = (value & 0b00001000) >> 3
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
-    cpu.memory.write_8bit(cpu.register.get_hl(), value)
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
+    gb.memory.write_8bit(gb.cpu.register.get_hl(), value)
     return 16
 
 
-def code_cb_5f(cpu):
+def code_cb_5f(gb):
     """ BIT 3,A - Test what is the value of bit 3 """
-    bit_to_check = (cpu.register.A & 0b00001000) >> 3
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
+    bit_to_check = (gb.cpu.register.A & 0b00001000) >> 3
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
     return 8
 
 
 # OPCODES CB 6x
-def code_cb_60(cpu):
+def code_cb_60(gb):
     """ BIT 4,B - Test what is the value of bit 4 """
-    bit_to_check = (cpu.register.B & 0b00010000) >> 4
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
+    bit_to_check = (gb.cpu.register.B & 0b00010000) >> 4
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
     return 8
 
 
-def code_cb_61(cpu):
+def code_cb_61(gb):
     """ BIT 4,C - Test what is the value of bit 4 """
-    bit_to_check = (cpu.register.C & 0b00010000) >> 4
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
+    bit_to_check = (gb.cpu.register.C & 0b00010000) >> 4
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
     return 8
 
 
-def code_cb_62(cpu):
+def code_cb_62(gb):
     """ BIT 4,D - Test what is the value of bit 4 """
-    bit_to_check = (cpu.register.D & 0b00010000) >> 4
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
+    bit_to_check = (gb.cpu.register.D & 0b00010000) >> 4
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
     return 8
 
 
-def code_cb_63(cpu):
+def code_cb_63(gb):
     """ BIT 4,E - Test what is the value of bit 4 """
-    bit_to_check = (cpu.register.E & 0b00010000) >> 4
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
+    bit_to_check = (gb.cpu.register.E & 0b00010000) >> 4
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
     return 8
 
 
-def code_cb_64(cpu):
+def code_cb_64(gb):
     """ BIT 4,H - Test what is the value of bit 4 """
-    bit_to_check = (cpu.register.H & 0b00010000) >> 4
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
+    bit_to_check = (gb.cpu.register.H & 0b00010000) >> 4
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
     return 8
 
 
-def code_cb_65(cpu):
+def code_cb_65(gb):
     """ BIT 4,L - Test what is the value of bit 4 """
-    bit_to_check = (cpu.register.L & 0b00010000) >> 4
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
+    bit_to_check = (gb.cpu.register.L & 0b00010000) >> 4
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
     return 8
 
 
-def code_cb_66(cpu):
+def code_cb_66(gb):
     """ BIT 4,(HL) - Test what is the value of bit 4 """
-    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    value = gb.memory.read_8bit(gb.cpu.register.get_hl())
     bit_to_check = (value & 0b00010000) >> 4
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
-    cpu.memory.write_8bit(cpu.register.get_hl(), value)
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
+    gb.memory.write_8bit(gb.cpu.register.get_hl(), value)
     return 16
 
 
-def code_cb_67(cpu):
+def code_cb_67(gb):
     """ BIT 4,A - Test what is the value of bit 4 """
-    bit_to_check = (cpu.register.A & 0b00010000) >> 4
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
+    bit_to_check = (gb.cpu.register.A & 0b00010000) >> 4
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
     return 8
 
 
-def code_cb_68(cpu):
+def code_cb_68(gb):
     """ BIT 5,B - Test what is the value of bit 5 """
-    bit_to_check = (cpu.register.B & 0b00100000) >> 5
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
+    bit_to_check = (gb.cpu.register.B & 0b00100000) >> 5
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
     return 8
 
 
-def code_cb_69(cpu):
+def code_cb_69(gb):
     """ BIT 5,C - Test what is the value of bit 5 """
-    bit_to_check = (cpu.register.C & 0b00100000) >> 5
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
+    bit_to_check = (gb.cpu.register.C & 0b00100000) >> 5
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
     return 8
 
 
-def code_cb_6a(cpu):
+def code_cb_6a(gb):
     """ BIT 5,D - Test what is the value of bit 5 """
-    bit_to_check = (cpu.register.D & 0b00100000) >> 5
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
+    bit_to_check = (gb.cpu.register.D & 0b00100000) >> 5
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
     return 8
 
 
-def code_cb_6b(cpu):
+def code_cb_6b(gb):
     """ BIT 5,E - Test what is the value of bit 5 """
-    bit_to_check = (cpu.register.E & 0b00100000) >> 5
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
+    bit_to_check = (gb.cpu.register.E & 0b00100000) >> 5
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
     return 8
 
 
-def code_cb_6c(cpu):
+def code_cb_6c(gb):
     """ BIT 5,H - Test what is the value of bit 5 """
-    bit_to_check = (cpu.register.H & 0b00100000) >> 5
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
+    bit_to_check = (gb.cpu.register.H & 0b00100000) >> 5
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
     return 8
 
 
-def code_cb_6d(cpu):
+def code_cb_6d(gb):
     """ BIT 5,L - Test what is the value of bit 5 """
-    bit_to_check = (cpu.register.L & 0b00100000) >> 5
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
+    bit_to_check = (gb.cpu.register.L & 0b00100000) >> 5
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
     return 8
 
 
-def code_cb_6e(cpu):
+def code_cb_6e(gb):
     """ BIT 5,(HL) - Test what is the value of bit 5 """
-    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    value = gb.memory.read_8bit(gb.cpu.register.get_hl())
     bit_to_check = (value & 0b00100000) >> 5
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
-    cpu.memory.write_8bit(cpu.register.get_hl(), value)
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
+    gb.memory.write_8bit(gb.cpu.register.get_hl(), value)
     return 16
 
 
-def code_cb_6f(cpu):
+def code_cb_6f(gb):
     """ BIT 5,A - Test what is the value of bit 5 """
-    bit_to_check = (cpu.register.A & 0b00100000) >> 5
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
+    bit_to_check = (gb.cpu.register.A & 0b00100000) >> 5
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
     return 8
 
 
 # OPCODES CB 7x
-def code_cb_70(cpu):
+def code_cb_70(gb):
     """ BIT 6,B - Test what is the value of bit 6 """
-    bit_to_check = (cpu.register.B & 0b01000000) >> 6
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
+    bit_to_check = (gb.cpu.register.B & 0b01000000) >> 6
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
     return 8
 
 
-def code_cb_71(cpu):
+def code_cb_71(gb):
     """ BIT 6,C - Test what is the value of bit 6 """
-    bit_to_check = (cpu.register.C & 0b01000000) >> 6
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
+    bit_to_check = (gb.cpu.register.C & 0b01000000) >> 6
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
     return 8
 
 
-def code_cb_72(cpu):
+def code_cb_72(gb):
     """ BIT 6,D - Test what is the value of bit 6 """
-    bit_to_check = (cpu.register.D & 0b01000000) >> 6
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
+    bit_to_check = (gb.cpu.register.D & 0b01000000) >> 6
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
     return 8
 
 
-def code_cb_73(cpu):
+def code_cb_73(gb):
     """ BIT 6,E - Test what is the value of bit 6 """
-    bit_to_check = (cpu.register.E & 0b01000000) >> 6
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
+    bit_to_check = (gb.cpu.register.E & 0b01000000) >> 6
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
     return 8
 
 
-def code_cb_74(cpu):
+def code_cb_74(gb):
     """ BIT 6,H - Test what is the value of bit 6 """
-    bit_to_check = (cpu.register.H & 0b01000000) >> 6
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
+    bit_to_check = (gb.cpu.register.H & 0b01000000) >> 6
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
     return 8
 
 
-def code_cb_75(cpu):
+def code_cb_75(gb):
     """ BIT 6,L - Test what is the value of bit 6 """
-    bit_to_check = (cpu.register.L & 0b01000000) >> 6
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
+    bit_to_check = (gb.cpu.register.L & 0b01000000) >> 6
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
     return 8
 
 
-def code_cb_76(cpu):
+def code_cb_76(gb):
     """ BIT 6,(HL) - Test what is the value of bit 6 """
-    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    value = gb.memory.read_8bit(gb.cpu.register.get_hl())
     bit_to_check = (value & 0b01000000) >> 6
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
-    cpu.memory.write_8bit(cpu.register.get_hl(), value)
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
+    gb.memory.write_8bit(gb.cpu.register.get_hl(), value)
     return 16
 
 
-def code_cb_77(cpu):
+def code_cb_77(gb):
     """ BIT 6,A - Test what is the value of bit 6 """
-    bit_to_check = (cpu.register.A & 0b01000000) >> 6
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
+    bit_to_check = (gb.cpu.register.A & 0b01000000) >> 6
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
     return 8
 
 
-def code_cb_78(cpu):
+def code_cb_78(gb):
     """ BIT 7,B - Test what is the value of bit 7 """
-    bit_to_check = (cpu.register.B & 0b10000000) >> 7
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
+    bit_to_check = (gb.cpu.register.B & 0b10000000) >> 7
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
     return 8
 
 
-def code_cb_79(cpu):
+def code_cb_79(gb):
     """ BIT 7,C - Test what is the value of bit 7 """
-    bit_to_check = (cpu.register.C & 0b10000000) >> 7
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
+    bit_to_check = (gb.cpu.register.C & 0b10000000) >> 7
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
     return 8
 
 
-def code_cb_7a(cpu):
+def code_cb_7a(gb):
     """ BIT 7,D - Test what is the value of bit 7 """
-    bit_to_check = (cpu.register.D & 0b10000000) >> 7
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
+    bit_to_check = (gb.cpu.register.D & 0b10000000) >> 7
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
     return 8
 
 
-def code_cb_7b(cpu):
+def code_cb_7b(gb):
     """ BIT 7,E - Test what is the value of bit 7 """
-    bit_to_check = (cpu.register.E & 0b10000000) >> 7
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
+    bit_to_check = (gb.cpu.register.E & 0b10000000) >> 7
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
     return 8
 
 
-def code_cb_7c(cpu):
+def code_cb_7c(gb):
     """ BIT 7,H - Test what is the value of bit 7 """
-    bit_to_check = (cpu.register.H & 0b10000000) >> 7
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
+    bit_to_check = (gb.cpu.register.H & 0b10000000) >> 7
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
     return 8
 
 
-def code_cb_7d(cpu):
+def code_cb_7d(gb):
     """ BIT 7,L - Test what is the value of bit 7 """
-    bit_to_check = (cpu.register.L & 0b10000000) >> 7
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
+    bit_to_check = (gb.cpu.register.L & 0b10000000) >> 7
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
     return 8
 
 
-def code_cb_7e(cpu):
+def code_cb_7e(gb):
     """ BIT 7,(HL) - Test what is the value of bit 7 """
-    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    value = gb.memory.read_8bit(gb.cpu.register.get_hl())
     bit_to_check = (value & 0b10000000) >> 7
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
-    cpu.memory.write_8bit(cpu.register.get_hl(), value)
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
+    gb.memory.write_8bit(gb.cpu.register.get_hl(), value)
     return 16
 
 
-def code_cb_7f(cpu):
+def code_cb_7f(gb):
     """ BIT 7,A - Test what is the value of bit 7 """
-    bit_to_check = (cpu.register.A & 0b10000000) >> 7
-    cpu.register.set_z_flag(bit_to_check)
-    cpu.register.set_n_flag(False)
-    cpu.register.set_h_flag(True)
+    bit_to_check = (gb.cpu.register.A & 0b10000000) >> 7
+    gb.cpu.register.set_z_flag(bit_to_check)
+    gb.cpu.register.set_n_flag(False)
+    gb.cpu.register.set_h_flag(True)
     return 8
 
 
 # OPCODES CB 8x
-def code_cb_80(cpu):
+def code_cb_80(gb):
     """ RES 0,B - Reset the specified bit """
-    cpu.register.B = cpu.register.B & 0b11111110
+    gb.cpu.register.B = gb.cpu.register.B & 0b11111110
     return 8
 
 
-def code_cb_81(cpu):
+def code_cb_81(gb):
     """ RES 0,C - Reset the specified bit """
-    cpu.register.C = cpu.register.C & 0b11111110
+    gb.cpu.register.C = gb.cpu.register.C & 0b11111110
     return 8
 
 
-def code_cb_82(cpu):
+def code_cb_82(gb):
     """ RES 0,D - Reset the specified bit """
-    cpu.register.D = cpu.register.D & 0b11111110
+    gb.cpu.register.D = gb.cpu.register.D & 0b11111110
     return 8
 
 
-def code_cb_83(cpu):
+def code_cb_83(gb):
     """ RES 0,E - Reset the specified bit """
-    cpu.register.E = cpu.register.E & 0b11111110
+    gb.cpu.register.E = gb.cpu.register.E & 0b11111110
     return 8
 
 
-def code_cb_84(cpu):
+def code_cb_84(gb):
     """ RES 0,H - Reset the specified bit """
-    cpu.register.H = cpu.register.H & 0b11111110
+    gb.cpu.register.H = gb.cpu.register.H & 0b11111110
     return 8
 
 
-def code_cb_85(cpu):
+def code_cb_85(gb):
     """ RES 0,L - Reset the specified bit """
-    cpu.register.L = cpu.register.L & 0b11111110
+    gb.cpu.register.L = gb.cpu.register.L & 0b11111110
     return 8
 
 
-def code_cb_86(cpu):
+def code_cb_86(gb):
     """ RES 0,(HL) - Reset the specified bit """
-    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    value = gb.memory.read_8bit(gb.cpu.register.get_hl())
     value = value & 0b11111110
-    cpu.memory.write_8bit(cpu.register.get_hl(), value)
+    gb.memory.write_8bit(gb.cpu.register.get_hl(), value)
     return 16
 
 
-def code_cb_87(cpu):
+def code_cb_87(gb):
     """ RES 0,A - Reset the specified bit """
-    cpu.register.A = cpu.register.A & 0b11111110
+    gb.cpu.register.A = gb.cpu.register.A & 0b11111110
     return 8
 
 
-def code_cb_88(cpu):
+def code_cb_88(gb):
     """ RES 1,B - Reset the specified bit """
-    cpu.register.B = cpu.register.B & 0b11111101
+    gb.cpu.register.B = gb.cpu.register.B & 0b11111101
     return 8
 
 
-def code_cb_89(cpu):
+def code_cb_89(gb):
     """ RES 1,C - Reset the specified bit """
-    cpu.register.C = cpu.register.C & 0b11111101
+    gb.cpu.register.C = gb.cpu.register.C & 0b11111101
     return 8
 
 
-def code_cb_8a(cpu):
+def code_cb_8a(gb):
     """ RES 1,D - Reset the specified bit """
-    cpu.register.D = cpu.register.D & 0b11111101
+    gb.cpu.register.D = gb.cpu.register.D & 0b11111101
     return 8
 
 
-def code_cb_8b(cpu):
+def code_cb_8b(gb):
     """ RES 1,E - Reset the specified bit """
-    cpu.register.E = cpu.register.E & 0b11111101
+    gb.cpu.register.E = gb.cpu.register.E & 0b11111101
     return 8
 
 
-def code_cb_8c(cpu):
+def code_cb_8c(gb):
     """ RES 1,H - Reset the specified bit """
-    cpu.register.H = cpu.register.H & 0b11111101
+    gb.cpu.register.H = gb.cpu.register.H & 0b11111101
     return 8
 
 
-def code_cb_8d(cpu):
+def code_cb_8d(gb):
     """ RES 1,L - Reset the specified bit """
-    cpu.register.L = cpu.register.L & 0b11111101
+    gb.cpu.register.L = gb.cpu.register.L & 0b11111101
     return 8
 
 
-def code_cb_8e(cpu):
+def code_cb_8e(gb):
     """ RES 1,(HL) - Reset the specified bit """
-    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    value = gb.memory.read_8bit(gb.cpu.register.get_hl())
     value = value & 0b11111101
-    cpu.memory.write_8bit(cpu.register.get_hl(), value)
+    gb.memory.write_8bit(gb.cpu.register.get_hl(), value)
     return 16
 
 
-def code_cb_8f(cpu):
+def code_cb_8f(gb):
     """ RES 1,A - Reset the specified bit """
-    cpu.register.A = cpu.register.A & 0b11111101
+    gb.cpu.register.A = gb.cpu.register.A & 0b11111101
     return 8
 
 
 # OPCODES CB 9x
-def code_cb_90(cpu):
+def code_cb_90(gb):
     """ RES 2,B - Reset the specified bit """
-    cpu.register.B = cpu.register.B & 0b11111011
+    gb.cpu.register.B = gb.cpu.register.B & 0b11111011
     return 8
 
 
-def code_cb_91(cpu):
+def code_cb_91(gb):
     """ RES 2,C - Reset the specified bit """
-    cpu.register.C = cpu.register.C & 0b11111011
+    gb.cpu.register.C = gb.cpu.register.C & 0b11111011
     return 8
 
 
-def code_cb_92(cpu):
+def code_cb_92(gb):
     """ RES 2,D - Reset the specified bit """
-    cpu.register.D = cpu.register.D & 0b11111011
+    gb.cpu.register.D = gb.cpu.register.D & 0b11111011
     return 8
 
 
-def code_cb_93(cpu):
+def code_cb_93(gb):
     """ RES 2,E - Reset the specified bit """
-    cpu.register.E = cpu.register.E & 0b11111011
+    gb.cpu.register.E = gb.cpu.register.E & 0b11111011
     return 8
 
 
-def code_cb_94(cpu):
+def code_cb_94(gb):
     """ RES 2,H - Reset the specified bit """
-    cpu.register.H = cpu.register.H & 0b11111011
+    gb.cpu.register.H = gb.cpu.register.H & 0b11111011
     return 8
 
 
-def code_cb_95(cpu):
+def code_cb_95(gb):
     """ RES 2,L - Reset the specified bit """
-    cpu.register.L = cpu.register.L & 0b11111011
+    gb.cpu.register.L = gb.cpu.register.L & 0b11111011
     return 8
 
 
-def code_cb_96(cpu):
+def code_cb_96(gb):
     """ RES 2,(HL) - Reset the specified bit """
-    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    value = gb.memory.read_8bit(gb.cpu.register.get_hl())
     value = value & 0b11111011
-    cpu.memory.write_8bit(cpu.register.get_hl(), value)
+    gb.memory.write_8bit(gb.cpu.register.get_hl(), value)
     return 16
 
 
-def code_cb_97(cpu):
+def code_cb_97(gb):
     """ RES 2,A - Reset the specified bit """
-    cpu.register.A = cpu.register.A & 0b11111011
+    gb.cpu.register.A = gb.cpu.register.A & 0b11111011
     return 8
 
 
-def code_cb_98(cpu):
+def code_cb_98(gb):
     """ RES 3,B - Reset the specified bit """
-    cpu.register.B = cpu.register.B & 0b11110111
+    gb.cpu.register.B = gb.cpu.register.B & 0b11110111
     return 8
 
 
-def code_cb_99(cpu):
+def code_cb_99(gb):
     """ RES 3,C - Reset the specified bit """
-    cpu.register.C = cpu.register.C & 0b11110111
+    gb.cpu.register.C = gb.cpu.register.C & 0b11110111
     return 8
 
 
-def code_cb_9a(cpu):
+def code_cb_9a(gb):
     """ RES 3,D - Reset the specified bit """
-    cpu.register.D = cpu.register.D & 0b11110111
+    gb.cpu.register.D = gb.cpu.register.D & 0b11110111
     return 8
 
 
-def code_cb_9b(cpu):
+def code_cb_9b(gb):
     """ RES 3,E - Reset the specified bit """
-    cpu.register.E = cpu.register.E & 0b11110111
+    gb.cpu.register.E = gb.cpu.register.E & 0b11110111
     return 8
 
 
-def code_cb_9c(cpu):
+def code_cb_9c(gb):
     """ RES 3,H - Reset the specified bit """
-    cpu.register.H = cpu.register.H & 0b11110111
+    gb.cpu.register.H = gb.cpu.register.H & 0b11110111
     return 8
 
 
-def code_cb_9d(cpu):
+def code_cb_9d(gb):
     """ RES 3,L - Reset the specified bit """
-    cpu.register.L = cpu.register.L & 0b11110111
+    gb.cpu.register.L = gb.cpu.register.L & 0b11110111
     return 8
 
 
-def code_cb_9e(cpu):
+def code_cb_9e(gb):
     """ RES 3,(HL) - Reset the specified bit """
-    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    value = gb.memory.read_8bit(gb.cpu.register.get_hl())
     value = value & 0b11110111
-    cpu.memory.write_8bit(cpu.register.get_hl(), value)
+    gb.memory.write_8bit(gb.cpu.register.get_hl(), value)
     return 16
 
 
-def code_cb_9f(cpu):
+def code_cb_9f(gb):
     """ RES 3,A - Reset the specified bit """
-    cpu.register.A = cpu.register.A & 0b11110111
+    gb.cpu.register.A = gb.cpu.register.A & 0b11110111
     return 8
 
 
 # OPCODES CB Ax
-def code_cb_a0(cpu):
+def code_cb_a0(gb):
     """ RES 4,B - Reset the specified bit """
-    cpu.register.B = cpu.register.B & 0b11101111
+    gb.cpu.register.B = gb.cpu.register.B & 0b11101111
     return 8
 
 
-def code_cb_a1(cpu):
+def code_cb_a1(gb):
     """ RES 4,C - Reset the specified bit """
-    cpu.register.C = cpu.register.C & 0b11101111
+    gb.cpu.register.C = gb.cpu.register.C & 0b11101111
     return 8
 
 
-def code_cb_a2(cpu):
+def code_cb_a2(gb):
     """ RES 4,D - Reset the specified bit """
-    cpu.register.D = cpu.register.D & 0b11101111
+    gb.cpu.register.D = gb.cpu.register.D & 0b11101111
     return 8
 
 
-def code_cb_a3(cpu):
+def code_cb_a3(gb):
     """ RES 4,E - Reset the specified bit """
-    cpu.register.E = cpu.register.E & 0b11101111
+    gb.cpu.register.E = gb.cpu.register.E & 0b11101111
     return 8
 
 
-def code_cb_a4(cpu):
+def code_cb_a4(gb):
     """ RES 4,H - Reset the specified bit """
-    cpu.register.H = cpu.register.H & 0b11101111
+    gb.cpu.register.H = gb.cpu.register.H & 0b11101111
     return 8
 
 
-def code_cb_a5(cpu):
+def code_cb_a5(gb):
     """ RES 4,L - Reset the specified bit """
-    cpu.register.L = cpu.register.L & 0b11101111
+    gb.cpu.register.L = gb.cpu.register.L & 0b11101111
     return 8
 
 
-def code_cb_a6(cpu):
+def code_cb_a6(gb):
     """ RES 4,(HL) - Reset the specified bit """
-    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    value = gb.memory.read_8bit(gb.cpu.register.get_hl())
     value = value & 0b11101111
-    cpu.memory.write_8bit(cpu.register.get_hl(), value)
+    gb.memory.write_8bit(gb.cpu.register.get_hl(), value)
     return 16
 
 
-def code_cb_a7(cpu):
+def code_cb_a7(gb):
     """ RES 4,A - Reset the specified bit """
-    cpu.register.A = cpu.register.A & 0b11101111
+    gb.cpu.register.A = gb.cpu.register.A & 0b11101111
     return 8
 
 
-def code_cb_a8(cpu):
+def code_cb_a8(gb):
     """ RES 5,B - Reset the specified bit """
-    cpu.register.B = cpu.register.B & 0b11011111
+    gb.cpu.register.B = gb.cpu.register.B & 0b11011111
     return 8
 
 
-def code_cb_a9(cpu):
+def code_cb_a9(gb):
     """ RES 5,C - Reset the specified bit """
-    cpu.register.C = cpu.register.C & 0b11011111
+    gb.cpu.register.C = gb.cpu.register.C & 0b11011111
     return 8
 
 
-def code_cb_aa(cpu):
+def code_cb_aa(gb):
     """ RES 5,D - Reset the specified bit """
-    cpu.register.D = cpu.register.D & 0b11011111
+    gb.cpu.register.D = gb.cpu.register.D & 0b11011111
     return 8
 
 
-def code_cb_ab(cpu):
+def code_cb_ab(gb):
     """ RES 5,E - Reset the specified bit """
-    cpu.register.E = cpu.register.E & 0b11011111
+    gb.cpu.register.E = gb.cpu.register.E & 0b11011111
     return 8
 
 
-def code_cb_ac(cpu):
+def code_cb_ac(gb):
     """ RES 5,H - Reset the specified bit """
-    cpu.register.H = cpu.register.H & 0b11011111
+    gb.cpu.register.H = gb.cpu.register.H & 0b11011111
     return 8
 
 
-def code_cb_ad(cpu):
+def code_cb_ad(gb):
     """ RES 5,L - Reset the specified bit """
-    cpu.register.L = cpu.register.L & 0b11011111
+    gb.cpu.register.L = gb.cpu.register.L & 0b11011111
     return 8
 
 
-def code_cb_ae(cpu):
+def code_cb_ae(gb):
     """ RES 5,(HL) - Reset the specified bit """
-    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    value = gb.memory.read_8bit(gb.cpu.register.get_hl())
     value = value & 0b11011111
-    cpu.memory.write_8bit(cpu.register.get_hl(), value)
+    gb.memory.write_8bit(gb.cpu.register.get_hl(), value)
     return 16
 
 
-def code_cb_af(cpu):
+def code_cb_af(gb):
     """ RES 5,A - Reset the specified bit """
-    cpu.register.A = cpu.register.A & 0b11011111
+    gb.cpu.register.A = gb.cpu.register.A & 0b11011111
     return 8
 
 
 # OPCODES CB Bx
-def code_cb_b0(cpu):
+def code_cb_b0(gb):
     """ RES 6,B - Reset the specified bit """
-    cpu.register.B = cpu.register.B & 0b10111111
+    gb.cpu.register.B = gb.cpu.register.B & 0b10111111
     return 8
 
 
-def code_cb_b1(cpu):
+def code_cb_b1(gb):
     """ RES 6,C - Reset the specified bit """
-    cpu.register.C = cpu.register.C & 0b10111111
+    gb.cpu.register.C = gb.cpu.register.C & 0b10111111
     return 8
 
 
-def code_cb_b2(cpu):
+def code_cb_b2(gb):
     """ RES 6,D - Reset the specified bit """
-    cpu.register.D = cpu.register.D & 0b10111111
+    gb.cpu.register.D = gb.cpu.register.D & 0b10111111
     return 8
 
 
-def code_cb_b3(cpu):
+def code_cb_b3(gb):
     """ RES 6,E - Reset the specified bit """
-    cpu.register.E = cpu.register.E & 0b10111111
+    gb.cpu.register.E = gb.cpu.register.E & 0b10111111
     return 8
 
 
-def code_cb_b4(cpu):
+def code_cb_b4(gb):
     """ RES 6,H - Reset the specified bit """
-    cpu.register.H = cpu.register.H & 0b10111111
+    gb.cpu.register.H = gb.cpu.register.H & 0b10111111
     return 8
 
 
-def code_cb_b5(cpu):
+def code_cb_b5(gb):
     """ RES 6,L - Reset the specified bit """
-    cpu.register.L = cpu.register.L & 0b10111111
+    gb.cpu.register.L = gb.cpu.register.L & 0b10111111
     return 8
 
 
-def code_cb_b6(cpu):
+def code_cb_b6(gb):
     """ RES 6,(HL) - Reset the specified bit """
-    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    value = gb.memory.read_8bit(gb.cpu.register.get_hl())
     value = value & 0b10111111
-    cpu.memory.write_8bit(cpu.register.get_hl(), value)
+    gb.memory.write_8bit(gb.cpu.register.get_hl(), value)
     return 16
 
 
-def code_cb_b7(cpu):
+def code_cb_b7(gb):
     """ RES 6,A - Reset the specified bit """
-    cpu.register.A = cpu.register.A & 0b10111111
+    gb.cpu.register.A = gb.cpu.register.A & 0b10111111
     return 8
 
 
-def code_cb_b8(cpu):
+def code_cb_b8(gb):
     """ RES 7,B - Reset the specified bit """
-    cpu.register.B = cpu.register.B & 0b01111111
+    gb.cpu.register.B = gb.cpu.register.B & 0b01111111
     return 8
 
 
-def code_cb_b9(cpu):
+def code_cb_b9(gb):
     """ RES 7,C - Reset the specified bit """
-    cpu.register.C = cpu.register.C & 0b01111111
+    gb.cpu.register.C = gb.cpu.register.C & 0b01111111
     return 8
 
 
-def code_cb_ba(cpu):
+def code_cb_ba(gb):
     """ RES 7,D - Reset the specified bit """
-    cpu.register.D = cpu.register.D & 0b01111111
+    gb.cpu.register.D = gb.cpu.register.D & 0b01111111
     return 8
 
 
-def code_cb_bb(cpu):
+def code_cb_bb(gb):
     """ RES 7,E - Reset the specified bit """
-    cpu.register.E = cpu.register.E & 0b01111111
+    gb.cpu.register.E = gb.cpu.register.E & 0b01111111
     return 8
 
 
-def code_cb_bc(cpu):
+def code_cb_bc(gb):
     """ RES 7,H - Reset the specified bit """
-    cpu.register.H = cpu.register.H & 0b01111111
+    gb.cpu.register.H = gb.cpu.register.H & 0b01111111
     return 8
 
 
-def code_cb_bd(cpu):
+def code_cb_bd(gb):
     """ RES 7,L - Reset the specified bit """
-    cpu.register.L = cpu.register.L & 0b01111111
+    gb.cpu.register.L = gb.cpu.register.L & 0b01111111
     return 8
 
 
-def code_cb_be(cpu):
+def code_cb_be(gb):
     """ RES 7,(HL) - Reset the specified bit """
-    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    value = gb.memory.read_8bit(gb.cpu.register.get_hl())
     value = value & 0b01111111
-    cpu.memory.write_8bit(cpu.register.get_hl(), value)
+    gb.memory.write_8bit(gb.cpu.register.get_hl(), value)
     return 16
 
 
-def code_cb_bf(cpu):
+def code_cb_bf(gb):
     """ RES 7,A - Reset the specified bit """
-    cpu.register.A = cpu.register.A & 0b01111111
+    gb.cpu.register.A = gb.cpu.register.A & 0b01111111
     return 8
 
 
 # OPCODES CB Cx
-def code_cb_c0(cpu):
+def code_cb_c0(gb):
     """ SET 0,B - Set the specified bit """
-    cpu.register.B = cpu.register.B | 0b00000001
+    gb.cpu.register.B = gb.cpu.register.B | 0b00000001
     return 8
 
 
-def code_cb_c1(cpu):
+def code_cb_c1(gb):
     """ SET 0,C - Set the specified bit """
-    cpu.register.C = cpu.register.C | 0b00000001
+    gb.cpu.register.C = gb.cpu.register.C | 0b00000001
     return 8
 
 
-def code_cb_c2(cpu):
+def code_cb_c2(gb):
     """ SET 0,D - Set the specified bit """
-    cpu.register.D = cpu.register.D | 0b00000001
+    gb.cpu.register.D = gb.cpu.register.D | 0b00000001
     return 8
 
 
-def code_cb_c3(cpu):
+def code_cb_c3(gb):
     """ SET 0,E - Set the specified bit """
-    cpu.register.E = cpu.register.E | 0b00000001
+    gb.cpu.register.E = gb.cpu.register.E | 0b00000001
     return 8
 
 
-def code_cb_c4(cpu):
+def code_cb_c4(gb):
     """ SET 0,H - Set the specified bit """
-    cpu.register.H = cpu.register.H | 0b00000001
+    gb.cpu.register.H = gb.cpu.register.H | 0b00000001
     return 8
 
 
-def code_cb_c5(cpu):
+def code_cb_c5(gb):
     """ SET 0,L - Set the specified bit """
-    cpu.register.L = cpu.register.L | 0b00000001
+    gb.cpu.register.L = gb.cpu.register.L | 0b00000001
     return 8
 
 
-def code_cb_c6(cpu):
+def code_cb_c6(gb):
     """ SET 0,(HL) - Set the specified bit """
-    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    value = gb.memory.read_8bit(gb.cpu.register.get_hl())
     value = value | 0b00000001
-    cpu.memory.write_8bit(cpu.register.get_hl(), value)
+    gb.memory.write_8bit(gb.cpu.register.get_hl(), value)
     return 16
 
 
-def code_cb_c7(cpu):
+def code_cb_c7(gb):
     """ SET 0,A - Set the specified bit """
-    cpu.register.A = cpu.register.A | 0b00000001
+    gb.cpu.register.A = gb.cpu.register.A | 0b00000001
     return 8
 
 
-def code_cb_c8(cpu):
+def code_cb_c8(gb):
     """ SET 1,B - Set the specified bit """
-    cpu.register.B = cpu.register.B | 0b00000010
+    gb.cpu.register.B = gb.cpu.register.B | 0b00000010
     return 8
 
 
-def code_cb_c9(cpu):
+def code_cb_c9(gb):
     """ SET 1,C - Set the specified bit """
-    cpu.register.C = cpu.register.C | 0b00000010
+    gb.cpu.register.C = gb.cpu.register.C | 0b00000010
     return 8
 
 
-def code_cb_ca(cpu):
+def code_cb_ca(gb):
     """ SET 1,D - Set the specified bit """
-    cpu.register.D = cpu.register.D | 0b00000010
+    gb.cpu.register.D = gb.cpu.register.D | 0b00000010
     return 8
 
 
-def code_cb_cb(cpu):
+def code_cb_cb(gb):
     """ SET 1,E - Set the specified bit """
-    cpu.register.E = cpu.register.E | 0b00000010
+    gb.cpu.register.E = gb.cpu.register.E | 0b00000010
     return 8
 
 
-def code_cb_cc(cpu):
+def code_cb_cc(gb):
     """ SET 1,H - Set the specified bit """
-    cpu.register.H = cpu.register.H | 0b00000010
+    gb.cpu.register.H = gb.cpu.register.H | 0b00000010
     return 8
 
 
-def code_cb_cd(cpu):
+def code_cb_cd(gb):
     """ SET 1,L - Set the specified bit """
-    cpu.register.L = cpu.register.L | 0b00000010
+    gb.cpu.register.L = gb.cpu.register.L | 0b00000010
     return 8
 
 
-def code_cb_ce(cpu):
+def code_cb_ce(gb):
     """ SET 1,(HL) - Set the specified bit """
-    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    value = gb.memory.read_8bit(gb.cpu.register.get_hl())
     value = value | 0b00000010
-    cpu.memory.write_8bit(cpu.register.get_hl(), value)
+    gb.memory.write_8bit(gb.cpu.register.get_hl(), value)
     return 16
 
 
-def code_cb_cf(cpu):
+def code_cb_cf(gb):
     """ SET 1,A - Set the specified bit """
-    cpu.register.A = cpu.register.A | 0b00000010
+    gb.cpu.register.A = gb.cpu.register.A | 0b00000010
     return 8
 
 
 # OPCODES CB Dx
-def code_cb_d0(cpu):
+def code_cb_d0(gb):
     """ SET 2,B - Set the specified bit """
-    cpu.register.B = cpu.register.B | 0b00000100
+    gb.cpu.register.B = gb.cpu.register.B | 0b00000100
     return 8
 
 
-def code_cb_d1(cpu):
+def code_cb_d1(gb):
     """ SET 2,C - Set the specified bit """
-    cpu.register.C = cpu.register.C | 0b00000100
+    gb.cpu.register.C = gb.cpu.register.C | 0b00000100
     return 8
 
 
-def code_cb_d2(cpu):
+def code_cb_d2(gb):
     """ SET 2,D - Set the specified bit """
-    cpu.register.D = cpu.register.D | 0b00000100
+    gb.cpu.register.D = gb.cpu.register.D | 0b00000100
     return 8
 
 
-def code_cb_d3(cpu):
+def code_cb_d3(gb):
     """ SET 2,E - Set the specified bit """
-    cpu.register.E = cpu.register.E | 0b00000100
+    gb.cpu.register.E = gb.cpu.register.E | 0b00000100
     return 8
 
 
-def code_cb_d4(cpu):
+def code_cb_d4(gb):
     """ SET 2,H - Set the specified bit """
-    cpu.register.H = cpu.register.H | 0b00000100
+    gb.cpu.register.H = gb.cpu.register.H | 0b00000100
     return 8
 
 
-def code_cb_d5(cpu):
+def code_cb_d5(gb):
     """ SET 2,L - Set the specified bit """
-    cpu.register.L = cpu.register.L | 0b00000100
+    gb.cpu.register.L = gb.cpu.register.L | 0b00000100
     return 8
 
 
-def code_cb_d6(cpu):
+def code_cb_d6(gb):
     """ SET 2,(HL) - Set the specified bit """
-    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    value = gb.memory.read_8bit(gb.cpu.register.get_hl())
     value = value | 0b00000100
-    cpu.memory.write_8bit(cpu.register.get_hl(), value)
+    gb.memory.write_8bit(gb.cpu.register.get_hl(), value)
     return 16
 
 
-def code_cb_d7(cpu):
+def code_cb_d7(gb):
     """ SET 2,A - Set the specified bit """
-    cpu.register.A = cpu.register.A | 0b00000100
+    gb.cpu.register.A = gb.cpu.register.A | 0b00000100
     return 8
 
 
-def code_cb_d8(cpu):
+def code_cb_d8(gb):
     """ SET 3,B - Set the specified bit """
-    cpu.register.B = cpu.register.B | 0b00001000
+    gb.cpu.register.B = gb.cpu.register.B | 0b00001000
     return 8
 
 
-def code_cb_d9(cpu):
+def code_cb_d9(gb):
     """ SET 3,C - Set the specified bit """
-    cpu.register.C = cpu.register.C | 0b00001000
+    gb.cpu.register.C = gb.cpu.register.C | 0b00001000
     return 8
 
 
-def code_cb_da(cpu):
+def code_cb_da(gb):
     """ SET 3,D - Set the specified bit """
-    cpu.register.D = cpu.register.D | 0b00001000
+    gb.cpu.register.D = gb.cpu.register.D | 0b00001000
     return 8
 
 
-def code_cb_db(cpu):
+def code_cb_db(gb):
     """ SET 3,E - Set the specified bit """
-    cpu.register.E = cpu.register.E | 0b00001000
+    gb.cpu.register.E = gb.cpu.register.E | 0b00001000
     return 8
 
 
-def code_cb_dc(cpu):
+def code_cb_dc(gb):
     """ SET 3,H - Set the specified bit """
-    cpu.register.H = cpu.register.H | 0b00001000
+    gb.cpu.register.H = gb.cpu.register.H | 0b00001000
     return 8
 
 
-def code_cb_dd(cpu):
+def code_cb_dd(gb):
     """ SET 3,L - Set the specified bit """
-    cpu.register.L = cpu.register.L | 0b00001000
+    gb.cpu.register.L = gb.cpu.register.L | 0b00001000
     return 8
 
 
-def code_cb_de(cpu):
+def code_cb_de(gb):
     """ SET 3,(HL) - Set the specified bit """
-    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    value = gb.memory.read_8bit(gb.cpu.register.get_hl())
     value = value | 0b00001000
-    cpu.memory.write_8bit(cpu.register.get_hl(), value)
+    gb.memory.write_8bit(gb.cpu.register.get_hl(), value)
     return 16
 
 
-def code_cb_df(cpu):
+def code_cb_df(gb):
     """ SET 3,A - Set the specified bit """
-    cpu.register.A = cpu.register.A | 0b00001000
+    gb.cpu.register.A = gb.cpu.register.A | 0b00001000
     return 8
 
 
 # OPCODES CB Ex
-def code_cb_e0(cpu):
+def code_cb_e0(gb):
     """ SET 4,B - Set the specified bit """
-    cpu.register.B = cpu.register.B | 0b00010000
+    gb.cpu.register.B = gb.cpu.register.B | 0b00010000
     return 8
 
 
-def code_cb_e1(cpu):
+def code_cb_e1(gb):
     """ SET 4,C - Set the specified bit """
-    cpu.register.C = cpu.register.C | 0b00010000
+    gb.cpu.register.C = gb.cpu.register.C | 0b00010000
     return 8
 
 
-def code_cb_e2(cpu):
+def code_cb_e2(gb):
     """ SET 4,D - Set the specified bit """
-    cpu.register.D = cpu.register.D | 0b00010000
+    gb.cpu.register.D = gb.cpu.register.D | 0b00010000
     return 8
 
 
-def code_cb_e3(cpu):
+def code_cb_e3(gb):
     """ SET 4,E - Set the specified bit """
-    cpu.register.E = cpu.register.E | 0b00010000
+    gb.cpu.register.E = gb.cpu.register.E | 0b00010000
     return 8
 
 
-def code_cb_e4(cpu):
+def code_cb_e4(gb):
     """ SET 4,H - Set the specified bit """
-    cpu.register.H = cpu.register.H | 0b00010000
+    gb.cpu.register.H = gb.cpu.register.H | 0b00010000
     return 8
 
 
-def code_cb_e5(cpu):
+def code_cb_e5(gb):
     """ SET 4,L - Set the specified bit """
-    cpu.register.L = cpu.register.L | 0b00010000
+    gb.cpu.register.L = gb.cpu.register.L | 0b00010000
     return 8
 
 
-def code_cb_e6(cpu):
+def code_cb_e6(gb):
     """ SET 4,(HL) - Set the specified bit """
-    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    value = gb.memory.read_8bit(gb.cpu.register.get_hl())
     value = value | 0b00010000
-    cpu.memory.write_8bit(cpu.register.get_hl(), value)
+    gb.memory.write_8bit(gb.cpu.register.get_hl(), value)
     return 16
 
 
-def code_cb_e7(cpu):
+def code_cb_e7(gb):
     """ SET 4,A - Set the specified bit """
-    cpu.register.A = cpu.register.A | 0b00010000
+    gb.cpu.register.A = gb.cpu.register.A | 0b00010000
     return 8
 
 
-def code_cb_e8(cpu):
+def code_cb_e8(gb):
     """ SET 5,B - Set the specified bit """
-    cpu.register.B = cpu.register.B | 0b00100000
+    gb.cpu.register.B = gb.cpu.register.B | 0b00100000
     return 8
 
 
-def code_cb_e9(cpu):
+def code_cb_e9(gb):
     """ SET 5,C - Set the specified bit """
-    cpu.register.C = cpu.register.C | 0b00100000
+    gb.cpu.register.C = gb.cpu.register.C | 0b00100000
     return 8
 
 
-def code_cb_ea(cpu):
+def code_cb_ea(gb):
     """ SET 5,D - Set the specified bit """
-    cpu.register.D = cpu.register.D | 0b00100000
+    gb.cpu.register.D = gb.cpu.register.D | 0b00100000
     return 8
 
 
-def code_cb_eb(cpu):
+def code_cb_eb(gb):
     """ SET 5,E - Set the specified bit """
-    cpu.register.E = cpu.register.E | 0b00100000
+    gb.cpu.register.E = gb.cpu.register.E | 0b00100000
     return 8
 
 
-def code_cb_ec(cpu):
+def code_cb_ec(gb):
     """ SET 5,H - Set the specified bit """
-    cpu.register.H = cpu.register.H | 0b00100000
+    gb.cpu.register.H = gb.cpu.register.H | 0b00100000
     return 8
 
 
-def code_cb_ed(cpu):
+def code_cb_ed(gb):
     """ SET 5,L - Set the specified bit """
-    cpu.register.L = cpu.register.L | 0b00100000
+    gb.cpu.register.L = gb.cpu.register.L | 0b00100000
     return 8
 
 
-def code_cb_ee(cpu):
+def code_cb_ee(gb):
     """ SET 5,(HL) - Set the specified bit """
-    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    value = gb.memory.read_8bit(gb.cpu.register.get_hl())
     value = value | 0b00100000
-    cpu.memory.write_8bit(cpu.register.get_hl(), value)
+    gb.memory.write_8bit(gb.cpu.register.get_hl(), value)
     return 16
 
 
-def code_cb_ef(cpu):
+def code_cb_ef(gb):
     """ SET 5,A - Set the specified bit """
-    cpu.register.A = cpu.register.A | 0b00100000
+    gb.cpu.register.A = gb.cpu.register.A | 0b00100000
     return 8
 
 
 # OPCODES CB Fx
-def code_cb_f0(cpu):
+def code_cb_f0(gb):
     """ SET 6,B - Set the specified bit """
-    cpu.register.B = cpu.register.B | 0b01000000
+    gb.cpu.register.B = gb.cpu.register.B | 0b01000000
     return 8
 
 
-def code_cb_f1(cpu):
+def code_cb_f1(gb):
     """ SET 6,C - Set the specified bit """
-    cpu.register.C = cpu.register.C | 0b01000000
+    gb.cpu.register.C = gb.cpu.register.C | 0b01000000
     return 8
 
 
-def code_cb_f2(cpu):
+def code_cb_f2(gb):
     """ SET 6,D - Set the specified bit """
-    cpu.register.D = cpu.register.D | 0b01000000
+    gb.cpu.register.D = gb.cpu.register.D | 0b01000000
     return 8
 
 
-def code_cb_f3(cpu):
+def code_cb_f3(gb):
     """ SET 6,E - Set the specified bit """
-    cpu.register.E = cpu.register.E | 0b01000000
+    gb.cpu.register.E = gb.cpu.register.E | 0b01000000
     return 8
 
 
-def code_cb_f4(cpu):
+def code_cb_f4(gb):
     """ SET 6,H - Set the specified bit """
-    cpu.register.H = cpu.register.H | 0b01000000
+    gb.cpu.register.H = gb.cpu.register.H | 0b01000000
     return 8
 
 
-def code_cb_f5(cpu):
+def code_cb_f5(gb):
     """ SET 6,L - Set the specified bit """
-    cpu.register.L = cpu.register.L | 0b01000000
+    gb.cpu.register.L = gb.cpu.register.L | 0b01000000
     return 8
 
 
-def code_cb_f6(cpu):
+def code_cb_f6(gb):
     """ SET 6,(HL) - Set the specified bit """
-    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    value = gb.memory.read_8bit(gb.cpu.register.get_hl())
     value = value | 0b01000000
-    cpu.memory.write_8bit(cpu.register.get_hl(), value)
+    gb.memory.write_8bit(gb.cpu.register.get_hl(), value)
     return 16
 
 
-def code_cb_f7(cpu):
+def code_cb_f7(gb):
     """ SET 6,A - Set the specified bit """
-    cpu.register.A = cpu.register.A | 0b01000000
+    gb.cpu.register.A = gb.cpu.register.A | 0b01000000
     return 8
 
 
-def code_cb_f8(cpu):
+def code_cb_f8(gb):
     """ SET 7,B - Set the specified bit """
-    cpu.register.B = cpu.register.B | 0b10000000
+    gb.cpu.register.B = gb.cpu.register.B | 0b10000000
     return 8
 
 
-def code_cb_f9(cpu):
+def code_cb_f9(gb):
     """ SET 7,C - Set the specified bit """
-    cpu.register.C = cpu.register.C | 0b10000000
+    gb.cpu.register.C = gb.cpu.register.C | 0b10000000
     return 8
 
 
-def code_cb_fa(cpu):
+def code_cb_fa(gb):
     """ SET 7,D - Set the specified bit """
-    cpu.register.D = cpu.register.D | 0b10000000
+    gb.cpu.register.D = gb.cpu.register.D | 0b10000000
     return 8
 
 
-def code_cb_fb(cpu):
+def code_cb_fb(gb):
     """ SET 7,E - Set the specified bit """
-    cpu.register.E = cpu.register.E | 0b10000000
+    gb.cpu.register.E = gb.cpu.register.E | 0b10000000
     return 8
 
 
-def code_cb_fc(cpu):
+def code_cb_fc(gb):
     """ SET 7,H - Set the specified bit """
-    cpu.register.H = cpu.register.H | 0b10000000
+    gb.cpu.register.H = gb.cpu.register.H | 0b10000000
     return 8
 
 
-def code_cb_fd(cpu):
+def code_cb_fd(gb):
     """ SET 7,L - Set the specified bit """
-    cpu.register.L = cpu.register.L | 0b10000000
+    gb.cpu.register.L = gb.cpu.register.L | 0b10000000
     return 8
 
 
-def code_cb_fe(cpu):
+def code_cb_fe(gb):
     """ SET 7,(HL) - Set the specified bit """
-    value = cpu.memory.read_8bit(cpu.register.get_hl())
+    value = gb.memory.read_8bit(gb.cpu.register.get_hl())
     value = value | 0b10000000
-    cpu.memory.write_8bit(cpu.register.get_hl(), value)
+    gb.memory.write_8bit(gb.cpu.register.get_hl(), value)
     return 16
 
 
-def code_cb_ff(cpu):
+def code_cb_ff(gb):
     """ SET 7,A - Set the specified bit """
-    cpu.register.A = cpu.register.A | 0b10000000
+    gb.cpu.register.A = gb.cpu.register.A | 0b10000000
     return 8
 
 
