@@ -1,5 +1,5 @@
 """
-Python Game Boy Emulator
+Python GameBoy Emulator
 """
 from gb import GB
 import sys

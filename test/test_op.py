@@ -20,7 +20,7 @@ def gb():
     from memory import Memory
     from gb import GB
     gb = GB()
-    gb.memory = Memory(gb)  # To remove all memory initialization made by other components
+    gb.memory = Memory()  # To remove all memory initialization made by other components
     return gb
 
 
@@ -44,6 +44,9 @@ def assert_registers(gb, A=0x00, F=0x00, B=0x00, C=0x00, D=0x00, E=0x00, H=0x00,
     assert gb.cpu.register.L == L
     assert gb.cpu.register.SP == SP
     assert gb.cpu.register.PC == PC
+
+
+# TODO: Tests are broken because of changes in Memory...
 
 
 # noinspection PyProtectedMember
@@ -361,7 +364,7 @@ def test_code_0f(gb):
 # noinspection PyShadowingNames
 def test_code_10(gb):
     """
-    STOP - Switch Game Boy into VERY low power standby mode. Halt CPU and LCD display until a button is pressed
+    STOP - Switch GameBoy into VERY low power standby mode. Halt CPU and LCD display until a button is pressed
     See: http://gbdev.gg8.se/wiki/articles/Reducing_Power_Consumption
     """
     cycles = op.code_10(gb)

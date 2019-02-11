@@ -10,6 +10,9 @@ For each test method with a parameter, the parameter name is the setup method th
 """
 
 
+# TODO: Tests are broken because of changes in Memory...
+
+
 @pytest.fixture
 def memory():
     """
@@ -17,9 +20,7 @@ def memory():
     :return: new memory instance
     """
     from memory import Memory
-    from gb import GB
-    gb = GB()
-    return Memory(gb)  # To remove all memory initialization made by other components
+    return Memory()  # To remove all memory initialization made by other components
 
 
 """

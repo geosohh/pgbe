@@ -11,7 +11,7 @@ import logging
 class CPU:
     """ CPU """
 
-    # The Game Boy CPU runs at 4194304hz, i.e. 4194304 cycles per second
+    # The GameBoy CPU runs at 4194304hz, i.e. 4194304 cycles per second
     CLOCK_HZ = 4194304
 
     # The special Divider Register (DIV, 0xFF04) must be incremented 16384 times per second, i.e. every 256 CPU cycles
@@ -30,36 +30,32 @@ class CPU:
         # State initialization
         self.halted = False  # for OP 76 (HALT)
         self.stopped = False  # for OP 10 (STOP)
-        self._cartridge_data: bytes = None
 
         # Logger
         self.logger = logging.getLogger("pgbe")
 
-    def execute(self, cartridge_data: bytes, debug: bool, step: bool):
+    def execute(self, delta_since_last_method_call):
         """
-        Execution main loop.
-        :param cartridge_data: game to execute
-        :param debug: If will run in debug mode or not
-        :param step: If it will stop after executing each loop or not. Requires debug==True.
+        Execution main loop
         """
-        self._cartridge_data = cartridge_data
-
-        while True:
+        self.logger.debug("time delta = "+str(delta_since_last_method_call))
+        full_update_cycle_completed = False
+        while not full_update_cycle_completed:
             opcode: int = None
             cycles_spent = 0
             if not self.halted and not self.stopped:
                 opcode = self.read_next_byte_from_cartridge()
 
-                plus1 = "{:02X}".format(self._cartridge_data[self.register.PC])
-                plus2 = "{:02X}".format(self._cartridge_data[self.register.PC+1])
+                plus1 = "{:02X}".format(self.gb.memory.read_8bit(self.register.PC))
+                plus2 = "{:02X}".format(self.gb.memory.read_8bit(self.register.PC+1))
                 self.logger.debug("Executing 0x%04X: %02X  [ %s , %s ]",self.register.PC-1,opcode,plus1,plus2)
                 cycles_spent += op.execute(self.gb, opcode)
             cycles_spent += self.gb.interrupts.update(opcode)
-            self.gb.gpu.update(cycles_spent)
+            full_update_cycle_completed = self.gb.gpu.update(cycles_spent)
 
-            if debug:
+            if self.gb.debug_mode:
                 self.gb.debug()
-                if step:
+                if self.gb.step_mode:
                     input()
 
             # TODO: redo
@@ -74,7 +70,7 @@ class CPU:
         Read the next data from the ROM, increment Program Counter
         :return: 8-bit data read from ROM
         """
-        data = self._cartridge_data[self.register.PC]
+        data = self.gb.memory.read_8bit(self.register.PC)
         self.register.PC += 1
         return data
 

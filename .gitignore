@@ -64,5 +64,8 @@ target/
 # Log files
 *.log
 
-Game Boy ROM files
+GameBoy ROM files
 *.gb
+
+GameBoy boot ROM file
+boot.rom
