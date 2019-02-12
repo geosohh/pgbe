@@ -21,6 +21,9 @@ class CPU:
         """
         :type gb: gb.GB
         """
+        # Logger
+        self.logger = logging.getLogger("pgbe")
+
         # Communication with other components
         self.gb = gb
 
@@ -30,9 +33,6 @@ class CPU:
         # State initialization
         self.halted = False  # for OP 76 (HALT)
         self.stopped = False  # for OP 10 (STOP)
-
-        # Logger
-        self.logger = logging.getLogger("pgbe")
 
     def execute(self, delta_since_last_method_call):
         """

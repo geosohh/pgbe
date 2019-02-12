@@ -13,14 +13,6 @@ class GB:
     """ GB components instantiation """
 
     def __init__(self):
-        self.cpu = CPU(self)
-        self.memory = Memory()
-        self.interrupts = Interrupts(self)
-        self.gpu = GPU(self)
-
-        self.debug_mode = False
-        self.step_mode = False
-
         self.logger = logging.getLogger("pgbe")
         # log_handler = logging.NullHandler()
         log_handler = logging.FileHandler("test.log", mode="w")
@@ -28,6 +20,14 @@ class GB:
         log_handler.setFormatter(formatter)
         self.logger.addHandler(log_handler)
         self.logger.setLevel(logging.DEBUG)
+
+        self.cpu = CPU(self)
+        self.memory = Memory()
+        self.interrupts = Interrupts(self)
+        self.gpu = GPU(self)
+
+        self.debug_mode = False
+        self.step_mode = False
 
     def execute(self, cartridge_data: bytes, debug: bool = False, step: bool = False):
         """
@@ -41,7 +41,7 @@ class GB:
         self.step_mode = step
         self.logger.info("Debug: %s\tStep: %s",self.debug_mode,self.step_mode)
         self.memory.load_cartridge(cartridge_data)
-        if not self.memory.load_boot_rom():
+        if self.memory.boot_rom is None:
             self.cpu.register.skip_boot_rom()
 
         # Instantiates the emulator screen. It will assume control of the main thread, so the emulator main loop must be

@@ -41,6 +41,9 @@ class GPU:
         """
         :type gb: gb.GB
         """
+        # Logger
+        self.logger = logging.getLogger("pgbe")
+
         # Communication with other components
         self.gb = gb
 
@@ -50,9 +53,6 @@ class GPU:
 
         self.framebuffer = [0, 0, 0] * (self.SCREEN_WIDTH * self.SCREEN_HEIGHT)  # Data being prepared to show on UI
         self.screen = self.framebuffer.copy()  # Data to show on UI
-
-        # Logger
-        self.logger = logging.getLogger("pgbe")
 
     def update(self, cpu_cycles_spent: int):
         """

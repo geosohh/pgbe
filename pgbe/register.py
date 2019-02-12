@@ -68,6 +68,9 @@ class Register:
     GB Registers
     """
     def __init__(self):
+        # Logger
+        self.logger = logging.getLogger("pgbe")
+
         # 8-bit registers (can be combined to read as 16-bit registers)
         self.A = 0x00  # Accumulator
         self.F = 0x00  # Flags
@@ -84,9 +87,6 @@ class Register:
         # 16-bit registers
         self.SP = 0xFFFE  # Stack Pointer
         self.PC = 0x0000  # Program Counter
-
-        # Logger
-        self.logger = logging.getLogger("pgbe")
 
     def skip_boot_rom(self):
         """

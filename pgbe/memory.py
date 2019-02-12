@@ -63,6 +63,8 @@ class Memory:
     """ Memory """
 
     def __init__(self):
+        # Logger
+        self.logger = logging.getLogger("pgbe")
 
         # State initialization
         # Cartridge bank 0, so nothing to initialize:  0x3FFF - 0x0000
@@ -78,13 +80,10 @@ class Memory:
         self.ie = 0x00  # Single address, no array:    0xFFFF
 
         self.cartridge: bytes = None
-        self.boot_rom: bytes = None
-        self.boot_rom_loaded = True
+        self.boot_rom: bytes = self.load_boot_rom()
+        self.boot_rom_loaded = (self.boot_rom is not None)
 
         self.mbc: MBC = None
-
-        # Logger
-        self.logger = logging.getLogger("pgbe")
 
     def load_cartridge(self, cartridge_data: bytes):
         """
@@ -199,7 +198,7 @@ class Memory:
 
     def load_boot_rom(self):
         """
-        Adds the GameBoy boot ROM to the beginning of the memory, so it is executed then the emulator starts.
+        Adds the GameBoy boot ROM to the beginning of the memory, so it is executed when the emulator starts.
 
         The boot ROM prepares the device by clearing memory areas and setting up some initial values. We could set the
         appropriate memory values without using the boot ROM and skip directly to game ROM execution, but it is more
@@ -209,9 +208,9 @@ class Memory:
         """
         try:
             f = open("boot.rom", "rb")
-            self.boot_rom = f.read()
+            boot_rom = f.read()
             f.close()
-            return True
+            return boot_rom
         except FileNotFoundError:
             self.logger.info("Boot ROM not found, skipping it")
             self.write_8bit(0xFF05, 0x00)  # TIMA
@@ -246,7 +245,7 @@ class Memory:
             self.write_8bit(0xFF4A, 0x00)  # WY
             self.write_8bit(0xFF4B, 0x00)  # WX
             self.write_8bit(0xFFFF, 0x00)  # IE
-            return False
+            return None
 
     def write_8bit(self, address: int, value: int):
         """
@@ -306,16 +305,16 @@ class Memory:
         """
         self.logger.debug("VRAM:")
         self._debug_memory_map(self.vram)
-        #self.logger.debug("External RAM:")
-        #self._debug_memory_map(self.external_ram)
-        #self.logger.debug("Internal RAM:")
-        #self._debug_memory_map(self.internal_ram)
-        #self.logger.debug("OAM:")
-        #self._debug_memory_map(self.oam)
+        # self.logger.debug("External RAM:")
+        # self._debug_memory_map(self.external_ram)
+        # self.logger.debug("Internal RAM:")
+        # self._debug_memory_map(self.internal_ram)
+        # self.logger.debug("OAM:")
+        # self._debug_memory_map(self.oam)
         self.logger.debug("I/O:")
         self._debug_memory_map(self.io)
-        #self.logger.debug("HRAM:")
-        #self._debug_memory_map(self.hram)
+        # self.logger.debug("HRAM:")
+        # self._debug_memory_map(self.hram)
 
     def _debug_memory_map(self, memory_map: array):
         custom_dict = {}

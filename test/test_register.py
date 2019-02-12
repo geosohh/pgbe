@@ -232,11 +232,39 @@ def test_get_hl(register):
 
 
 # noinspection PyShadowingNames
+def test_set_a(register):
+    register.A = 0x01
+    register.set_a(0x02)
+    assert_registers(register, A=0x02)
+
+
+# noinspection PyShadowingNames
+def test_set_f(register):
+    register.F = 0x01
+    register.set_f(0x02)
+    assert_registers(register, F=0x02)
+
+
+# noinspection PyShadowingNames
 def test_set_af(register):
     register.A = 0x01
     register.F = 0x01
     register.set_af(0xFE15)
     assert_registers(register, A=0xFE, F=0x15)
+
+
+# noinspection PyShadowingNames
+def test_set_b(register):
+    register.B = 0x01
+    register.set_b(0x02)
+    assert_registers(register, B=0x02)
+
+
+# noinspection PyShadowingNames
+def test_set_c(register):
+    register.C = 0x01
+    register.set_c(0x02)
+    assert_registers(register, C=0x02)
 
 
 # noinspection PyShadowingNames
@@ -248,11 +276,39 @@ def test_set_bc(register):
 
 
 # noinspection PyShadowingNames
+def test_set_d(register):
+    register.D = 0x01
+    register.set_d(0x02)
+    assert_registers(register, D=0x02)
+
+
+# noinspection PyShadowingNames
+def test_set_e(register):
+    register.E = 0x01
+    register.set_e(0x02)
+    assert_registers(register, E=0x02)
+
+
+# noinspection PyShadowingNames
 def test_set_de(register):
     register.D = 0x01
     register.E = 0x01
     register.set_de(0xFE15)
     assert_registers(register, D=0xFE, E=0x15)
+
+
+# noinspection PyShadowingNames
+def test_set_h(register):
+    register.H = 0x01
+    register.set_h(0x02)
+    assert_registers(register, H=0x02)
+
+
+# noinspection PyShadowingNames
+def test_set_l(register):
+    register.L = 0x01
+    register.set_l(0x02)
+    assert_registers(register, L=0x02)
 
 
 # noinspection PyShadowingNames

@@ -34,6 +34,9 @@ class Interrupts:
         """
         :type gb: gb.GB
         """
+        # Logger
+        self.logger = logging.getLogger("pgbe")
+
         # Communication with other components
         self.gb = gb
 
@@ -41,9 +44,6 @@ class Interrupts:
         self.IME = False
         self.enable_IME_after_next_instruction = False
         self.disable_IME_after_next_instruction = False
-
-        # Logger
-        self.logger = logging.getLogger("pgbe")
 
     def update(self, opcode_executed: int):
         """
