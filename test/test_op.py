@@ -60,7 +60,8 @@ def assert_memory(gb, custom_address=None):
         custom_address = {}
 
     for i in range(0x0000, len(gb.memory.cartridge)):
-        custom_address.setdefault(i, gb.memory.cartridge[i])
+        if gb.memory.cartridge[i] != 0:
+            custom_address.setdefault(i, gb.memory.cartridge[i])
 
     if gb.memory.boot_rom_loaded:
         for i in range(0x0000, len(gb.memory.boot_rom)):
@@ -110,9 +111,12 @@ def assert_memory(gb, custom_address=None):
         assert value == expected_value
 
 
+fake_cartridge = bytes.fromhex("00")*0x8000
+
+
 def create_fake_cartridge(fake_data: str):
     """ Create fake cartridge bytes array """
-    return bytes.fromhex(fake_data) + bytes.fromhex("00")*0x8000
+    return bytes.fromhex(fake_data) + fake_cartridge
 
 
 # noinspection PyShadowingNames
@@ -1132,31 +1136,29 @@ def test_code_34(gb):
     assert_memory(gb, {0x8010: 0x00})
 
 
-# TODO: Many tests starting from here are still failing, most of them because of writing to cartridge data space
-
 # noinspection PyShadowingNames
 def test_code_35(gb):
     """ DEC (HL) - (value at address HL)=(value at address HL)-1 """
-    gb.memory.write_8bit(0x1010, 0x00)
-    gb.cpu.register.set_hl(0x1010)
+    gb.memory.write_8bit(0x8010, 0x00)
+    gb.cpu.register.set_hl(0x8010)
     cycles = op.code_35(gb)
     assert cycles == 12
-    assert_registers(gb, H=0x10, L=0x10, F=0b01100000)
-    assert_memory(gb, {0x1010: 0xFF})
+    assert_registers(gb, H=0x80, L=0x10, F=0b01100000)
+    assert_memory(gb, {0x8010: 0xFF})
 
-    gb.memory.write_8bit(0x1010, 0x0F)
-    gb.cpu.register.set_hl(0x1010)
+    gb.memory.write_8bit(0x8010, 0x0F)
+    gb.cpu.register.set_hl(0x8010)
     cycles = op.code_35(gb)
     assert cycles == 12
-    assert_registers(gb, H=0x10, L=0x10, F=0b01000000)
-    assert_memory(gb, {0x1010: 0x0E})
+    assert_registers(gb, H=0x80, L=0x10, F=0b01000000)
+    assert_memory(gb, {0x8010: 0x0E})
 
-    gb.memory.write_8bit(0x1010, 0x01)
-    gb.cpu.register.set_hl(0x1010)
+    gb.memory.write_8bit(0x8010, 0x01)
+    gb.cpu.register.set_hl(0x8010)
     cycles = op.code_35(gb)
     assert cycles == 12
-    assert_registers(gb, H=0x10, L=0x10, F=0b11000000)
-    assert_memory(gb, {0x1010: 0x00})
+    assert_registers(gb, H=0x80, L=0x10, F=0b11000000)
+    assert_memory(gb, {0x8010: 0x00})
 
 
 # noinspection PyShadowingNames
@@ -1164,11 +1166,11 @@ def test_code_36(gb):
     """ LD (HL),d8 - Stores d8 at the address in HL """
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
     gb.memory.cartridge = create_fake_cartridge("99")
-    gb.cpu.register.set_hl(0x1010)
+    gb.cpu.register.set_hl(0x8010)
     cycles = op.code_36(gb)
     assert cycles == 12
-    assert_registers(gb, H=0x10, L=0x10, PC=0x0001)
-    assert_memory(gb, {0x1010:0x99})
+    assert_registers(gb, H=0x80, L=0x10, PC=0x0001)
+    assert_memory(gb, {0x8010:0x99})
 
 
 # noinspection PyShadowingNames
@@ -1250,12 +1252,12 @@ def test_code_39(gb):
 # noinspection PyShadowingNames
 def test_code_3a(gb):
     """ LD A,(HL-) or LD A,(HLD) or LDD A,(HL) - Put value at address HL into A. Decrement HL """
-    gb.memory.write_8bit(0x1010, 0x69)
-    gb.cpu.register.set_hl(0x1010)
+    gb.memory.write_8bit(0x8010, 0x69)
+    gb.cpu.register.set_hl(0x8010)
     cycles = op.code_3a(gb)
     assert cycles == 8
-    assert_registers(gb, A=0x69, H=0x10, L=0x0F)
-    assert_memory(gb, {0x1010: 0x69})
+    assert_registers(gb, A=0x69, H=0x80, L=0x0F)
+    assert_memory(gb, {0x8010: 0x69})
 
 
 # noinspection PyShadowingNames
@@ -1412,12 +1414,12 @@ def test_code_45(gb):
 # noinspection PyShadowingNames
 def test_code_46(gb):
     """ LD B,(HL) - Load reg with the value at the address in HL """
-    gb.memory.write_8bit(0x1010, 0x99)
-    gb.cpu.register.set_hl(0x1010)
+    gb.memory.write_8bit(0x8010, 0x99)
+    gb.cpu.register.set_hl(0x8010)
     cycles = op.code_46(gb)
     assert cycles == 8
-    assert_registers(gb, B=0x99, H=0x10, L=0x10)
-    assert_memory(gb,{0x1010:0x99})
+    assert_registers(gb, B=0x99, H=0x80, L=0x10)
+    assert_memory(gb,{0x8010:0x99})
 
 
 # noinspection PyShadowingNames
@@ -1493,12 +1495,12 @@ def test_code_4d(gb):
 # noinspection PyShadowingNames
 def test_code_4e(gb):
     """ LD C,(HL) - Load reg with the value at the address in HL """
-    gb.memory.write_8bit(0x1010, 0x99)
-    gb.cpu.register.set_hl(0x1010)
+    gb.memory.write_8bit(0x8010, 0x99)
+    gb.cpu.register.set_hl(0x8010)
     cycles = op.code_4e(gb)
     assert cycles == 8
-    assert_registers(gb, C=0x99, H=0x10, L=0x10)
-    assert_memory(gb, {0x1010: 0x99})
+    assert_registers(gb, C=0x99, H=0x80, L=0x10)
+    assert_memory(gb, {0x8010: 0x99})
 
 
 # noinspection PyShadowingNames
@@ -1574,12 +1576,12 @@ def test_code_55(gb):
 # noinspection PyShadowingNames
 def test_code_56(gb):
     """ LD D,(HL) - Load reg with the value at the address in HL """
-    gb.memory.write_8bit(0x1010, 0x99)
-    gb.cpu.register.set_hl(0x1010)
+    gb.memory.write_8bit(0x8010, 0x99)
+    gb.cpu.register.set_hl(0x8010)
     cycles = op.code_56(gb)
     assert cycles == 8
-    assert_registers(gb, D=0x99, H=0x10, L=0x10)
-    assert_memory(gb, {0x1010: 0x99})
+    assert_registers(gb, D=0x99, H=0x80, L=0x10)
+    assert_memory(gb, {0x8010: 0x99})
 
 
 # noinspection PyShadowingNames
@@ -1655,12 +1657,12 @@ def test_code_5d(gb):
 # noinspection PyShadowingNames
 def test_code_5e(gb):
     """ LD E,(HL) - Load reg with the value at the address in HL """
-    gb.memory.write_8bit(0x1010, 0x99)
-    gb.cpu.register.set_hl(0x1010)
+    gb.memory.write_8bit(0x8010, 0x99)
+    gb.cpu.register.set_hl(0x8010)
     cycles = op.code_5e(gb)
     assert cycles == 8
-    assert_registers(gb, E=0x99, H=0x10, L=0x10)
-    assert_memory(gb, {0x1010: 0x99})
+    assert_registers(gb, E=0x99, H=0x80, L=0x10)
+    assert_memory(gb, {0x8010: 0x99})
 
 
 # noinspection PyShadowingNames
@@ -1736,12 +1738,12 @@ def test_code_65(gb):
 # noinspection PyShadowingNames
 def test_code_66(gb):
     """ LD H,(HL) - Load reg with the value at the address in HL """
-    gb.memory.write_8bit(0x1010, 0x99)
-    gb.cpu.register.set_hl(0x1010)
+    gb.memory.write_8bit(0x8010, 0x99)
+    gb.cpu.register.set_hl(0x8010)
     cycles = op.code_66(gb)
     assert cycles == 8
     assert_registers(gb, H=0x99, L=0x10)
-    assert_memory(gb, {0x1010: 0x99})
+    assert_memory(gb, {0x8010: 0x99})
 
 
 # noinspection PyShadowingNames
@@ -1817,12 +1819,12 @@ def test_code_6d(gb):
 # noinspection PyShadowingNames
 def test_code_6e(gb):
     """ LD L,(HL) - Load reg with the value at the address in HL """
-    gb.memory.write_8bit(0x1010, 0x99)
-    gb.cpu.register.set_hl(0x1010)
+    gb.memory.write_8bit(0x8010, 0x99)
+    gb.cpu.register.set_hl(0x8010)
     cycles = op.code_6e(gb)
     assert cycles == 8
-    assert_registers(gb, H=0x10, L=0x99)
-    assert_memory(gb, {0x1010: 0x99})
+    assert_registers(gb, H=0x80, L=0x99)
+    assert_memory(gb, {0x8010: 0x99})
 
 
 # noinspection PyShadowingNames
@@ -1839,64 +1841,64 @@ def test_code_6f(gb):
 def test_code_70(gb):
     """ LD (HL),B - Stores reg at the address in HL """
     gb.cpu.register.B = 0x99
-    gb.cpu.register.set_hl(0x1010)
+    gb.cpu.register.set_hl(0x8010)
     cycles = op.code_70(gb)
     assert cycles == 8
-    assert_registers(gb,B=0x99,H=0x10,L=0x10)
-    assert_memory(gb,{0x1010:0x99})
+    assert_registers(gb,B=0x99,H=0x80,L=0x10)
+    assert_memory(gb,{0x8010:0x99})
 
 
 # noinspection PyShadowingNames
 def test_code_71(gb):
     """ LD (HL),C - Stores reg at the address in HL """
     gb.cpu.register.C = 0x99
-    gb.cpu.register.set_hl(0x1010)
+    gb.cpu.register.set_hl(0x8010)
     cycles = op.code_71(gb)
     assert cycles == 8
-    assert_registers(gb, C=0x99, H=0x10, L=0x10)
-    assert_memory(gb, {0x1010: 0x99})
+    assert_registers(gb, C=0x99, H=0x80, L=0x10)
+    assert_memory(gb, {0x8010: 0x99})
 
 
 # noinspection PyShadowingNames
 def test_code_72(gb):
     """ LD (HL),D - Stores reg at the address in HL """
     gb.cpu.register.D = 0x99
-    gb.cpu.register.set_hl(0x1010)
+    gb.cpu.register.set_hl(0x8010)
     cycles = op.code_72(gb)
     assert cycles == 8
-    assert_registers(gb, D=0x99, H=0x10, L=0x10)
-    assert_memory(gb, {0x1010: 0x99})
+    assert_registers(gb, D=0x99, H=0x80, L=0x10)
+    assert_memory(gb, {0x8010: 0x99})
 
 
 # noinspection PyShadowingNames
 def test_code_73(gb):
     """ LD (HL),E - Stores reg at the address in HL """
     gb.cpu.register.E = 0x99
-    gb.cpu.register.set_hl(0x1010)
+    gb.cpu.register.set_hl(0x8010)
     cycles = op.code_73(gb)
     assert cycles == 8
-    assert_registers(gb, E=0x99, H=0x10, L=0x10)
-    assert_memory(gb, {0x1010: 0x99})
+    assert_registers(gb, E=0x99, H=0x80, L=0x10)
+    assert_memory(gb, {0x8010: 0x99})
 
 
 # noinspection PyShadowingNames
 def test_code_74(gb):
     """ LD (HL),H - Stores reg at the address in HL """
-    gb.cpu.register.set_hl(0x1110)
+    gb.cpu.register.set_hl(0x8110)
     cycles = op.code_74(gb)
     assert cycles == 8
-    assert_registers(gb, H=0x11, L=0x10)
-    assert_memory(gb, {0x1110: 0x11})
+    assert_registers(gb, H=0x81, L=0x10)
+    assert_memory(gb, {0x8110: 0x81})
 
 
 # noinspection PyShadowingNames
 def test_code_75(gb):
     """ LD (HL),L - Stores reg at the address in HL """
-    gb.cpu.register.set_hl(0x1011)
+    gb.cpu.register.set_hl(0x8011)
     cycles = op.code_75(gb)
     assert cycles == 8
-    assert_registers(gb, H=0x10, L=0x11)
-    assert_memory(gb, {0x1011: 0x11})
+    assert_registers(gb, H=0x80, L=0x11)
+    assert_memory(gb, {0x8011: 0x11})
 
 
 # noinspection PyShadowingNames
@@ -1916,11 +1918,11 @@ def test_code_76(gb):
 def test_code_77(gb):
     """ LD (HL),A - Stores reg at the address in HL """
     gb.cpu.register.A = 0x99
-    gb.cpu.register.set_hl(0x1010)
+    gb.cpu.register.set_hl(0x8010)
     cycles = op.code_77(gb)
     assert cycles == 8
-    assert_registers(gb, A=0x99, H=0x10, L=0x10)
-    assert_memory(gb, {0x1010: 0x99})
+    assert_registers(gb, A=0x99, H=0x80, L=0x10)
+    assert_memory(gb, {0x8010: 0x99})
 
 
 # noinspection PyShadowingNames
@@ -1986,12 +1988,12 @@ def test_code_7d(gb):
 # noinspection PyShadowingNames
 def test_code_7e(gb):
     """ LD A,(HL) - Load reg with the value at the address in HL """
-    gb.memory.write_8bit(0x1010, 0x99)
-    gb.cpu.register.set_hl(0x1010)
+    gb.memory.write_8bit(0x8010, 0x99)
+    gb.cpu.register.set_hl(0x8010)
     cycles = op.code_7e(gb)
     assert cycles == 8
-    assert_registers(gb, A=0x99, H=0x10, L=0x10)
-    assert_memory(gb, {0x1010: 0x99})
+    assert_registers(gb, A=0x99, H=0x80, L=0x10)
+    assert_memory(gb, {0x8010: 0x99})
 
 
 # noinspection PyShadowingNames
@@ -2259,48 +2261,48 @@ def test_code_85(gb):
 # noinspection PyShadowingNames
 def test_code_86(gb):
     """ ADD A,(HL) - A=A+(value at address HL) """
-    gb.cpu.register.set_hl(0x1010)
+    gb.cpu.register.set_hl(0x8010)
     gb.cpu.register.A = 0x00
-    gb.memory.write_8bit(0x1010, 0x00)
+    gb.memory.write_8bit(0x8010, 0x00)
     cycles = op.code_86(gb)
     assert cycles == 8
-    assert_registers(gb, A=0x00, H=0x10, L=0x10, F=0b10000000)
+    assert_registers(gb, A=0x00, H=0x80, L=0x10, F=0b10000000)
     assert_memory(gb)
 
     gb.cpu.register.A = 0x00
-    gb.memory.write_8bit(0x1010, 0x01)
+    gb.memory.write_8bit(0x8010, 0x01)
     cycles = op.code_86(gb)
     assert cycles == 8
-    assert_registers(gb, A=0x01, H=0x10, L=0x10, F=0b00000000)
-    assert_memory(gb,{0x1010:0x01})
+    assert_registers(gb, A=0x01, H=0x80, L=0x10, F=0b00000000)
+    assert_memory(gb,{0x8010:0x01})
 
     gb.cpu.register.A = 0x0F
-    gb.memory.write_8bit(0x1010, 0x01)
+    gb.memory.write_8bit(0x8010, 0x01)
     cycles = op.code_86(gb)
     assert cycles == 8
-    assert_registers(gb, A=0x10, H=0x10, L=0x10, F=0b00100000)
-    assert_memory(gb, {0x1010: 0x01})
+    assert_registers(gb, A=0x10, H=0x80, L=0x10, F=0b00100000)
+    assert_memory(gb, {0x8010: 0x01})
 
     gb.cpu.register.A = 0xF0
-    gb.memory.write_8bit(0x1010, 0x10)
+    gb.memory.write_8bit(0x8010, 0x10)
     cycles = op.code_86(gb)
     assert cycles == 8
-    assert_registers(gb, A=0x00, H=0x10, L=0x10, F=0b10010000)
-    assert_memory(gb, {0x1010: 0x10})
+    assert_registers(gb, A=0x00, H=0x80, L=0x10, F=0b10010000)
+    assert_memory(gb, {0x8010: 0x10})
 
     gb.cpu.register.A = 0xFF
-    gb.memory.write_8bit(0x1010, 0x01)
+    gb.memory.write_8bit(0x8010, 0x01)
     cycles = op.code_86(gb)
     assert cycles == 8
-    assert_registers(gb, A=0x00, H=0x10, L=0x10, F=0b10110000)
-    assert_memory(gb, {0x1010: 0x01})
+    assert_registers(gb, A=0x00, H=0x80, L=0x10, F=0b10110000)
+    assert_memory(gb, {0x8010: 0x01})
 
     gb.cpu.register.A = 0xFF
-    gb.memory.write_8bit(0x1010, 0x02)
+    gb.memory.write_8bit(0x8010, 0x02)
     cycles = op.code_86(gb)
     assert cycles == 8
-    assert_registers(gb, A=0x01, H=0x10, L=0x10, F=0b00110000)
-    assert_memory(gb, {0x1010: 0x02})
+    assert_registers(gb, A=0x01, H=0x80, L=0x10, F=0b00110000)
+    assert_memory(gb, {0x8010: 0x02})
 
 
 # noinspection PyShadowingNames
@@ -2667,63 +2669,63 @@ def test_code_8d(gb):
 # noinspection PyShadowingNames
 def test_code_8e(gb):
     """ ADC A,(HL) - A=A+(value at address HL)+carry_flag (yes, '+carry_flag' is just +1 or +0) """
-    gb.cpu.register.set_hl(0x1010)
+    gb.cpu.register.set_hl(0x8010)
 
     gb.cpu.register.A = 0x00
-    gb.memory.write_8bit(0x1010, 0x00)
+    gb.memory.write_8bit(0x8010, 0x00)
     gb.cpu.register.F = 0b00000000
     cycles = op.code_8e(gb)
     assert cycles == 8
-    assert_registers(gb, A=0x00, H=0x10, L=0x10, F=0b10000000)
+    assert_registers(gb, A=0x00, H=0x80, L=0x10, F=0b10000000)
     assert_memory(gb)
 
     gb.cpu.register.A = 0x00
-    gb.memory.write_8bit(0x1010, 0x00)
+    gb.memory.write_8bit(0x8010, 0x00)
     gb.cpu.register.F = 0b00010000
     cycles = op.code_8e(gb)
     assert cycles == 8
-    assert_registers(gb, A=0x01, H=0x10, L=0x10, F=0b00000000)
+    assert_registers(gb, A=0x01, H=0x80, L=0x10, F=0b00000000)
     assert_memory(gb)
 
     gb.cpu.register.A = 0x00
-    gb.memory.write_8bit(0x1010, 0x01)
+    gb.memory.write_8bit(0x8010, 0x01)
     gb.cpu.register.F = 0b00010000
     cycles = op.code_8e(gb)
     assert cycles == 8
-    assert_registers(gb, A=0x02, H=0x10, L=0x10, F=0b00000000)
-    assert_memory(gb,{0x1010:0x01})
+    assert_registers(gb, A=0x02, H=0x80, L=0x10, F=0b00000000)
+    assert_memory(gb,{0x8010:0x01})
 
     gb.cpu.register.A = 0x0E
-    gb.memory.write_8bit(0x1010, 0x01)
+    gb.memory.write_8bit(0x8010, 0x01)
     gb.cpu.register.F = 0b00010000
     cycles = op.code_8e(gb)
     assert cycles == 8
-    assert_registers(gb, A=0x10, H=0x10, L=0x10, F=0b00100000)
-    assert_memory(gb, {0x1010:0x01})
+    assert_registers(gb, A=0x10, H=0x80, L=0x10, F=0b00100000)
+    assert_memory(gb, {0x8010:0x01})
 
     gb.cpu.register.A = 0xF0
-    gb.memory.write_8bit(0x1010, 0x0F)
+    gb.memory.write_8bit(0x8010, 0x0F)
     gb.cpu.register.F = 0b00010000
     cycles = op.code_8e(gb)
     assert cycles == 8
-    assert_registers(gb, A=0x00, H=0x10, L=0x10, F=0b10110000)
-    assert_memory(gb, {0x1010:0x0F})
+    assert_registers(gb, A=0x00, H=0x80, L=0x10, F=0b10110000)
+    assert_memory(gb, {0x8010:0x0F})
 
     gb.cpu.register.A = 0xFE
-    gb.memory.write_8bit(0x1010, 0x01)
+    gb.memory.write_8bit(0x8010, 0x01)
     gb.cpu.register.F = 0b00010000
     cycles = op.code_8e(gb)
     assert cycles == 8
-    assert_registers(gb, A=0x00, H=0x10, L=0x10, F=0b10110000)
-    assert_memory(gb, {0x1010:0x01})
+    assert_registers(gb, A=0x00, H=0x80, L=0x10, F=0b10110000)
+    assert_memory(gb, {0x8010:0x01})
 
     gb.cpu.register.A = 0xFE
-    gb.memory.write_8bit(0x1010, 0x02)
+    gb.memory.write_8bit(0x8010, 0x02)
     gb.cpu.register.F = 0b00010000
     cycles = op.code_8e(gb)
     assert cycles == 8
-    assert_registers(gb, A=0x01, H=0x10, L=0x10, F=0b00110000)
-    assert_memory(gb, {0x1010:0x02})
+    assert_registers(gb, A=0x01, H=0x80, L=0x10, F=0b00110000)
+    assert_memory(gb, {0x8010:0x02})
 
 
 # noinspection PyShadowingNames
@@ -3029,49 +3031,49 @@ def test_code_95(gb):
 # noinspection PyShadowingNames
 def test_code_96(gb):
     """ SUB A,(HL) - A=A-(value at address HL) """
-    gb.cpu.register.set_hl(0x1010)
+    gb.cpu.register.set_hl(0x8010)
 
     gb.cpu.register.A = 0x00
-    gb.memory.write_8bit(0x1010, 0x00)
+    gb.memory.write_8bit(0x8010, 0x00)
     cycles = op.code_96(gb)
     assert cycles == 8
-    assert_registers(gb, A=0x00, H=0x10, L=0x10, F=0b11000000)
+    assert_registers(gb, A=0x00, H=0x80, L=0x10, F=0b11000000)
     assert_memory(gb)
 
     gb.cpu.register.A = 0x00
-    gb.memory.write_8bit(0x1010, 0x01)
+    gb.memory.write_8bit(0x8010, 0x01)
     cycles = op.code_96(gb)
     assert cycles == 8
-    assert_registers(gb, A=0xFF, H=0x10, L=0x10, F=0b01110000)
-    assert_memory(gb,{0x1010:0x01})
+    assert_registers(gb, A=0xFF, H=0x80, L=0x10, F=0b01110000)
+    assert_memory(gb,{0x8010:0x01})
 
     gb.cpu.register.A = 0x0F
-    gb.memory.write_8bit(0x1010, 0x01)
+    gb.memory.write_8bit(0x8010, 0x01)
     cycles = op.code_96(gb)
     assert cycles == 8
-    assert_registers(gb, A=0x0E, H=0x10, L=0x10, F=0b01000000)
-    assert_memory(gb, {0x1010: 0x01})
+    assert_registers(gb, A=0x0E, H=0x80, L=0x10, F=0b01000000)
+    assert_memory(gb, {0x8010: 0x01})
 
     gb.cpu.register.A = 0xF0
-    gb.memory.write_8bit(0x1010, 0x10)
+    gb.memory.write_8bit(0x8010, 0x10)
     cycles = op.code_96(gb)
     assert cycles == 8
-    assert_registers(gb, A=0xE0, H=0x10, L=0x10, F=0b01000000)
-    assert_memory(gb, {0x1010: 0x10})
+    assert_registers(gb, A=0xE0, H=0x80, L=0x10, F=0b01000000)
+    assert_memory(gb, {0x8010: 0x10})
 
     gb.cpu.register.A = 0xFF
-    gb.memory.write_8bit(0x1010, 0x01)
+    gb.memory.write_8bit(0x8010, 0x01)
     cycles = op.code_96(gb)
     assert cycles == 8
-    assert_registers(gb, A=0xFE, H=0x10, L=0x10, F=0b01000000)
-    assert_memory(gb, {0x1010: 0x01})
+    assert_registers(gb, A=0xFE, H=0x80, L=0x10, F=0b01000000)
+    assert_memory(gb, {0x8010: 0x01})
 
     gb.cpu.register.A = 0xFF
-    gb.memory.write_8bit(0x1010, 0xFE)
+    gb.memory.write_8bit(0x8010, 0xFE)
     cycles = op.code_96(gb)
     assert cycles == 8
-    assert_registers(gb, A=0x01, H=0x10, L=0x10, F=0b01000000)
-    assert_memory(gb, {0x1010: 0xFE})
+    assert_registers(gb, A=0x01, H=0x80, L=0x10, F=0b01000000)
+    assert_memory(gb, {0x8010: 0xFE})
 
 
 # noinspection PyShadowingNames
@@ -3302,39 +3304,39 @@ def test_code_9d(gb):
 # noinspection PyShadowingNames
 def test_code_9e(gb):
     """ SBC A,(HL) - A=A-(value at address HL)-carry_flag (yes, '-carry_flag' is just -1 or -0) """
-    gb.cpu.register.set_hl(0x1010)
+    gb.cpu.register.set_hl(0x8010)
 
     gb.cpu.register.A = 0x00
-    gb.memory.write_8bit(0x1010, 0x00)
+    gb.memory.write_8bit(0x8010, 0x00)
     gb.cpu.register.F = 0b00000000
     cycles = op.code_9e(gb)
     assert cycles == 8
-    assert_registers(gb, A=0x00, H=0x10, L=0x10, F=0b11000000)
+    assert_registers(gb, A=0x00, H=0x80, L=0x10, F=0b11000000)
     assert_memory(gb)
 
     gb.cpu.register.A = 0x02
-    gb.memory.write_8bit(0x1010, 0x00)
+    gb.memory.write_8bit(0x8010, 0x00)
     gb.cpu.register.F = 0b00010000
     cycles = op.code_9e(gb)
     assert cycles == 8
-    assert_registers(gb, A=0x01, H=0x10, L=0x10, F=0b01000000)
+    assert_registers(gb, A=0x01, H=0x80, L=0x10, F=0b01000000)
     assert_memory(gb)
 
     gb.cpu.register.A = 0x00
-    gb.memory.write_8bit(0x1010, 0x01)
+    gb.memory.write_8bit(0x8010, 0x01)
     gb.cpu.register.F = 0b00010000
     cycles = op.code_9e(gb)
     assert cycles == 8
-    assert_registers(gb, A=0xFE, H=0x10, L=0x10, F=0b01110000)
-    assert_memory(gb,{0x1010:0x01})
+    assert_registers(gb, A=0xFE, H=0x80, L=0x10, F=0b01110000)
+    assert_memory(gb,{0x8010:0x01})
 
     gb.cpu.register.A = 0x13
-    gb.memory.write_8bit(0x1010, 0x04)
+    gb.memory.write_8bit(0x8010, 0x04)
     gb.cpu.register.F = 0b00010000
     cycles = op.code_9e(gb)
     assert cycles == 8
-    assert_registers(gb, A=0x0E, H=0x10, L=0x10, F=0b01100000)
-    assert_memory(gb, {0x1010: 0x04})
+    assert_registers(gb, A=0x0E, H=0x80, L=0x10, F=0b01100000)
+    assert_memory(gb, {0x8010: 0x04})
 
 
 # noinspection PyShadowingNames
@@ -3472,19 +3474,19 @@ def test_code_a5(gb):
 # noinspection PyShadowingNames
 def test_code_a6(gb):
     """ AND (HL) - A=Logical AND A with (value at address HL) """
-    gb.cpu.register.set_hl(0x1010)
+    gb.cpu.register.set_hl(0x8010)
 
     gb.cpu.register.A = 0b10100011
-    gb.memory.write_8bit(0x1010,0b01000100)
+    gb.memory.write_8bit(0x8010,0b01000100)
     cycles = op.code_a6(gb)
     assert cycles == 8
-    assert_registers(gb, A=0b00000000, H=0x10, L=0x10, F=0b10100000)
+    assert_registers(gb, A=0b00000000, H=0x80, L=0x10, F=0b10100000)
 
     gb.cpu.register.A = 0b10100011
-    gb.memory.write_8bit(0x1010, 0b01100110)
+    gb.memory.write_8bit(0x8010, 0b01100110)
     cycles = op.code_a6(gb)
     assert cycles == 8
-    assert_registers(gb, A=0b00100010, H=0x10, L=0x10, F=0b00100000)
+    assert_registers(gb, A=0b00100010, H=0x80, L=0x10, F=0b00100000)
 
 
 # noinspection PyShadowingNames
@@ -3614,21 +3616,21 @@ def test_code_ad(gb):
 # noinspection PyShadowingNames
 def test_code_ae(gb):
     """ XOR (HL) - A=Logical XOR A with (value at address HL) """
-    gb.cpu.register.set_hl(0x1010)
+    gb.cpu.register.set_hl(0x8010)
 
     gb.cpu.register.A = 0b10100011
-    gb.memory.write_8bit(0x1010, 0b10100011)
+    gb.memory.write_8bit(0x8010, 0b10100011)
     cycles = op.code_ae(gb)
     assert cycles == 8
-    assert_registers(gb, A=0b00000000, H=0x10, L=0x10, F=0b10000000)
-    assert_memory(gb,{0x1010:0b10100011})
+    assert_registers(gb, A=0b00000000, H=0x80, L=0x10, F=0b10000000)
+    assert_memory(gb,{0x8010:0b10100011})
 
     gb.cpu.register.A = 0b10100011
-    gb.memory.write_8bit(0x1010, 0b01100110)
+    gb.memory.write_8bit(0x8010, 0b01100110)
     cycles = op.code_ae(gb)
     assert cycles == 8
-    assert_registers(gb, A=0b11000101, H=0x10, L=0x10, F=0b00000000)
-    assert_memory(gb, {0x1010: 0b01100110})
+    assert_registers(gb, A=0b11000101, H=0x80, L=0x10, F=0b00000000)
+    assert_memory(gb, {0x8010: 0b01100110})
 
 
 # noinspection PyShadowingNames
@@ -3758,21 +3760,21 @@ def test_code_b5(gb):
 # noinspection PyShadowingNames
 def test_code_b6(gb):
     """ OR (HL) - A=Logical OR A with (value at address HL) """
-    gb.cpu.register.set_hl(0x1010)
+    gb.cpu.register.set_hl(0x8010)
 
     gb.cpu.register.A = 0b00000000
-    gb.memory.write_8bit(0x1010,0b00000000)
+    gb.memory.write_8bit(0x8010,0b00000000)
     cycles = op.code_b6(gb)
     assert cycles == 8
-    assert_registers(gb, A=0b00000000, H=0x10, L=0x10, F=0b10000000)
+    assert_registers(gb, A=0b00000000, H=0x80, L=0x10, F=0b10000000)
     assert_memory(gb)
 
     gb.cpu.register.A = 0b10100011
-    gb.memory.write_8bit(0x1010,0b01100110)
+    gb.memory.write_8bit(0x8010,0b01100110)
     cycles = op.code_b6(gb)
     assert cycles == 8
-    assert_registers(gb, A=0b11100111, H=0x10, L=0x10, F=0b00000000)
-    assert_memory(gb,{0x1010:0b01100110})
+    assert_registers(gb, A=0b11100111, H=0x80, L=0x10, F=0b00000000)
+    assert_memory(gb,{0x8010:0b01100110})
 
 
 # noinspection PyShadowingNames
@@ -4046,49 +4048,49 @@ def test_code_bd(gb):
 # noinspection PyShadowingNames
 def test_code_be(gb):
     """ CP A,(HL) - same as SUB A,(HL) but throw the result away, only set flags """
-    gb.cpu.register.set_hl(0x1010)
+    gb.cpu.register.set_hl(0x8010)
 
     gb.cpu.register.A = 0x00
-    gb.memory.write_8bit(0x1010,0x00)
+    gb.memory.write_8bit(0x8010,0x00)
     cycles = op.code_be(gb)
     assert cycles == 8
-    assert_registers(gb, A=0x00, H=0x10, L=0x10, F=0b11000000)
+    assert_registers(gb, A=0x00, H=0x80, L=0x10, F=0b11000000)
     assert_memory(gb)
 
     gb.cpu.register.A = 0x00
-    gb.memory.write_8bit(0x1010, 0x01)
+    gb.memory.write_8bit(0x8010, 0x01)
     cycles = op.code_be(gb)
     assert cycles == 8
-    assert_registers(gb, A=0x00, H=0x10, L=0x10, F=0b01110000)
-    assert_memory(gb, {0x1010:0x01})
+    assert_registers(gb, A=0x00, H=0x80, L=0x10, F=0b01110000)
+    assert_memory(gb, {0x8010:0x01})
 
     gb.cpu.register.A = 0x0F
-    gb.memory.write_8bit(0x1010, 0x01)
+    gb.memory.write_8bit(0x8010, 0x01)
     cycles = op.code_be(gb)
     assert cycles == 8
-    assert_registers(gb, A=0x0F, H=0x10, L=0x10, F=0b01000000)
-    assert_memory(gb, {0x1010: 0x01})
+    assert_registers(gb, A=0x0F, H=0x80, L=0x10, F=0b01000000)
+    assert_memory(gb, {0x8010: 0x01})
 
     gb.cpu.register.A = 0xF0
-    gb.memory.write_8bit(0x1010, 0x10)
+    gb.memory.write_8bit(0x8010, 0x10)
     cycles = op.code_be(gb)
     assert cycles == 8
-    assert_registers(gb, A=0xF0, H=0x10, L=0x10, F=0b01000000)
-    assert_memory(gb, {0x1010: 0x10})
+    assert_registers(gb, A=0xF0, H=0x80, L=0x10, F=0b01000000)
+    assert_memory(gb, {0x8010: 0x10})
 
     gb.cpu.register.A = 0xFF
-    gb.memory.write_8bit(0x1010, 0x01)
+    gb.memory.write_8bit(0x8010, 0x01)
     cycles = op.code_be(gb)
     assert cycles == 8
-    assert_registers(gb, A=0xFF, H=0x10, L=0x10, F=0b01000000)
-    assert_memory(gb, {0x1010: 0x01})
+    assert_registers(gb, A=0xFF, H=0x80, L=0x10, F=0b01000000)
+    assert_memory(gb, {0x8010: 0x01})
 
     gb.cpu.register.A = 0xFF
-    gb.memory.write_8bit(0x1010, 0xFE)
+    gb.memory.write_8bit(0x8010, 0xFE)
     cycles = op.code_be(gb)
     assert cycles == 8
-    assert_registers(gb, A=0xFF, H=0x10, L=0x10, F=0b01000000)
-    assert_memory(gb, {0x1010: 0xFE})
+    assert_registers(gb, A=0xFF, H=0x80, L=0x10, F=0b01000000)
+    assert_memory(gb, {0x8010: 0xFE})
 
 
 # noinspection PyShadowingNames
@@ -4115,24 +4117,24 @@ def test_code_bf(gb):
 # noinspection PyShadowingNames
 def test_code_c0(gb):
     """ RET NZ - Return if flag Z is reset """
-    gb.memory.write_8bit(0x1010, 0x50)
-    gb.memory.write_8bit(0x1011, 0x40)
+    gb.memory.write_8bit(0x8010, 0x50)
+    gb.memory.write_8bit(0x8011, 0x40)
 
-    gb.cpu.register.SP = 0x1010
+    gb.cpu.register.SP = 0x8010
     gb.cpu.register.PC = 0x0000
     gb.cpu.register.F = 0b00000000
     cycles = op.code_c0(gb)
     assert cycles == 20
-    assert_registers(gb, SP=0x1012, PC=0x4050)
+    assert_registers(gb, SP=0x8012, PC=0x4050)
 
-    gb.cpu.register.SP = 0x1010
+    gb.cpu.register.SP = 0x8010
     gb.cpu.register.PC = 0x0000
     gb.cpu.register.F = 0b10000000
     cycles = op.code_c0(gb)
     assert cycles == 8
-    assert_registers(gb, SP=0x1010, PC=0x0000, F=0b10000000)
+    assert_registers(gb, SP=0x8010, PC=0x0000, F=0b10000000)
 
-    assert_memory(gb,{0x1010:0x50, 0x1011:0x40})
+    assert_memory(gb,{0x8010:0x50, 0x8011:0x40})
 
 
 # noinspection PyShadowingNames
@@ -4261,49 +4263,49 @@ def test_code_c6(gb):
 def test_code_c7(gb):
     """ RST 00H - Push present address onto stack, jump to address $0000 + 00H """
     gb.cpu.register.PC = 0x2233
-    gb.cpu.register.SP = 0x1010
+    gb.cpu.register.SP = 0x8010
     cycles = op.code_c7(gb)
     assert cycles == 16
-    assert_registers(gb, PC=0x0000, SP=0x100E)
-    assert_memory(gb,{0x100F:0x22, 0x100E:0x33})
+    assert_registers(gb, PC=0x0000, SP=0x800E)
+    assert_memory(gb,{0x800F:0x22, 0x800E:0x33})
 
 
 # noinspection PyShadowingNames
 def test_code_c8(gb):
     """ RET Z - Return if flag Z is set """
-    gb.memory.write_8bit(0x1010, 0x50)
-    gb.memory.write_8bit(0x1011, 0x40)
+    gb.memory.write_8bit(0x8010, 0x50)
+    gb.memory.write_8bit(0x8011, 0x40)
 
-    gb.cpu.register.SP = 0x1010
+    gb.cpu.register.SP = 0x8010
     gb.cpu.register.PC = 0x0000
     gb.cpu.register.F = 0b10000000
     cycles = op.code_c8(gb)
     assert cycles == 20
-    assert_registers(gb, SP=0x1012, PC=0x4050, F=0b10000000)
+    assert_registers(gb, SP=0x8012, PC=0x4050, F=0b10000000)
 
-    gb.cpu.register.SP = 0x1010
+    gb.cpu.register.SP = 0x8010
     gb.cpu.register.PC = 0x0000
     gb.cpu.register.F = 0b00000000
     cycles = op.code_c8(gb)
     assert cycles == 8
-    assert_registers(gb, SP=0x1010, PC=0x0000)
+    assert_registers(gb, SP=0x8010, PC=0x0000)
 
-    assert_memory(gb, {0x1010: 0x50, 0x1011: 0x40})
+    assert_memory(gb, {0x8010: 0x50, 0x8011: 0x40})
 
 
 # noinspection PyShadowingNames
 def test_code_c9(gb):
     """ RET - Pop two bytes from stack and jump to that address """
-    gb.memory.write_8bit(0x1010, 0x50)
-    gb.memory.write_8bit(0x1011, 0x40)
+    gb.memory.write_8bit(0x8010, 0x50)
+    gb.memory.write_8bit(0x8011, 0x40)
 
-    gb.cpu.register.SP = 0x1010
+    gb.cpu.register.SP = 0x8010
     gb.cpu.register.PC = 0x0000
     cycles = op.code_c9(gb)
     assert cycles == 16
-    assert_registers(gb, SP=0x1012, PC=0x4050)
+    assert_registers(gb, SP=0x8012, PC=0x4050)
 
-    assert_memory(gb, {0x1010: 0x50, 0x1011: 0x40})
+    assert_memory(gb, {0x8010: 0x50, 0x8011: 0x40})
 
 
 # noinspection PyShadowingNames
@@ -4332,7 +4334,7 @@ def test_code_cb(gb):
     gb.cpu.register.B = 0b00000001
     cycles = op.code_cb(gb)
     assert cycles == 12  # 4 from CB + 8 from CB_40
-    assert_registers(gb,B=0b00000001,F=0b10100000,PC=0x0001)
+    assert_registers(gb,B=0b00000001,F=0b00100000,PC=0x0001)
     assert_memory(gb)
 
 
@@ -4437,34 +4439,34 @@ def test_code_ce(gb):
 def test_code_cf(gb):
     """ RST 08H - Push present address onto stack, jump to address $0000 + 08H """
     gb.cpu.register.PC = 0x2233
-    gb.cpu.register.SP = 0x1010
+    gb.cpu.register.SP = 0x8010
     cycles = op.code_cf(gb)
     assert cycles == 16
-    assert_registers(gb, PC=0x0008, SP=0x100E)
-    assert_memory(gb, {0x100F: 0x22, 0x100E: 0x33})
+    assert_registers(gb, PC=0x0008, SP=0x800E)
+    assert_memory(gb, {0x800F: 0x22, 0x800E: 0x33})
 
 
 # noinspection PyShadowingNames
 def test_code_d0(gb):
     """ RET NC - Return if flag C is reset """
-    gb.memory.write_8bit(0x1010, 0x50)
-    gb.memory.write_8bit(0x1011, 0x40)
+    gb.memory.write_8bit(0x8010, 0x50)
+    gb.memory.write_8bit(0x8011, 0x40)
 
-    gb.cpu.register.SP = 0x1010
+    gb.cpu.register.SP = 0x8010
     gb.cpu.register.PC = 0x0000
     gb.cpu.register.F = 0b00000000
     cycles = op.code_d0(gb)
     assert cycles == 20
-    assert_registers(gb, SP=0x1012, PC=0x4050)
+    assert_registers(gb, SP=0x8012, PC=0x4050)
 
-    gb.cpu.register.SP = 0x1010
+    gb.cpu.register.SP = 0x8010
     gb.cpu.register.PC = 0x0000
     gb.cpu.register.F = 0b00010000
     cycles = op.code_d0(gb)
     assert cycles == 8
-    assert_registers(gb, SP=0x1010, PC=0x0000, F=0b00010000)
+    assert_registers(gb, SP=0x8010, PC=0x0000, F=0b00010000)
 
-    assert_memory(gb, {0x1010: 0x50, 0x1011: 0x40})
+    assert_memory(gb, {0x8010: 0x50, 0x8011: 0x40})
 
 
 # noinspection PyShadowingNames
@@ -4585,49 +4587,49 @@ def test_code_d6(gb):
 def test_code_d7(gb):
     """ RST 10H - Push present address onto stack, jump to address $0000 + 10H """
     gb.cpu.register.PC = 0x2233
-    gb.cpu.register.SP = 0x1010
+    gb.cpu.register.SP = 0x8010
     cycles = op.code_d7(gb)
     assert cycles == 16
-    assert_registers(gb, PC=0x0010, SP=0x100E)
-    assert_memory(gb, {0x100F: 0x22, 0x100E: 0x33})
+    assert_registers(gb, PC=0x0010, SP=0x800E)
+    assert_memory(gb, {0x800F: 0x22, 0x800E: 0x33})
 
 
 # noinspection PyShadowingNames
 def test_code_d8(gb):
     """ RET C - Return if flag C is set """
-    gb.memory.write_8bit(0x1010, 0x50)
-    gb.memory.write_8bit(0x1011, 0x40)
+    gb.memory.write_8bit(0x8010, 0x50)
+    gb.memory.write_8bit(0x8011, 0x40)
 
-    gb.cpu.register.SP = 0x1010
+    gb.cpu.register.SP = 0x8010
     gb.cpu.register.PC = 0x0000
     gb.cpu.register.F = 0b00010000
     cycles = op.code_d8(gb)
     assert cycles == 20
-    assert_registers(gb, SP=0x1012, PC=0x4050, F=0b00010000)
+    assert_registers(gb, SP=0x8012, PC=0x4050, F=0b00010000)
 
-    gb.cpu.register.SP = 0x1010
+    gb.cpu.register.SP = 0x8010
     gb.cpu.register.PC = 0x0000
     gb.cpu.register.F = 0b00000000
     cycles = op.code_d8(gb)
     assert cycles == 8
-    assert_registers(gb, SP=0x1010, PC=0x0000)
+    assert_registers(gb, SP=0x8010, PC=0x0000)
 
-    assert_memory(gb, {0x1010: 0x50, 0x1011: 0x40})
+    assert_memory(gb, {0x8010: 0x50, 0x8011: 0x40})
 
 
 # noinspection PyShadowingNames
 def test_code_d9(gb):
     """ RETI - Pop two bytes from stack and jump to that address then enable interrupts """
-    gb.memory.write_8bit(0x1010, 0x50)
-    gb.memory.write_8bit(0x1011, 0x40)
+    gb.memory.write_8bit(0x8010, 0x50)
+    gb.memory.write_8bit(0x8011, 0x40)
 
-    gb.cpu.register.SP = 0x1010
+    gb.cpu.register.SP = 0x8010
     gb.cpu.register.PC = 0x0000
     cycles = op.code_d9(gb)
     assert cycles == 16
-    assert_registers(gb, SP=0x1012, PC=0x4050)
+    assert_registers(gb, SP=0x8012, PC=0x4050)
 
-    assert_memory(gb, {0x1010: 0x50, 0x1011: 0x40})
+    assert_memory(gb, {0x8010: 0x50, 0x8011: 0x40})
     # Since interrupt enable will be done during "interrupt update" step, it cannot be tested here
 
 
@@ -4721,11 +4723,11 @@ def test_code_de(gb):
 def test_code_df(gb):
     """ RST 18H - Push present address onto stack, jump to address $0000 + 18H """
     gb.cpu.register.PC = 0x2233
-    gb.cpu.register.SP = 0x1010
+    gb.cpu.register.SP = 0x8010
     cycles = op.code_df(gb)
     assert cycles == 16
-    assert_registers(gb, PC=0x0018, SP=0x100E)
-    assert_memory(gb, {0x100F: 0x22, 0x100E: 0x33})
+    assert_registers(gb, PC=0x0018, SP=0x800E)
+    assert_memory(gb, {0x800F: 0x22, 0x800E: 0x33})
 
 
 # noinspection PyShadowingNames
@@ -4783,17 +4785,10 @@ def test_code_e6(gb):
     """ AND d8 - A=Logical AND A with d8 """
     gb.cpu.register.A = 0b10100011
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = 0b01000100.to_bytes(1,byteorder="big")
+    gb.memory.cartridge = create_fake_cartridge("{:02X}".format(0b01000100))
     cycles = op.code_e6(gb)
     assert cycles == 8
     assert_registers(gb, A=0b00000000, F=0b10100000, PC=0x0001)
-
-    gb.cpu.register.A = 0b10100011
-    gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = 0b01100110.to_bytes(1, byteorder="big")
-    cycles = op.code_e6(gb)
-    assert cycles == 8
-    assert_registers(gb, A=0b00100010, F=0b00100000, PC=0x0001)
 
     assert_memory(gb)
 
@@ -4802,11 +4797,11 @@ def test_code_e6(gb):
 def test_code_e7(gb):
     """ RST 20H - Push present address onto stack, jump to address $0000 + 20H """
     gb.cpu.register.PC = 0x2233
-    gb.cpu.register.SP = 0x1010
+    gb.cpu.register.SP = 0x8010
     cycles = op.code_e7(gb)
     assert cycles == 16
-    assert_registers(gb, PC=0x0020, SP=0x100E)
-    assert_memory(gb, {0x100F: 0x22, 0x100E: 0x33})
+    assert_registers(gb, PC=0x0020, SP=0x800E)
+    assert_memory(gb, {0x800F: 0x22, 0x800E: 0x33})
 
 
 # noinspection PyShadowingNames
@@ -4846,24 +4841,24 @@ def test_code_e8(gb):
 # noinspection PyShadowingNames
 def test_code_e9(gb):
     """ JP (HL) - Jump to address contained in HL """
-    gb.cpu.register.set_hl(0x1010)
-    gb.memory.write_16bit(0x1010,0x5566)
+    gb.cpu.register.set_hl(0x8010)
+    gb.memory.write_16bit(0x8010,0x5566)
     cycles = op.code_e9(gb)
     assert cycles == 4
-    assert_registers(gb,H=0x10,L=0x10,PC=0x5566)
-    assert_memory(gb,{0x1010:0x66,0x1011:0x55})
+    assert_registers(gb,H=0x80,L=0x10,PC=0x5566)
+    assert_memory(gb,{0x8010:0x66,0x8011:0x55})
 
 
 # noinspection PyShadowingNames
 def test_code_ea(gb):
     """ LD (a16),A - Stores reg at the address in a16 (least significant byte first) """
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.memory.cartridge = create_fake_cartridge("11 10")
+    gb.memory.cartridge = create_fake_cartridge("11 80")
     gb.cpu.register.A = 0x99
     cycles = op.code_ea(gb)
     assert cycles == 16
     assert_registers(gb, A=0x99, PC=0x0002)
-    assert_memory(gb,{0x1011:0x99})
+    assert_memory(gb,{0x8011:0x99})
 
 
 # OPCODE EB is unused
@@ -4880,14 +4875,14 @@ def test_code_ee(gb):
     """ XOR d8 - A=Logical XOR A with d8 """
     gb.cpu.register.A = 0b10100011
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = 0b10100011.to_bytes(1, byteorder="big")
+    gb.memory.cartridge = 0b10100011.to_bytes(1, byteorder="big")
     cycles = op.code_ee(gb)
     assert cycles == 8
     assert_registers(gb, A=0b00000000, F=0b10000000, PC=0x0001)
 
     gb.cpu.register.A = 0b10100011
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = 0b01100110.to_bytes(1, byteorder="big")
+    gb.memory.cartridge = 0b01100110.to_bytes(1, byteorder="big")
     cycles = op.code_ee(gb)
     assert cycles == 8
     assert_registers(gb, A=0b11000101, F=0b00000000, PC=0x0001)
@@ -4897,11 +4892,11 @@ def test_code_ee(gb):
 def test_code_ef(gb):
     """ RST 28H - Push present address onto stack, jump to address $0000 + 28H """
     gb.cpu.register.PC = 0x2233
-    gb.cpu.register.SP = 0x1010
+    gb.cpu.register.SP = 0x8010
     cycles = op.code_ef(gb)
     assert cycles == 16
-    assert_registers(gb, PC=0x0028, SP=0x100E)
-    assert_memory(gb, {0x100F: 0x22, 0x100E: 0x33})
+    assert_registers(gb, PC=0x0028, SP=0x800E)
+    assert_memory(gb, {0x800F: 0x22, 0x800E: 0x33})
 
 
 # noinspection PyShadowingNames
@@ -4966,14 +4961,14 @@ def test_code_f6(gb):
     """ OR d8 - A=Logical OR A with d8 """
     gb.cpu.register.A = 0b00000000
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = 0b00000000.to_bytes(1, byteorder="big")
+    gb.memory.cartridge = 0b00000000.to_bytes(1, byteorder="big")
     cycles = op.code_f6(gb)
     assert cycles == 8
     assert_registers(gb, A=0b00000000, F=0b10000000, PC=0x0001)
 
     gb.cpu.register.A = 0b10100011
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = 0b01100110.to_bytes(1, byteorder="big")
+    gb.memory.cartridge = 0b01100110.to_bytes(1, byteorder="big")
     cycles = op.code_f6(gb)
     assert cycles == 8
     assert_registers(gb, A=0b11100111, F=0b00000000, PC=0x0001)
@@ -4983,11 +4978,11 @@ def test_code_f6(gb):
 def test_code_f7(gb):
     """ RST 30H - Push present address onto stack, jump to address $0000 + 30H """
     gb.cpu.register.PC = 0x2233
-    gb.cpu.register.SP = 0x1010
+    gb.cpu.register.SP = 0x8010
     cycles = op.code_f7(gb)
     assert cycles == 16
-    assert_registers(gb, PC=0x0030, SP=0x100E)
-    assert_memory(gb, {0x100F: 0x22, 0x100E: 0x33})
+    assert_registers(gb, PC=0x0030, SP=0x800E)
+    assert_memory(gb, {0x800F: 0x22, 0x800E: 0x33})
 
 
 # noinspection PyShadowingNames
@@ -5037,12 +5032,12 @@ def test_code_f9(gb):
 def test_code_fa(gb):
     """ LD A,(a16) - Load reg with the value at the address in a16 (least significant byte first) """
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.memory.cartridge = create_fake_cartridge("11 10")
-    gb.memory.write_8bit(0x1011,0x55)
+    gb.memory.cartridge = create_fake_cartridge("11 80")
+    gb.memory.write_8bit(0x8011,0x55)
     cycles = op.code_fa(gb)
     assert cycles == 16
     assert_registers(gb,A=0x55,PC=0x0002)
-    assert_memory(gb,{0x1011:0x55})
+    assert_memory(gb,{0x8011:0x55})
 
 
 # noinspection PyShadowingNames
@@ -5113,11 +5108,11 @@ def test_code_fe(gb):
 def test_code_ff(gb):
     """ RST 38H - Push present address onto stack, jump to address $0000 + 38H """
     gb.cpu.register.PC = 0x2233
-    gb.cpu.register.SP = 0x1010
+    gb.cpu.register.SP = 0x8010
     cycles = op.code_ff(gb)
     assert cycles == 16
-    assert_registers(gb, PC=0x0038, SP=0x100E)
-    assert_memory(gb, {0x100F: 0x22, 0x100E: 0x33})
+    assert_registers(gb, PC=0x0038, SP=0x800E)
+    assert_memory(gb, {0x800F: 0x22, 0x800E: 0x33})
 
 
 """ CB-Prefix operations """
@@ -5222,18 +5217,18 @@ def test_code_cb_05(gb):
 # noinspection PyShadowingNames
 def test_code_cb_06(gb):
     """ RLC (HL) - Copy (value at address HL) bit 7 to Carry flag, then rotate (value at address HL) left """
-    gb.cpu.register.set_hl(0x1010)
-    gb.memory.write_8bit(0x1010,0b11100010)
+    gb.cpu.register.set_hl(0x8010)
+    gb.memory.write_8bit(0x8010,0b11100010)
     cycles = op.code_cb_06(gb)
     assert cycles == 16
-    assert_registers(gb, H=0x10, L=0x10, F=0b00010000)
-    assert_memory(gb,{0x1010:0b11000101})
+    assert_registers(gb, H=0x80, L=0x10, F=0b00010000)
+    assert_memory(gb,{0x8010:0b11000101})
 
-    gb.cpu.register.set_hl(0x1010)
-    gb.memory.write_8bit(0x1010, 0b00000000)
+    gb.cpu.register.set_hl(0x8010)
+    gb.memory.write_8bit(0x8010, 0b00000000)
     cycles = op.code_cb_06(gb)
     assert cycles == 16
-    assert_registers(gb, H=0x10, L=0x10, F=0b10000000)
+    assert_registers(gb, H=0x80, L=0x10, F=0b10000000)
     assert_memory(gb)
 
 
@@ -5352,17 +5347,17 @@ def test_code_cb_0d(gb):
 # noinspection PyShadowingNames
 def test_code_cb_0e(gb):
     """ RRC (HL) - Copy bit 0 to Carry flag, then rotate right """
-    gb.cpu.register.set_hl(0x1010)
-    gb.memory.write_8bit(0x1010,0b11100011)
+    gb.cpu.register.set_hl(0x8010)
+    gb.memory.write_8bit(0x8010,0b11100011)
     cycles = op.code_cb_0e(gb)
     assert cycles == 16
-    assert_registers(gb, H=0x10, L=0x10, F=0b00010000)
-    assert_memory(gb,{0x1010:0b11110001})
+    assert_registers(gb, H=0x80, L=0x10, F=0b00010000)
+    assert_memory(gb,{0x8010:0b11110001})
 
-    gb.memory.write_8bit(0x1010, 0b00000000)
+    gb.memory.write_8bit(0x8010, 0b00000000)
     cycles = op.code_cb_0e(gb)
     assert cycles == 16
-    assert_registers(gb, H=0x10, L=0x10, F=0b10000000)
+    assert_registers(gb, H=0x80, L=0x10, F=0b10000000)
     assert_memory(gb)
 
 
@@ -5492,20 +5487,20 @@ def test_code_cb_15(gb):
 # noinspection PyShadowingNames
 def test_code_cb_16(gb):
     """ RL (HL) - Copy bit 7 to temp, replace bit 7 w/ Carry flag, rotate left, copy temp to Carry flag """
-    gb.cpu.register.set_hl(0x1010)
-    gb.memory.write_8bit(0x1010, 0b11100010)
+    gb.cpu.register.set_hl(0x8010)
+    gb.memory.write_8bit(0x8010, 0b11100010)
     gb.cpu.register.F = 0b00010000
     cycles = op.code_cb_16(gb)
     assert cycles == 16
-    assert_registers(gb, H=0x10, L=0x10, F=0b00010000)
-    assert_memory(gb,{0x1010:0b11000101})
+    assert_registers(gb, H=0x80, L=0x10, F=0b00010000)
+    assert_memory(gb,{0x8010:0b11000101})
 
-    gb.memory.write_8bit(0x1010, 0b00000000)
+    gb.memory.write_8bit(0x8010, 0b00000000)
     gb.cpu.register.F = 0b00010000
     cycles = op.code_cb_16(gb)
     assert cycles == 16
-    assert_registers(gb, H=0x10, L=0x10, F=0b00000000)
-    assert_memory(gb, {0x1010: 0b00000001})
+    assert_registers(gb, H=0x80, L=0x10, F=0b00000000)
+    assert_memory(gb, {0x8010: 0b00000001})
 
 
 # noinspection PyShadowingNames
@@ -5637,20 +5632,20 @@ def test_code_cb_1d(gb):
 # noinspection PyShadowingNames
 def test_code_cb_1e(gb):
     """ RR (HL) - Copy (HL) bit 0 to temp, replace bit 0 w/ Carry flag, rotate right, copy temp to Carry flag """
-    gb.cpu.register.set_hl(0x1010)
-    gb.memory.write_8bit(0x1010, 0b11100011)
+    gb.cpu.register.set_hl(0x8010)
+    gb.memory.write_8bit(0x8010, 0b11100011)
     gb.cpu.register.F = 0b00010000
     cycles = op.code_cb_1e(gb)
     assert cycles == 16
-    assert_registers(gb, H=0x10, L=0x10, F=0b00010000)
-    assert_memory(gb,{0x1010:0b11110001})
+    assert_registers(gb, H=0x80, L=0x10, F=0b00010000)
+    assert_memory(gb,{0x8010:0b11110001})
 
-    gb.memory.write_8bit(0x1010, 0b00000000)
+    gb.memory.write_8bit(0x8010, 0b00000000)
     gb.cpu.register.F = 0b00010000
     cycles = op.code_cb_1e(gb)
     assert cycles == 16
-    assert_registers(gb, H=0x10, L=0x10, F=0b00000000)
-    assert_memory(gb, {0x1010: 0b10000000})
+    assert_registers(gb, H=0x80, L=0x10, F=0b00000000)
+    assert_memory(gb, {0x8010: 0b10000000})
 
 
 # noinspection PyShadowingNames
@@ -5770,17 +5765,17 @@ def test_code_cb_25(gb):
 # noinspection PyShadowingNames
 def test_code_cb_26(gb):
     """ SLA (HL) - Copy (HL) bit 7 to temp, replace bit 7 w/ zero, rotate left, copy temp to Carry flag """
-    gb.cpu.register.set_hl(0x1010)
-    gb.memory.write_8bit(0x1010, 0b11100010)
+    gb.cpu.register.set_hl(0x8010)
+    gb.memory.write_8bit(0x8010, 0b11100010)
     cycles = op.code_cb_26(gb)
     assert cycles == 16
-    assert_registers(gb, H=0x10, L=0x10, F=0b00010000)
-    assert_memory(gb,{0x1010:0b11000100})
+    assert_registers(gb, H=0x80, L=0x10, F=0b00010000)
+    assert_memory(gb,{0x8010:0b11000100})
 
-    gb.memory.write_8bit(0x1010, 0b00000000)
+    gb.memory.write_8bit(0x8010, 0b00000000)
     cycles = op.code_cb_26(gb)
     assert cycles == 16
-    assert_registers(gb, H=0x10, L=0x10, F=0b10000000)
+    assert_registers(gb, H=0x80, L=0x10, F=0b10000000)
     assert_memory(gb)
 
 
@@ -5905,18 +5900,18 @@ def test_code_cb_2d(gb):
 # noinspection PyShadowingNames
 def test_code_cb_2e(gb):
     """ SRA (HL) - Copy bit 7 to temp, copy bit 0 to Carry flag, shift right, replace new bit 7 with temp """
-    gb.cpu.register.set_hl(0x1010)
-    gb.memory.write_8bit(0x1010, 0b10000001)
+    gb.cpu.register.set_hl(0x8010)
+    gb.memory.write_8bit(0x8010, 0b10000001)
     cycles = op.code_cb_2e(gb)
     assert cycles == 16
-    assert_registers(gb, H=0x10, L=0x10, F=0b00010000)
-    assert_memory(gb, {0x1010: 0b11000000})
+    assert_registers(gb, H=0x80, L=0x10, F=0b00010000)
+    assert_memory(gb, {0x8010: 0b11000000})
 
-    gb.memory.write_8bit(0x1010, 0b00000001)
+    gb.memory.write_8bit(0x8010, 0b00000001)
     gb.cpu.register.F = 0b00000000
     cycles = op.code_cb_2e(gb)
     assert cycles == 16
-    assert_registers(gb, H=0x10, L=0x10, F=0b10010000)
+    assert_registers(gb, H=0x80, L=0x10, F=0b10010000)
     assert_memory(gb)
 
 
@@ -6066,24 +6061,24 @@ def test_code_cb_35(gb):
 # noinspection PyShadowingNames
 def test_code_cb_36(gb):
     """ SWAP (HL) - Swap upper and lower nibbles (nibble = 4 bits) """
-    gb.cpu.register.set_hl(0x1010)
-    gb.memory.write_8bit(0x1010, 0xAB)
+    gb.cpu.register.set_hl(0x8010)
+    gb.memory.write_8bit(0x8010, 0xAB)
     cycles = op.code_cb_36(gb)
     assert cycles == 16
-    assert_registers(gb, H=0x10, L=0x10, F=0b00000000)
-    assert_memory(gb,{0x1010:0xBA})
+    assert_registers(gb, H=0x80, L=0x10, F=0b00000000)
+    assert_memory(gb,{0x8010:0xBA})
 
-    gb.memory.write_8bit(0x1010, 0x00)
+    gb.memory.write_8bit(0x8010, 0x00)
     cycles = op.code_cb_36(gb)
     assert cycles == 16
-    assert_registers(gb, H=0x10, L=0x10, F=0b10000000)
+    assert_registers(gb, H=0x80, L=0x10, F=0b10000000)
     assert_memory(gb)
 
-    gb.memory.write_8bit(0x1010, 0xF0)
+    gb.memory.write_8bit(0x8010, 0xF0)
     cycles = op.code_cb_36(gb)
     assert cycles == 16
-    assert_registers(gb, H=0x10, L=0x10, F=0b00000000)
-    assert_memory(gb, {0x1010: 0x0F})
+    assert_registers(gb, H=0x80, L=0x10, F=0b00000000)
+    assert_memory(gb, {0x8010: 0x0F})
 
 
 # noinspection PyShadowingNames
@@ -6212,18 +6207,18 @@ def test_code_cb_3d(gb):
 # noinspection PyShadowingNames
 def test_code_cb_3e(gb):
     """ SRL (HL) - Copy bit 7 to temp, copy bit 0 to Carry flag, shift right, replace new bit 7 with temp """
-    gb.cpu.register.set_hl(0x1010)
-    gb.memory.write_8bit(0x1010, 0b10000001)
+    gb.cpu.register.set_hl(0x8010)
+    gb.memory.write_8bit(0x8010, 0b10000001)
     cycles = op.code_cb_3e(gb)
     assert cycles == 16
-    assert_registers(gb, H=0x10, L=0x10, F=0b00010000)
-    assert_memory(gb, {0x1010: 0b01000000})
+    assert_registers(gb, H=0x80, L=0x10, F=0b00010000)
+    assert_memory(gb, {0x8010: 0b01000000})
 
-    gb.memory.write_8bit(0x1010, 0b00000001)
+    gb.memory.write_8bit(0x8010, 0b00000001)
     gb.cpu.register.F = 0b00000000
     cycles = op.code_cb_3e(gb)
     assert cycles == 16
-    assert_registers(gb, H=0x10, L=0x10, F=0b10010000)
+    assert_registers(gb, H=0x80, L=0x10, F=0b10010000)
     assert_memory(gb)
 
 
@@ -6250,12 +6245,12 @@ def test_code_cb_40(gb):
     gb.cpu.register.B = 0b00000001
     cycles = op.code_cb_40(gb)
     assert cycles == 8
-    assert_registers(gb, B=0b00000001, F=0b10100000)
+    assert_registers(gb, B=0b00000001, F=0b00100000)
 
     gb.cpu.register.B = 0b11111110
     cycles = op.code_cb_40(gb)
     assert cycles == 8
-    assert_registers(gb, B=0b11111110, F=0b00100000)
+    assert_registers(gb, B=0b11111110, F=0b10100000)
 
     assert_memory(gb)
 
@@ -6266,12 +6261,12 @@ def test_code_cb_41(gb):
     gb.cpu.register.C = 0b00000001
     cycles = op.code_cb_41(gb)
     assert cycles == 8
-    assert_registers(gb, C=0b00000001, F=0b10100000)
+    assert_registers(gb, C=0b00000001, F=0b00100000)
 
     gb.cpu.register.C = 0b11111110
     cycles = op.code_cb_41(gb)
     assert cycles == 8
-    assert_registers(gb, C=0b11111110, F=0b00100000)
+    assert_registers(gb, C=0b11111110, F=0b10100000)
 
     assert_memory(gb)
 
@@ -6282,12 +6277,12 @@ def test_code_cb_42(gb):
     gb.cpu.register.D = 0b00000001
     cycles = op.code_cb_42(gb)
     assert cycles == 8
-    assert_registers(gb, D=0b00000001, F=0b10100000)
+    assert_registers(gb, D=0b00000001, F=0b00100000)
 
     gb.cpu.register.D = 0b11111110
     cycles = op.code_cb_42(gb)
     assert cycles == 8
-    assert_registers(gb, D=0b11111110, F=0b00100000)
+    assert_registers(gb, D=0b11111110, F=0b10100000)
 
     assert_memory(gb)
 
@@ -6298,12 +6293,12 @@ def test_code_cb_43(gb):
     gb.cpu.register.E = 0b00000001
     cycles = op.code_cb_43(gb)
     assert cycles == 8
-    assert_registers(gb, E=0b00000001, F=0b10100000)
+    assert_registers(gb, E=0b00000001, F=0b00100000)
 
     gb.cpu.register.E = 0b11111110
     cycles = op.code_cb_43(gb)
     assert cycles == 8
-    assert_registers(gb, E=0b11111110, F=0b00100000)
+    assert_registers(gb, E=0b11111110, F=0b10100000)
 
     assert_memory(gb)
 
@@ -6314,12 +6309,12 @@ def test_code_cb_44(gb):
     gb.cpu.register.H = 0b00000001
     cycles = op.code_cb_44(gb)
     assert cycles == 8
-    assert_registers(gb, H=0b00000001, F=0b10100000)
+    assert_registers(gb, H=0b00000001, F=0b00100000)
 
     gb.cpu.register.H = 0b11111110
     cycles = op.code_cb_44(gb)
     assert cycles == 8
-    assert_registers(gb, H=0b11111110, F=0b00100000)
+    assert_registers(gb, H=0b11111110, F=0b10100000)
 
     assert_memory(gb)
 
@@ -6330,12 +6325,12 @@ def test_code_cb_45(gb):
     gb.cpu.register.L = 0b00000001
     cycles = op.code_cb_45(gb)
     assert cycles == 8
-    assert_registers(gb, L=0b00000001, F=0b10100000)
+    assert_registers(gb, L=0b00000001, F=0b00100000)
 
     gb.cpu.register.L = 0b11111110
     cycles = op.code_cb_45(gb)
     assert cycles == 8
-    assert_registers(gb, L=0b11111110, F=0b00100000)
+    assert_registers(gb, L=0b11111110, F=0b10100000)
 
     assert_memory(gb)
 
@@ -6343,18 +6338,18 @@ def test_code_cb_45(gb):
 # noinspection PyShadowingNames
 def test_code_cb_46(gb):
     """ BIT 0,(HL) - Test what is the value of bit 0 """
-    gb.cpu.register.set_hl(0x1010)
-    gb.memory.write_8bit(0x1010, 0b00000001)
+    gb.cpu.register.set_hl(0x8010)
+    gb.memory.write_8bit(0x8010, 0b00000001)
     cycles = op.code_cb_46(gb)
     assert cycles == 16
-    assert_registers(gb, H=0x10, L=0x10, F=0b10100000)
-    assert_memory(gb,{0x1010:0b00000001})
+    assert_registers(gb, H=0x80, L=0x10, F=0b00100000)
+    assert_memory(gb,{0x8010:0b00000001})
 
-    gb.memory.write_8bit(0x1010, 0b11111110)
+    gb.memory.write_8bit(0x8010, 0b11111110)
     cycles = op.code_cb_46(gb)
     assert cycles == 16
-    assert_registers(gb, H=0x10, L=0x10, F=0b00100000)
-    assert_memory(gb, {0x1010: 0b11111110})
+    assert_registers(gb, H=0x80, L=0x10, F=0b10100000)
+    assert_memory(gb, {0x8010: 0b11111110})
 
 
 # noinspection PyShadowingNames
@@ -6363,12 +6358,12 @@ def test_code_cb_47(gb):
     gb.cpu.register.A = 0b00000001
     cycles = op.code_cb_47(gb)
     assert cycles == 8
-    assert_registers(gb, A=0b00000001, F=0b10100000)
+    assert_registers(gb, A=0b00000001, F=0b00100000)
 
     gb.cpu.register.A = 0b11111110
     cycles = op.code_cb_47(gb)
     assert cycles == 8
-    assert_registers(gb, A=0b11111110, F=0b00100000)
+    assert_registers(gb, A=0b11111110, F=0b10100000)
 
     assert_memory(gb)
 
@@ -6379,12 +6374,12 @@ def test_code_cb_48(gb):
     gb.cpu.register.B = 0b00000010
     cycles = op.code_cb_48(gb)
     assert cycles == 8
-    assert_registers(gb, B=0b00000010, F=0b10100000)
+    assert_registers(gb, B=0b00000010, F=0b00100000)
 
     gb.cpu.register.B = 0b11111101
     cycles = op.code_cb_48(gb)
     assert cycles == 8
-    assert_registers(gb, B=0b11111101, F=0b00100000)
+    assert_registers(gb, B=0b11111101, F=0b10100000)
 
     assert_memory(gb)
 
@@ -6395,12 +6390,12 @@ def test_code_cb_49(gb):
     gb.cpu.register.C = 0b00000010
     cycles = op.code_cb_49(gb)
     assert cycles == 8
-    assert_registers(gb, C=0b00000010, F=0b10100000)
+    assert_registers(gb, C=0b00000010, F=0b00100000)
 
     gb.cpu.register.C = 0b11111101
     cycles = op.code_cb_49(gb)
     assert cycles == 8
-    assert_registers(gb, C=0b11111101, F=0b00100000)
+    assert_registers(gb, C=0b11111101, F=0b10100000)
 
     assert_memory(gb)
 
@@ -6411,12 +6406,12 @@ def test_code_cb_4a(gb):
     gb.cpu.register.D = 0b00000010
     cycles = op.code_cb_4a(gb)
     assert cycles == 8
-    assert_registers(gb, D=0b00000010, F=0b10100000)
+    assert_registers(gb, D=0b00000010, F=0b00100000)
 
     gb.cpu.register.D = 0b11111101
     cycles = op.code_cb_4a(gb)
     assert cycles == 8
-    assert_registers(gb, D=0b11111101, F=0b00100000)
+    assert_registers(gb, D=0b11111101, F=0b10100000)
 
     assert_memory(gb)
 
@@ -6427,12 +6422,12 @@ def test_code_cb_4b(gb):
     gb.cpu.register.E = 0b00000010
     cycles = op.code_cb_4b(gb)
     assert cycles == 8
-    assert_registers(gb, E=0b00000010, F=0b10100000)
+    assert_registers(gb, E=0b00000010, F=0b00100000)
 
     gb.cpu.register.E = 0b11111101
     cycles = op.code_cb_4b(gb)
     assert cycles == 8
-    assert_registers(gb, E=0b11111101, F=0b00100000)
+    assert_registers(gb, E=0b11111101, F=0b10100000)
 
     assert_memory(gb)
 
@@ -6443,12 +6438,12 @@ def test_code_cb_4c(gb):
     gb.cpu.register.H = 0b00000010
     cycles = op.code_cb_4c(gb)
     assert cycles == 8
-    assert_registers(gb, H=0b00000010, F=0b10100000)
+    assert_registers(gb, H=0b00000010, F=0b00100000)
 
     gb.cpu.register.H = 0b11111101
     cycles = op.code_cb_4c(gb)
     assert cycles == 8
-    assert_registers(gb, H=0b11111101, F=0b00100000)
+    assert_registers(gb, H=0b11111101, F=0b10100000)
 
     assert_memory(gb)
 
@@ -6459,12 +6454,12 @@ def test_code_cb_4d(gb):
     gb.cpu.register.L = 0b00000010
     cycles = op.code_cb_4d(gb)
     assert cycles == 8
-    assert_registers(gb, L=0b00000010, F=0b10100000)
+    assert_registers(gb, L=0b00000010, F=0b00100000)
 
     gb.cpu.register.L = 0b11111101
     cycles = op.code_cb_4d(gb)
     assert cycles == 8
-    assert_registers(gb, L=0b11111101, F=0b00100000)
+    assert_registers(gb, L=0b11111101, F=0b10100000)
 
     assert_memory(gb)
 
@@ -6472,18 +6467,18 @@ def test_code_cb_4d(gb):
 # noinspection PyShadowingNames
 def test_code_cb_4e(gb):
     """ BIT 1,(HL) - Test what is the value of bit 1 """
-    gb.cpu.register.set_hl(0x1010)
-    gb.memory.write_8bit(0x1010, 0b00000010)
+    gb.cpu.register.set_hl(0x8010)
+    gb.memory.write_8bit(0x8010, 0b00000010)
     cycles = op.code_cb_4e(gb)
     assert cycles == 16
-    assert_registers(gb, H=0x10, L=0x10, F=0b10100000)
-    assert_memory(gb, {0x1010: 0b00000010})
+    assert_registers(gb, H=0x80, L=0x10, F=0b00100000)
+    assert_memory(gb, {0x8010: 0b00000010})
 
-    gb.memory.write_8bit(0x1010, 0b11111101)
+    gb.memory.write_8bit(0x8010, 0b11111101)
     cycles = op.code_cb_4e(gb)
     assert cycles == 16
-    assert_registers(gb, H=0x10, L=0x10, F=0b00100000)
-    assert_memory(gb,{0x1010:0b11111101})
+    assert_registers(gb, H=0x80, L=0x10, F=0b10100000)
+    assert_memory(gb,{0x8010:0b11111101})
 
 
 # noinspection PyShadowingNames
@@ -6492,12 +6487,12 @@ def test_code_cb_4f(gb):
     gb.cpu.register.A = 0b00000010
     cycles = op.code_cb_4f(gb)
     assert cycles == 8
-    assert_registers(gb, A=0b00000010, F=0b10100000)
+    assert_registers(gb, A=0b00000010, F=0b00100000)
 
     gb.cpu.register.A = 0b11111101
     cycles = op.code_cb_4f(gb)
     assert cycles == 8
-    assert_registers(gb, A=0b11111101, F=0b00100000)
+    assert_registers(gb, A=0b11111101, F=0b10100000)
 
     assert_memory(gb)
 
@@ -6508,12 +6503,12 @@ def test_code_cb_50(gb):
     gb.cpu.register.B = 0b00000100
     cycles = op.code_cb_50(gb)
     assert cycles == 8
-    assert_registers(gb, B=0b00000100, F=0b10100000)
+    assert_registers(gb, B=0b00000100, F=0b00100000)
 
     gb.cpu.register.B = 0b11111011
     cycles = op.code_cb_50(gb)
     assert cycles == 8
-    assert_registers(gb, B=0b11111011, F=0b00100000)
+    assert_registers(gb, B=0b11111011, F=0b10100000)
 
     assert_memory(gb)
 
@@ -6524,12 +6519,12 @@ def test_code_cb_51(gb):
     gb.cpu.register.C = 0b00000100
     cycles = op.code_cb_51(gb)
     assert cycles == 8
-    assert_registers(gb, C=0b00000100, F=0b10100000)
+    assert_registers(gb, C=0b00000100, F=0b00100000)
 
     gb.cpu.register.C = 0b11111011
     cycles = op.code_cb_51(gb)
     assert cycles == 8
-    assert_registers(gb, C=0b11111011, F=0b00100000)
+    assert_registers(gb, C=0b11111011, F=0b10100000)
 
     assert_memory(gb)
 
@@ -6540,12 +6535,12 @@ def test_code_cb_52(gb):
     gb.cpu.register.D = 0b00000100
     cycles = op.code_cb_52(gb)
     assert cycles == 8
-    assert_registers(gb, D=0b00000100, F=0b10100000)
+    assert_registers(gb, D=0b00000100, F=0b00100000)
 
     gb.cpu.register.D = 0b11111011
     cycles = op.code_cb_52(gb)
     assert cycles == 8
-    assert_registers(gb, D=0b11111011, F=0b00100000)
+    assert_registers(gb, D=0b11111011, F=0b10100000)
 
     assert_memory(gb)
 
@@ -6556,12 +6551,12 @@ def test_code_cb_53(gb):
     gb.cpu.register.E = 0b00000100
     cycles = op.code_cb_53(gb)
     assert cycles == 8
-    assert_registers(gb, E=0b00000100, F=0b10100000)
+    assert_registers(gb, E=0b00000100, F=0b00100000)
 
     gb.cpu.register.E = 0b11111011
     cycles = op.code_cb_53(gb)
     assert cycles == 8
-    assert_registers(gb, E=0b11111011, F=0b00100000)
+    assert_registers(gb, E=0b11111011, F=0b10100000)
 
     assert_memory(gb)
 
@@ -6572,12 +6567,12 @@ def test_code_cb_54(gb):
     gb.cpu.register.H = 0b00000100
     cycles = op.code_cb_54(gb)
     assert cycles == 8
-    assert_registers(gb, H=0b00000100, F=0b10100000)
+    assert_registers(gb, H=0b00000100, F=0b00100000)
 
     gb.cpu.register.H = 0b11111011
     cycles = op.code_cb_54(gb)
     assert cycles == 8
-    assert_registers(gb, H=0b11111011, F=0b00100000)
+    assert_registers(gb, H=0b11111011, F=0b10100000)
 
     assert_memory(gb)
 
@@ -6588,12 +6583,12 @@ def test_code_cb_55(gb):
     gb.cpu.register.L = 0b00000100
     cycles = op.code_cb_55(gb)
     assert cycles == 8
-    assert_registers(gb, L=0b00000100, F=0b10100000)
+    assert_registers(gb, L=0b00000100, F=0b00100000)
 
     gb.cpu.register.L = 0b11111011
     cycles = op.code_cb_55(gb)
     assert cycles == 8
-    assert_registers(gb, L=0b11111011, F=0b00100000)
+    assert_registers(gb, L=0b11111011, F=0b10100000)
 
     assert_memory(gb)
 
@@ -6601,18 +6596,18 @@ def test_code_cb_55(gb):
 # noinspection PyShadowingNames
 def test_code_cb_56(gb):
     """ BIT 2,(HL) - Test what is the value of bit 2 """
-    gb.cpu.register.set_hl(0x1010)
-    gb.memory.write_8bit(0x1010, 0b00000100)
+    gb.cpu.register.set_hl(0x8010)
+    gb.memory.write_8bit(0x8010, 0b00000100)
     cycles = op.code_cb_56(gb)
     assert cycles == 16
-    assert_registers(gb, H=0x10, L=0x10, F=0b10100000)
-    assert_memory(gb, {0x1010: 0b00000100})
+    assert_registers(gb, H=0x80, L=0x10, F=0b00100000)
+    assert_memory(gb, {0x8010: 0b00000100})
 
-    gb.memory.write_8bit(0x1010, 0b11111011)
+    gb.memory.write_8bit(0x8010, 0b11111011)
     cycles = op.code_cb_56(gb)
     assert cycles == 16
-    assert_registers(gb, H=0x10, L=0x10, F=0b00100000)
-    assert_memory(gb,{0x1010:0b11111011})
+    assert_registers(gb, H=0x80, L=0x10, F=0b10100000)
+    assert_memory(gb,{0x8010:0b11111011})
 
 
 # noinspection PyShadowingNames
@@ -6621,12 +6616,12 @@ def test_code_cb_57(gb):
     gb.cpu.register.A = 0b00000100
     cycles = op.code_cb_57(gb)
     assert cycles == 8
-    assert_registers(gb, A=0b00000100, F=0b10100000)
+    assert_registers(gb, A=0b00000100, F=0b00100000)
 
     gb.cpu.register.A = 0b11111011
     cycles = op.code_cb_57(gb)
     assert cycles == 8
-    assert_registers(gb, A=0b11111011, F=0b00100000)
+    assert_registers(gb, A=0b11111011, F=0b10100000)
 
     assert_memory(gb)
 
@@ -6637,12 +6632,12 @@ def test_code_cb_58(gb):
     gb.cpu.register.B = 0b00001000
     cycles = op.code_cb_58(gb)
     assert cycles == 8
-    assert_registers(gb, B=0b00001000, F=0b10100000)
+    assert_registers(gb, B=0b00001000, F=0b00100000)
 
     gb.cpu.register.B = 0b11110111
     cycles = op.code_cb_58(gb)
     assert cycles == 8
-    assert_registers(gb, B=0b11110111, F=0b00100000)
+    assert_registers(gb, B=0b11110111, F=0b10100000)
 
     assert_memory(gb)
 
@@ -6653,12 +6648,12 @@ def test_code_cb_59(gb):
     gb.cpu.register.C = 0b00001000
     cycles = op.code_cb_59(gb)
     assert cycles == 8
-    assert_registers(gb, C=0b00001000, F=0b10100000)
+    assert_registers(gb, C=0b00001000, F=0b00100000)
 
     gb.cpu.register.C = 0b11110111
     cycles = op.code_cb_59(gb)
     assert cycles == 8
-    assert_registers(gb, C=0b11110111, F=0b00100000)
+    assert_registers(gb, C=0b11110111, F=0b10100000)
 
     assert_memory(gb)
 
@@ -6669,12 +6664,12 @@ def test_code_cb_5a(gb):
     gb.cpu.register.D = 0b00001000
     cycles = op.code_cb_5a(gb)
     assert cycles == 8
-    assert_registers(gb, D=0b00001000, F=0b10100000)
+    assert_registers(gb, D=0b00001000, F=0b00100000)
 
     gb.cpu.register.D = 0b11110111
     cycles = op.code_cb_5a(gb)
     assert cycles == 8
-    assert_registers(gb, D=0b11110111, F=0b00100000)
+    assert_registers(gb, D=0b11110111, F=0b10100000)
 
     assert_memory(gb)
 
@@ -6685,12 +6680,12 @@ def test_code_cb_5b(gb):
     gb.cpu.register.E = 0b00001000
     cycles = op.code_cb_5b(gb)
     assert cycles == 8
-    assert_registers(gb, E=0b00001000, F=0b10100000)
+    assert_registers(gb, E=0b00001000, F=0b00100000)
 
     gb.cpu.register.E = 0b11110111
     cycles = op.code_cb_5b(gb)
     assert cycles == 8
-    assert_registers(gb, E=0b11110111, F=0b00100000)
+    assert_registers(gb, E=0b11110111, F=0b10100000)
 
     assert_memory(gb)
 
@@ -6701,12 +6696,12 @@ def test_code_cb_5c(gb):
     gb.cpu.register.H = 0b00001000
     cycles = op.code_cb_5c(gb)
     assert cycles == 8
-    assert_registers(gb, H=0b00001000, F=0b10100000)
+    assert_registers(gb, H=0b00001000, F=0b00100000)
 
     gb.cpu.register.H = 0b11110111
     cycles = op.code_cb_5c(gb)
     assert cycles == 8
-    assert_registers(gb, H=0b11110111, F=0b00100000)
+    assert_registers(gb, H=0b11110111, F=0b10100000)
 
     assert_memory(gb)
 
@@ -6717,12 +6712,12 @@ def test_code_cb_5d(gb):
     gb.cpu.register.L = 0b00001000
     cycles = op.code_cb_5d(gb)
     assert cycles == 8
-    assert_registers(gb, L=0b00001000, F=0b10100000)
+    assert_registers(gb, L=0b00001000, F=0b00100000)
 
     gb.cpu.register.L = 0b11110111
     cycles = op.code_cb_5d(gb)
     assert cycles == 8
-    assert_registers(gb, L=0b11110111, F=0b00100000)
+    assert_registers(gb, L=0b11110111, F=0b10100000)
 
     assert_memory(gb)
 
@@ -6730,18 +6725,18 @@ def test_code_cb_5d(gb):
 # noinspection PyShadowingNames
 def test_code_cb_5e(gb):
     """ BIT 3,(HL) - Test what is the value of bit 3 """
-    gb.cpu.register.set_hl(0x1010)
-    gb.memory.write_8bit(0x1010, 0b00001000)
+    gb.cpu.register.set_hl(0x8010)
+    gb.memory.write_8bit(0x8010, 0b00001000)
     cycles = op.code_cb_5e(gb)
     assert cycles == 16
-    assert_registers(gb, H=0x10, L=0x10, F=0b10100000)
-    assert_memory(gb, {0x1010: 0b00001000})
+    assert_registers(gb, H=0x80, L=0x10, F=0b00100000)
+    assert_memory(gb, {0x8010: 0b00001000})
 
-    gb.memory.write_8bit(0x1010, 0b11110111)
+    gb.memory.write_8bit(0x8010, 0b11110111)
     cycles = op.code_cb_5e(gb)
     assert cycles == 16
-    assert_registers(gb, H=0x10, L=0x10, F=0b00100000)
-    assert_memory(gb,{0x1010:0b11110111})
+    assert_registers(gb, H=0x80, L=0x10, F=0b10100000)
+    assert_memory(gb,{0x8010:0b11110111})
 
 
 # noinspection PyShadowingNames
@@ -6750,12 +6745,12 @@ def test_code_cb_5f(gb):
     gb.cpu.register.A = 0b00001000
     cycles = op.code_cb_5f(gb)
     assert cycles == 8
-    assert_registers(gb, A=0b00001000, F=0b10100000)
+    assert_registers(gb, A=0b00001000, F=0b00100000)
 
     gb.cpu.register.A = 0b11110111
     cycles = op.code_cb_5f(gb)
     assert cycles == 8
-    assert_registers(gb, A=0b11110111, F=0b00100000)
+    assert_registers(gb, A=0b11110111, F=0b10100000)
 
     assert_memory(gb)
 
@@ -6766,12 +6761,12 @@ def test_code_cb_60(gb):
     gb.cpu.register.B = 0b00010000
     cycles = op.code_cb_60(gb)
     assert cycles == 8
-    assert_registers(gb, B=0b00010000, F=0b10100000)
+    assert_registers(gb, B=0b00010000, F=0b00100000)
 
     gb.cpu.register.B = 0b11101111
     cycles = op.code_cb_60(gb)
     assert cycles == 8
-    assert_registers(gb, B=0b11101111, F=0b00100000)
+    assert_registers(gb, B=0b11101111, F=0b10100000)
 
     assert_memory(gb)
 
@@ -6782,12 +6777,12 @@ def test_code_cb_61(gb):
     gb.cpu.register.C = 0b00010000
     cycles = op.code_cb_61(gb)
     assert cycles == 8
-    assert_registers(gb, C=0b00010000, F=0b10100000)
+    assert_registers(gb, C=0b00010000, F=0b00100000)
 
     gb.cpu.register.C = 0b11101111
     cycles = op.code_cb_61(gb)
     assert cycles == 8
-    assert_registers(gb, C=0b11101111, F=0b00100000)
+    assert_registers(gb, C=0b11101111, F=0b10100000)
 
     assert_memory(gb)
 
@@ -6798,12 +6793,12 @@ def test_code_cb_62(gb):
     gb.cpu.register.D = 0b00010000
     cycles = op.code_cb_62(gb)
     assert cycles == 8
-    assert_registers(gb, D=0b00010000, F=0b10100000)
+    assert_registers(gb, D=0b00010000, F=0b00100000)
 
     gb.cpu.register.D = 0b11101111
     cycles = op.code_cb_62(gb)
     assert cycles == 8
-    assert_registers(gb, D=0b11101111, F=0b00100000)
+    assert_registers(gb, D=0b11101111, F=0b10100000)
 
     assert_memory(gb)
 
@@ -6814,12 +6809,12 @@ def test_code_cb_63(gb):
     gb.cpu.register.E = 0b00010000
     cycles = op.code_cb_63(gb)
     assert cycles == 8
-    assert_registers(gb, E=0b00010000, F=0b10100000)
+    assert_registers(gb, E=0b00010000, F=0b00100000)
 
     gb.cpu.register.E = 0b11101111
     cycles = op.code_cb_63(gb)
     assert cycles == 8
-    assert_registers(gb, E=0b11101111, F=0b00100000)
+    assert_registers(gb, E=0b11101111, F=0b10100000)
 
     assert_memory(gb)
 
@@ -6830,12 +6825,12 @@ def test_code_cb_64(gb):
     gb.cpu.register.H = 0b00010000
     cycles = op.code_cb_64(gb)
     assert cycles == 8
-    assert_registers(gb, H=0b00010000, F=0b10100000)
+    assert_registers(gb, H=0b00010000, F=0b00100000)
 
     gb.cpu.register.H = 0b11101111
     cycles = op.code_cb_64(gb)
     assert cycles == 8
-    assert_registers(gb, H=0b11101111, F=0b00100000)
+    assert_registers(gb, H=0b11101111, F=0b10100000)
 
     assert_memory(gb)
 
@@ -6846,12 +6841,12 @@ def test_code_cb_65(gb):
     gb.cpu.register.L = 0b00010000
     cycles = op.code_cb_65(gb)
     assert cycles == 8
-    assert_registers(gb, L=0b00010000, F=0b10100000)
+    assert_registers(gb, L=0b00010000, F=0b00100000)
 
     gb.cpu.register.L = 0b11101111
     cycles = op.code_cb_65(gb)
     assert cycles == 8
-    assert_registers(gb, L=0b11101111, F=0b00100000)
+    assert_registers(gb, L=0b11101111, F=0b10100000)
 
     assert_memory(gb)
 
@@ -6859,18 +6854,18 @@ def test_code_cb_65(gb):
 # noinspection PyShadowingNames
 def test_code_cb_66(gb):
     """ BIT 4,(HL) - Test what is the value of bit 4 """
-    gb.cpu.register.set_hl(0x1010)
-    gb.memory.write_8bit(0x1010, 0b00010000)
+    gb.cpu.register.set_hl(0x8010)
+    gb.memory.write_8bit(0x8010, 0b00010000)
     cycles = op.code_cb_66(gb)
     assert cycles == 16
-    assert_registers(gb, H=0x10, L=0x10, F=0b10100000)
-    assert_memory(gb, {0x1010: 0b00010000})
+    assert_registers(gb, H=0x80, L=0x10, F=0b00100000)
+    assert_memory(gb, {0x8010: 0b00010000})
 
-    gb.memory.write_8bit(0x1010, 0b11101111)
+    gb.memory.write_8bit(0x8010, 0b11101111)
     cycles = op.code_cb_66(gb)
     assert cycles == 16
-    assert_registers(gb, H=0x10, L=0x10, F=0b00100000)
-    assert_memory(gb,{0x1010:0b11101111})
+    assert_registers(gb, H=0x80, L=0x10, F=0b10100000)
+    assert_memory(gb,{0x8010:0b11101111})
 
 
 # noinspection PyShadowingNames
@@ -6879,12 +6874,12 @@ def test_code_cb_67(gb):
     gb.cpu.register.A = 0b00010000
     cycles = op.code_cb_67(gb)
     assert cycles == 8
-    assert_registers(gb, A=0b00010000, F=0b10100000)
+    assert_registers(gb, A=0b00010000, F=0b00100000)
 
     gb.cpu.register.A = 0b11101111
     cycles = op.code_cb_67(gb)
     assert cycles == 8
-    assert_registers(gb, A=0b11101111, F=0b00100000)
+    assert_registers(gb, A=0b11101111, F=0b10100000)
 
     assert_memory(gb)
 
@@ -6895,12 +6890,12 @@ def test_code_cb_68(gb):
     gb.cpu.register.B = 0b00100000
     cycles = op.code_cb_68(gb)
     assert cycles == 8
-    assert_registers(gb, B=0b00100000, F=0b10100000)
+    assert_registers(gb, B=0b00100000, F=0b00100000)
 
     gb.cpu.register.B = 0b11011111
     cycles = op.code_cb_68(gb)
     assert cycles == 8
-    assert_registers(gb, B=0b11011111, F=0b00100000)
+    assert_registers(gb, B=0b11011111, F=0b10100000)
 
     assert_memory(gb)
 
@@ -6911,12 +6906,12 @@ def test_code_cb_69(gb):
     gb.cpu.register.C = 0b00100000
     cycles = op.code_cb_69(gb)
     assert cycles == 8
-    assert_registers(gb, C=0b00100000, F=0b10100000)
+    assert_registers(gb, C=0b00100000, F=0b00100000)
 
     gb.cpu.register.C = 0b11011111
     cycles = op.code_cb_69(gb)
     assert cycles == 8
-    assert_registers(gb, C=0b11011111, F=0b00100000)
+    assert_registers(gb, C=0b11011111, F=0b10100000)
 
     assert_memory(gb)
 
@@ -6927,12 +6922,12 @@ def test_code_cb_6a(gb):
     gb.cpu.register.D = 0b00100000
     cycles = op.code_cb_6a(gb)
     assert cycles == 8
-    assert_registers(gb, D=0b00100000, F=0b10100000)
+    assert_registers(gb, D=0b00100000, F=0b00100000)
 
     gb.cpu.register.D = 0b11011111
     cycles = op.code_cb_6a(gb)
     assert cycles == 8
-    assert_registers(gb, D=0b11011111, F=0b00100000)
+    assert_registers(gb, D=0b11011111, F=0b10100000)
 
     assert_memory(gb)
 
@@ -6943,12 +6938,12 @@ def test_code_cb_6b(gb):
     gb.cpu.register.E = 0b00100000
     cycles = op.code_cb_6b(gb)
     assert cycles == 8
-    assert_registers(gb, E=0b00100000, F=0b10100000)
+    assert_registers(gb, E=0b00100000, F=0b00100000)
 
     gb.cpu.register.E = 0b11011111
     cycles = op.code_cb_6b(gb)
     assert cycles == 8
-    assert_registers(gb, E=0b11011111, F=0b00100000)
+    assert_registers(gb, E=0b11011111, F=0b10100000)
 
     assert_memory(gb)
 
@@ -6959,12 +6954,12 @@ def test_code_cb_6c(gb):
     gb.cpu.register.H = 0b00100000
     cycles = op.code_cb_6c(gb)
     assert cycles == 8
-    assert_registers(gb, H=0b00100000, F=0b10100000)
+    assert_registers(gb, H=0b00100000, F=0b00100000)
 
     gb.cpu.register.H = 0b11011111
     cycles = op.code_cb_6c(gb)
     assert cycles == 8
-    assert_registers(gb, H=0b11011111, F=0b00100000)
+    assert_registers(gb, H=0b11011111, F=0b10100000)
 
     assert_memory(gb)
 
@@ -6975,12 +6970,12 @@ def test_code_cb_6d(gb):
     gb.cpu.register.L = 0b00100000
     cycles = op.code_cb_6d(gb)
     assert cycles == 8
-    assert_registers(gb, L=0b00100000, F=0b10100000)
+    assert_registers(gb, L=0b00100000, F=0b00100000)
 
     gb.cpu.register.L = 0b11011111
     cycles = op.code_cb_6d(gb)
     assert cycles == 8
-    assert_registers(gb, L=0b11011111, F=0b00100000)
+    assert_registers(gb, L=0b11011111, F=0b10100000)
 
     assert_memory(gb)
 
@@ -6988,18 +6983,18 @@ def test_code_cb_6d(gb):
 # noinspection PyShadowingNames
 def test_code_cb_6e(gb):
     """ BIT 5,(HL) - Test what is the value of bit 5 """
-    gb.cpu.register.set_hl(0x1010)
-    gb.memory.write_8bit(0x1010, 0b00100000)
+    gb.cpu.register.set_hl(0x8010)
+    gb.memory.write_8bit(0x8010, 0b00100000)
     cycles = op.code_cb_6e(gb)
     assert cycles == 16
-    assert_registers(gb, H=0x10, L=0x10, F=0b10100000)
-    assert_memory(gb, {0x1010: 0b00100000})
+    assert_registers(gb, H=0x80, L=0x10, F=0b00100000)
+    assert_memory(gb, {0x8010: 0b00100000})
 
-    gb.memory.write_8bit(0x1010, 0b11011111)
+    gb.memory.write_8bit(0x8010, 0b11011111)
     cycles = op.code_cb_6e(gb)
     assert cycles == 16
-    assert_registers(gb, H=0x10, L=0x10, F=0b00100000)
-    assert_memory(gb,{0x1010:0b11011111})
+    assert_registers(gb, H=0x80, L=0x10, F=0b10100000)
+    assert_memory(gb,{0x8010:0b11011111})
 
 
 # noinspection PyShadowingNames
@@ -7008,12 +7003,12 @@ def test_code_cb_6f(gb):
     gb.cpu.register.A = 0b00100000
     cycles = op.code_cb_6f(gb)
     assert cycles == 8
-    assert_registers(gb, A=0b00100000, F=0b10100000)
+    assert_registers(gb, A=0b00100000, F=0b00100000)
 
     gb.cpu.register.A = 0b11011111
     cycles = op.code_cb_6f(gb)
     assert cycles == 8
-    assert_registers(gb, A=0b11011111, F=0b00100000)
+    assert_registers(gb, A=0b11011111, F=0b10100000)
 
     assert_memory(gb)
 
@@ -7024,12 +7019,12 @@ def test_code_cb_70(gb):
     gb.cpu.register.B = 0b01000000
     cycles = op.code_cb_70(gb)
     assert cycles == 8
-    assert_registers(gb, B=0b01000000, F=0b10100000)
+    assert_registers(gb, B=0b01000000, F=0b00100000)
 
     gb.cpu.register.B = 0b10111111
     cycles = op.code_cb_70(gb)
     assert cycles == 8
-    assert_registers(gb, B=0b10111111, F=0b00100000)
+    assert_registers(gb, B=0b10111111, F=0b10100000)
 
     assert_memory(gb)
 
@@ -7040,12 +7035,12 @@ def test_code_cb_71(gb):
     gb.cpu.register.C = 0b01000000
     cycles = op.code_cb_71(gb)
     assert cycles == 8
-    assert_registers(gb, C=0b01000000, F=0b10100000)
+    assert_registers(gb, C=0b01000000, F=0b00100000)
 
     gb.cpu.register.C = 0b10111111
     cycles = op.code_cb_71(gb)
     assert cycles == 8
-    assert_registers(gb, C=0b10111111, F=0b00100000)
+    assert_registers(gb, C=0b10111111, F=0b10100000)
 
     assert_memory(gb)
 
@@ -7056,12 +7051,12 @@ def test_code_cb_72(gb):
     gb.cpu.register.D = 0b01000000
     cycles = op.code_cb_72(gb)
     assert cycles == 8
-    assert_registers(gb, D=0b01000000, F=0b10100000)
+    assert_registers(gb, D=0b01000000, F=0b00100000)
 
     gb.cpu.register.D = 0b10111111
     cycles = op.code_cb_72(gb)
     assert cycles == 8
-    assert_registers(gb, D=0b10111111, F=0b00100000)
+    assert_registers(gb, D=0b10111111, F=0b10100000)
 
     assert_memory(gb)
 
@@ -7072,12 +7067,12 @@ def test_code_cb_73(gb):
     gb.cpu.register.E = 0b01000000
     cycles = op.code_cb_73(gb)
     assert cycles == 8
-    assert_registers(gb, E=0b01000000, F=0b10100000)
+    assert_registers(gb, E=0b01000000, F=0b00100000)
 
     gb.cpu.register.E = 0b10111111
     cycles = op.code_cb_73(gb)
     assert cycles == 8
-    assert_registers(gb, E=0b10111111, F=0b00100000)
+    assert_registers(gb, E=0b10111111, F=0b10100000)
 
     assert_memory(gb)
 
@@ -7088,12 +7083,12 @@ def test_code_cb_74(gb):
     gb.cpu.register.H = 0b01000000
     cycles = op.code_cb_74(gb)
     assert cycles == 8
-    assert_registers(gb, H=0b01000000, F=0b10100000)
+    assert_registers(gb, H=0b01000000, F=0b00100000)
 
     gb.cpu.register.H = 0b10111111
     cycles = op.code_cb_74(gb)
     assert cycles == 8
-    assert_registers(gb, H=0b10111111, F=0b00100000)
+    assert_registers(gb, H=0b10111111, F=0b10100000)
 
     assert_memory(gb)
 
@@ -7104,12 +7099,12 @@ def test_code_cb_75(gb):
     gb.cpu.register.L = 0b01000000
     cycles = op.code_cb_75(gb)
     assert cycles == 8
-    assert_registers(gb, L=0b01000000, F=0b10100000)
+    assert_registers(gb, L=0b01000000, F=0b00100000)
 
     gb.cpu.register.L = 0b10111111
     cycles = op.code_cb_75(gb)
     assert cycles == 8
-    assert_registers(gb, L=0b10111111, F=0b00100000)
+    assert_registers(gb, L=0b10111111, F=0b10100000)
 
     assert_memory(gb)
 
@@ -7117,18 +7112,18 @@ def test_code_cb_75(gb):
 # noinspection PyShadowingNames
 def test_code_cb_76(gb):
     """ BIT 6,(HL) - Test what is the value of bit 6 """
-    gb.cpu.register.set_hl(0x1010)
-    gb.memory.write_8bit(0x1010, 0b01000000)
+    gb.cpu.register.set_hl(0x8010)
+    gb.memory.write_8bit(0x8010, 0b01000000)
     cycles = op.code_cb_76(gb)
     assert cycles == 16
-    assert_registers(gb, H=0x10, L=0x10, F=0b10100000)
-    assert_memory(gb, {0x1010: 0b01000000})
+    assert_registers(gb, H=0x80, L=0x10, F=0b00100000)
+    assert_memory(gb, {0x8010: 0b01000000})
 
-    gb.memory.write_8bit(0x1010, 0b10111111)
+    gb.memory.write_8bit(0x8010, 0b10111111)
     cycles = op.code_cb_76(gb)
     assert cycles == 16
-    assert_registers(gb, H=0x10, L=0x10, F=0b00100000)
-    assert_memory(gb,{0x1010:0b10111111})
+    assert_registers(gb, H=0x80, L=0x10, F=0b10100000)
+    assert_memory(gb,{0x8010:0b10111111})
 
 
 # noinspection PyShadowingNames
@@ -7137,12 +7132,12 @@ def test_code_cb_77(gb):
     gb.cpu.register.A = 0b01000000
     cycles = op.code_cb_77(gb)
     assert cycles == 8
-    assert_registers(gb, A=0b01000000, F=0b10100000)
+    assert_registers(gb, A=0b01000000, F=0b00100000)
 
     gb.cpu.register.A = 0b10111111
     cycles = op.code_cb_77(gb)
     assert cycles == 8
-    assert_registers(gb, A=0b10111111, F=0b00100000)
+    assert_registers(gb, A=0b10111111, F=0b10100000)
 
     assert_memory(gb)
 
@@ -7153,12 +7148,12 @@ def test_code_cb_78(gb):
     gb.cpu.register.B = 0b10000000
     cycles = op.code_cb_78(gb)
     assert cycles == 8
-    assert_registers(gb, B=0b10000000, F=0b10100000)
+    assert_registers(gb, B=0b10000000, F=0b00100000)
 
     gb.cpu.register.B = 0b01111111
     cycles = op.code_cb_78(gb)
     assert cycles == 8
-    assert_registers(gb, B=0b01111111, F=0b00100000)
+    assert_registers(gb, B=0b01111111, F=0b10100000)
 
     assert_memory(gb)
 
@@ -7169,12 +7164,12 @@ def test_code_cb_79(gb):
     gb.cpu.register.C = 0b10000000
     cycles = op.code_cb_79(gb)
     assert cycles == 8
-    assert_registers(gb, C=0b10000000, F=0b10100000)
+    assert_registers(gb, C=0b10000000, F=0b00100000)
 
     gb.cpu.register.C = 0b01111111
     cycles = op.code_cb_79(gb)
     assert cycles == 8
-    assert_registers(gb, C=0b01111111, F=0b00100000)
+    assert_registers(gb, C=0b01111111, F=0b10100000)
 
     assert_memory(gb)
 
@@ -7185,12 +7180,12 @@ def test_code_cb_7a(gb):
     gb.cpu.register.D = 0b10000000
     cycles = op.code_cb_7a(gb)
     assert cycles == 8
-    assert_registers(gb, D=0b10000000, F=0b10100000)
+    assert_registers(gb, D=0b10000000, F=0b00100000)
 
     gb.cpu.register.D = 0b01111111
     cycles = op.code_cb_7a(gb)
     assert cycles == 8
-    assert_registers(gb, D=0b01111111, F=0b00100000)
+    assert_registers(gb, D=0b01111111, F=0b10100000)
 
     assert_memory(gb)
 
@@ -7201,12 +7196,12 @@ def test_code_cb_7b(gb):
     gb.cpu.register.E = 0b10000000
     cycles = op.code_cb_7b(gb)
     assert cycles == 8
-    assert_registers(gb, E=0b10000000, F=0b10100000)
+    assert_registers(gb, E=0b10000000, F=0b00100000)
 
     gb.cpu.register.E = 0b01111111
     cycles = op.code_cb_7b(gb)
     assert cycles == 8
-    assert_registers(gb, E=0b01111111, F=0b00100000)
+    assert_registers(gb, E=0b01111111, F=0b10100000)
 
     assert_memory(gb)
 
@@ -7217,12 +7212,12 @@ def test_code_cb_7c(gb):
     gb.cpu.register.H = 0b10000000
     cycles = op.code_cb_7c(gb)
     assert cycles == 8
-    assert_registers(gb, H=0b10000000, F=0b10100000)
+    assert_registers(gb, H=0b10000000, F=0b00100000)
 
     gb.cpu.register.H = 0b01111111
     cycles = op.code_cb_7c(gb)
     assert cycles == 8
-    assert_registers(gb, H=0b01111111, F=0b00100000)
+    assert_registers(gb, H=0b01111111, F=0b10100000)
 
     assert_memory(gb)
 
@@ -7233,12 +7228,12 @@ def test_code_cb_7d(gb):
     gb.cpu.register.L = 0b10000000
     cycles = op.code_cb_7d(gb)
     assert cycles == 8
-    assert_registers(gb, L=0b10000000, F=0b10100000)
+    assert_registers(gb, L=0b10000000, F=0b00100000)
 
     gb.cpu.register.L = 0b01111111
     cycles = op.code_cb_7d(gb)
     assert cycles == 8
-    assert_registers(gb, L=0b01111111, F=0b00100000)
+    assert_registers(gb, L=0b01111111, F=0b10100000)
 
     assert_memory(gb)
 
@@ -7246,18 +7241,18 @@ def test_code_cb_7d(gb):
 # noinspection PyShadowingNames
 def test_code_cb_7e(gb):
     """ BIT 7,(HL) - Test what is the value of bit 7 """
-    gb.cpu.register.set_hl(0x1010)
-    gb.memory.write_8bit(0x1010, 0b10000000)
+    gb.cpu.register.set_hl(0x8010)
+    gb.memory.write_8bit(0x8010, 0b10000000)
     cycles = op.code_cb_7e(gb)
     assert cycles == 16
-    assert_registers(gb, H=0x10, L=0x10, F=0b10100000)
-    assert_memory(gb, {0x1010: 0b10000000})
+    assert_registers(gb, H=0x80, L=0x10, F=0b00100000)
+    assert_memory(gb, {0x8010: 0b10000000})
 
-    gb.memory.write_8bit(0x1010, 0b01111111)
+    gb.memory.write_8bit(0x8010, 0b01111111)
     cycles = op.code_cb_7e(gb)
     assert cycles == 16
-    assert_registers(gb, H=0x10, L=0x10, F=0b00100000)
-    assert_memory(gb,{0x1010:0b01111111})
+    assert_registers(gb, H=0x80, L=0x10, F=0b10100000)
+    assert_memory(gb,{0x8010:0b01111111})
 
 
 # noinspection PyShadowingNames
@@ -7266,12 +7261,12 @@ def test_code_cb_7f(gb):
     gb.cpu.register.A = 0b10000000
     cycles = op.code_cb_7f(gb)
     assert cycles == 8
-    assert_registers(gb, A=0b10000000, F=0b10100000)
+    assert_registers(gb, A=0b10000000, F=0b00100000)
 
     gb.cpu.register.A = 0b01111111
     cycles = op.code_cb_7f(gb)
     assert cycles == 8
-    assert_registers(gb, A=0b01111111, F=0b00100000)
+    assert_registers(gb, A=0b01111111, F=0b10100000)
 
     assert_memory(gb)
 
@@ -7375,18 +7370,18 @@ def test_code_cb_85(gb):
 # noinspection PyShadowingNames
 def test_code_cb_86(gb):
     """ RES 0,(HL) - Reset the specified bit """
-    gb.cpu.register.set_hl(0x1010)
-    gb.memory.write_8bit(0x1010, 0b00000000)
+    gb.cpu.register.set_hl(0x8010)
+    gb.memory.write_8bit(0x8010, 0b00000000)
     cycle = op.code_cb_86(gb)
     assert cycle == 16
-    assert_registers(gb, H=0x10, L=0x10)
+    assert_registers(gb, H=0x80, L=0x10)
     assert_memory(gb)
 
-    gb.memory.write_8bit(0x1010, 0b11111111)
+    gb.memory.write_8bit(0x8010, 0b11111111)
     cycle = op.code_cb_86(gb)
     assert cycle == 16
-    assert_registers(gb, H=0x10, L=0x10)
-    assert_memory(gb,{0x1010:0b11111110})
+    assert_registers(gb, H=0x80, L=0x10)
+    assert_memory(gb,{0x8010:0b11111110})
 
 
 # noinspection PyShadowingNames
@@ -7504,18 +7499,18 @@ def test_code_cb_8d(gb):
 # noinspection PyShadowingNames
 def test_code_cb_8e(gb):
     """ RES 1,(HL) - Reset the specified bit """
-    gb.cpu.register.set_hl(0x1010)
-    gb.memory.write_8bit(0x1010, 0b00000000)
+    gb.cpu.register.set_hl(0x8010)
+    gb.memory.write_8bit(0x8010, 0b00000000)
     cycle = op.code_cb_8e(gb)
     assert cycle == 16
-    assert_registers(gb, H=0x10, L=0x10)
+    assert_registers(gb, H=0x80, L=0x10)
     assert_memory(gb)
 
-    gb.memory.write_8bit(0x1010, 0b11111111)
+    gb.memory.write_8bit(0x8010, 0b11111111)
     cycle = op.code_cb_8e(gb)
     assert cycle == 16
-    assert_registers(gb, H=0x10, L=0x10)
-    assert_memory(gb,{0x1010:0b11111101})
+    assert_registers(gb, H=0x80, L=0x10)
+    assert_memory(gb,{0x8010:0b11111101})
 
 
 # noinspection PyShadowingNames
@@ -7633,18 +7628,18 @@ def test_code_cb_95(gb):
 # noinspection PyShadowingNames
 def test_code_cb_96(gb):
     """ RES 2,(HL) - Reset the specified bit """
-    gb.cpu.register.set_hl(0x1010)
-    gb.memory.write_8bit(0x1010, 0b00000000)
+    gb.cpu.register.set_hl(0x8010)
+    gb.memory.write_8bit(0x8010, 0b00000000)
     cycle = op.code_cb_96(gb)
     assert cycle == 16
-    assert_registers(gb, H=0x10, L=0x10)
+    assert_registers(gb, H=0x80, L=0x10)
     assert_memory(gb)
 
-    gb.memory.write_8bit(0x1010, 0b11111111)
+    gb.memory.write_8bit(0x8010, 0b11111111)
     cycle = op.code_cb_96(gb)
     assert cycle == 16
-    assert_registers(gb, H=0x10, L=0x10)
-    assert_memory(gb,{0x1010:0b11111011})
+    assert_registers(gb, H=0x80, L=0x10)
+    assert_memory(gb,{0x8010:0b11111011})
 
 
 # noinspection PyShadowingNames
@@ -7762,18 +7757,18 @@ def test_code_cb_9d(gb):
 # noinspection PyShadowingNames
 def test_code_cb_9e(gb):
     """ RES 3,(HL) - Reset the specified bit """
-    gb.cpu.register.set_hl(0x1010)
-    gb.memory.write_8bit(0x1010, 0b00000000)
+    gb.cpu.register.set_hl(0x8010)
+    gb.memory.write_8bit(0x8010, 0b00000000)
     cycle = op.code_cb_9e(gb)
     assert cycle == 16
-    assert_registers(gb, H=0x10, L=0x10)
+    assert_registers(gb, H=0x80, L=0x10)
     assert_memory(gb)
 
-    gb.memory.write_8bit(0x1010, 0b11111111)
+    gb.memory.write_8bit(0x8010, 0b11111111)
     cycle = op.code_cb_9e(gb)
     assert cycle == 16
-    assert_registers(gb, H=0x10, L=0x10)
-    assert_memory(gb,{0x1010:0b11110111})
+    assert_registers(gb, H=0x80, L=0x10)
+    assert_memory(gb,{0x8010:0b11110111})
 
 
 # noinspection PyShadowingNames
@@ -7891,18 +7886,18 @@ def test_code_cb_a5(gb):
 # noinspection PyShadowingNames
 def test_code_cb_a6(gb):
     """ RES 4,(HL) - Reset the specified bit """
-    gb.cpu.register.set_hl(0x1010)
-    gb.memory.write_8bit(0x1010, 0b00000000)
+    gb.cpu.register.set_hl(0x8010)
+    gb.memory.write_8bit(0x8010, 0b00000000)
     cycle = op.code_cb_a6(gb)
     assert cycle == 16
-    assert_registers(gb, H=0x10, L=0x10)
+    assert_registers(gb, H=0x80, L=0x10)
     assert_memory(gb)
 
-    gb.memory.write_8bit(0x1010, 0b11111111)
+    gb.memory.write_8bit(0x8010, 0b11111111)
     cycle = op.code_cb_a6(gb)
     assert cycle == 16
-    assert_registers(gb, H=0x10, L=0x10)
-    assert_memory(gb,{0x1010:0b11101111})
+    assert_registers(gb, H=0x80, L=0x10)
+    assert_memory(gb,{0x8010:0b11101111})
 
 
 # noinspection PyShadowingNames
@@ -8020,18 +8015,18 @@ def test_code_cb_ad(gb):
 # noinspection PyShadowingNames
 def test_code_cb_ae(gb):
     """ RES 5,(HL) - Reset the specified bit """
-    gb.cpu.register.set_hl(0x1010)
-    gb.memory.write_8bit(0x1010, 0b00000000)
+    gb.cpu.register.set_hl(0x8010)
+    gb.memory.write_8bit(0x8010, 0b00000000)
     cycle = op.code_cb_ae(gb)
     assert cycle == 16
-    assert_registers(gb, H=0x10, L=0x10)
+    assert_registers(gb, H=0x80, L=0x10)
     assert_memory(gb)
 
-    gb.memory.write_8bit(0x1010, 0b11111111)
+    gb.memory.write_8bit(0x8010, 0b11111111)
     cycle = op.code_cb_ae(gb)
     assert cycle == 16
-    assert_registers(gb, H=0x10, L=0x10)
-    assert_memory(gb,{0x1010:0b11011111})
+    assert_registers(gb, H=0x80, L=0x10)
+    assert_memory(gb,{0x8010:0b11011111})
 
 
 # noinspection PyShadowingNames
@@ -8149,18 +8144,18 @@ def test_code_cb_b5(gb):
 # noinspection PyShadowingNames
 def test_code_cb_b6(gb):
     """ RES 6,(HL) - Reset the specified bit """
-    gb.cpu.register.set_hl(0x1010)
-    gb.memory.write_8bit(0x1010, 0b00000000)
+    gb.cpu.register.set_hl(0x8010)
+    gb.memory.write_8bit(0x8010, 0b00000000)
     cycle = op.code_cb_b6(gb)
     assert cycle == 16
-    assert_registers(gb, H=0x10, L=0x10)
+    assert_registers(gb, H=0x80, L=0x10)
     assert_memory(gb)
 
-    gb.memory.write_8bit(0x1010, 0b11111111)
+    gb.memory.write_8bit(0x8010, 0b11111111)
     cycle = op.code_cb_b6(gb)
     assert cycle == 16
-    assert_registers(gb, H=0x10, L=0x10)
-    assert_memory(gb,{0x1010:0b10111111})
+    assert_registers(gb, H=0x80, L=0x10)
+    assert_memory(gb,{0x8010:0b10111111})
 
 
 # noinspection PyShadowingNames
@@ -8278,18 +8273,18 @@ def test_code_cb_bd(gb):
 # noinspection PyShadowingNames
 def test_code_cb_be(gb):
     """ RES 7,(HL) - Reset the specified bit """
-    gb.cpu.register.set_hl(0x1010)
-    gb.memory.write_8bit(0x1010, 0b00000000)
+    gb.cpu.register.set_hl(0x8010)
+    gb.memory.write_8bit(0x8010, 0b00000000)
     cycle = op.code_cb_be(gb)
     assert cycle == 16
-    assert_registers(gb, H=0x10, L=0x10)
+    assert_registers(gb, H=0x80, L=0x10)
     assert_memory(gb)
 
-    gb.memory.write_8bit(0x1010, 0b11111111)
+    gb.memory.write_8bit(0x8010, 0b11111111)
     cycle = op.code_cb_be(gb)
     assert cycle == 16
-    assert_registers(gb, H=0x10, L=0x10)
-    assert_memory(gb,{0x1010:0b01111111})
+    assert_registers(gb, H=0x80, L=0x10)
+    assert_memory(gb,{0x8010:0b01111111})
 
 
 # noinspection PyShadowingNames
@@ -8407,18 +8402,18 @@ def test_code_cb_c5(gb):
 # noinspection PyShadowingNames
 def test_code_cb_c6(gb):
     """ SET 0,(HL) - Set the specified bit """
-    gb.cpu.register.set_hl(0x1010)
-    gb.memory.write_8bit(0x1010, 0b00000000)
+    gb.cpu.register.set_hl(0x8010)
+    gb.memory.write_8bit(0x8010, 0b00000000)
     cycle = op.code_cb_c6(gb)
     assert cycle == 16
-    assert_registers(gb, H=0x10, L=0x10)
-    assert_memory(gb, {0x1010: 0b00000001})
+    assert_registers(gb, H=0x80, L=0x10)
+    assert_memory(gb, {0x8010: 0b00000001})
 
-    gb.memory.write_8bit(0x1010, 0b11111111)
+    gb.memory.write_8bit(0x8010, 0b11111111)
     cycle = op.code_cb_c6(gb)
     assert cycle == 16
-    assert_registers(gb, H=0x10, L=0x10)
-    assert_memory(gb,{0x1010:0b11111111})
+    assert_registers(gb, H=0x80, L=0x10)
+    assert_memory(gb,{0x8010:0b11111111})
 
 
 # noinspection PyShadowingNames
@@ -8536,18 +8531,18 @@ def test_code_cb_cd(gb):
 # noinspection PyShadowingNames
 def test_code_cb_ce(gb):
     """ SET 1,(HL) - Set the specified bit """
-    gb.cpu.register.set_hl(0x1010)
-    gb.memory.write_8bit(0x1010, 0b00000000)
+    gb.cpu.register.set_hl(0x8010)
+    gb.memory.write_8bit(0x8010, 0b00000000)
     cycle = op.code_cb_ce(gb)
     assert cycle == 16
-    assert_registers(gb, H=0x10, L=0x10)
-    assert_memory(gb, {0x1010: 0b00000010})
+    assert_registers(gb, H=0x80, L=0x10)
+    assert_memory(gb, {0x8010: 0b00000010})
 
-    gb.memory.write_8bit(0x1010, 0b11111111)
+    gb.memory.write_8bit(0x8010, 0b11111111)
     cycle = op.code_cb_ce(gb)
     assert cycle == 16
-    assert_registers(gb, H=0x10, L=0x10)
-    assert_memory(gb,{0x1010:0b11111111})
+    assert_registers(gb, H=0x80, L=0x10)
+    assert_memory(gb,{0x8010:0b11111111})
 
 
 # noinspection PyShadowingNames
@@ -8665,18 +8660,18 @@ def test_code_cb_d5(gb):
 # noinspection PyShadowingNames
 def test_code_cb_d6(gb):
     """ SET 2,(HL) - Set the specified bit """
-    gb.cpu.register.set_hl(0x1010)
-    gb.memory.write_8bit(0x1010, 0b00000000)
+    gb.cpu.register.set_hl(0x8010)
+    gb.memory.write_8bit(0x8010, 0b00000000)
     cycle = op.code_cb_d6(gb)
     assert cycle == 16
-    assert_registers(gb, H=0x10, L=0x10)
-    assert_memory(gb, {0x1010: 0b00000100})
+    assert_registers(gb, H=0x80, L=0x10)
+    assert_memory(gb, {0x8010: 0b00000100})
 
-    gb.memory.write_8bit(0x1010, 0b11111111)
+    gb.memory.write_8bit(0x8010, 0b11111111)
     cycle = op.code_cb_d6(gb)
     assert cycle == 16
-    assert_registers(gb, H=0x10, L=0x10)
-    assert_memory(gb,{0x1010:0b11111111})
+    assert_registers(gb, H=0x80, L=0x10)
+    assert_memory(gb,{0x8010:0b11111111})
 
 
 # noinspection PyShadowingNames
@@ -8794,18 +8789,18 @@ def test_code_cb_dd(gb):
 # noinspection PyShadowingNames
 def test_code_cb_de(gb):
     """ SET 3,(HL) - Set the specified bit """
-    gb.cpu.register.set_hl(0x1010)
-    gb.memory.write_8bit(0x1010, 0b00000000)
+    gb.cpu.register.set_hl(0x8010)
+    gb.memory.write_8bit(0x8010, 0b00000000)
     cycle = op.code_cb_de(gb)
     assert cycle == 16
-    assert_registers(gb, H=0x10, L=0x10)
-    assert_memory(gb, {0x1010: 0b00001000})
+    assert_registers(gb, H=0x80, L=0x10)
+    assert_memory(gb, {0x8010: 0b00001000})
 
-    gb.memory.write_8bit(0x1010, 0b11111111)
+    gb.memory.write_8bit(0x8010, 0b11111111)
     cycle = op.code_cb_de(gb)
     assert cycle == 16
-    assert_registers(gb, H=0x10, L=0x10)
-    assert_memory(gb,{0x1010:0b11111111})
+    assert_registers(gb, H=0x80, L=0x10)
+    assert_memory(gb,{0x8010:0b11111111})
 
 
 # noinspection PyShadowingNames
@@ -8923,18 +8918,18 @@ def test_code_cb_e5(gb):
 # noinspection PyShadowingNames
 def test_code_cb_e6(gb):
     """ SET 4,(HL) - Set the specified bit """
-    gb.cpu.register.set_hl(0x1010)
-    gb.memory.write_8bit(0x1010, 0b00000000)
+    gb.cpu.register.set_hl(0x8010)
+    gb.memory.write_8bit(0x8010, 0b00000000)
     cycle = op.code_cb_e6(gb)
     assert cycle == 16
-    assert_registers(gb, H=0x10, L=0x10)
-    assert_memory(gb, {0x1010: 0b00010000})
+    assert_registers(gb, H=0x80, L=0x10)
+    assert_memory(gb, {0x8010: 0b00010000})
 
-    gb.memory.write_8bit(0x1010, 0b11111111)
+    gb.memory.write_8bit(0x8010, 0b11111111)
     cycle = op.code_cb_e6(gb)
     assert cycle == 16
-    assert_registers(gb, H=0x10, L=0x10)
-    assert_memory(gb,{0x1010:0b11111111})
+    assert_registers(gb, H=0x80, L=0x10)
+    assert_memory(gb,{0x8010:0b11111111})
 
 
 # noinspection PyShadowingNames
@@ -9052,18 +9047,18 @@ def test_code_cb_ed(gb):
 # noinspection PyShadowingNames
 def test_code_cb_ee(gb):
     """ SET 5,(HL) - Set the specified bit """
-    gb.cpu.register.set_hl(0x1010)
-    gb.memory.write_8bit(0x1010, 0b00000000)
+    gb.cpu.register.set_hl(0x8010)
+    gb.memory.write_8bit(0x8010, 0b00000000)
     cycle = op.code_cb_ee(gb)
     assert cycle == 16
-    assert_registers(gb, H=0x10, L=0x10)
-    assert_memory(gb, {0x1010: 0b00100000})
+    assert_registers(gb, H=0x80, L=0x10)
+    assert_memory(gb, {0x8010: 0b00100000})
 
-    gb.memory.write_8bit(0x1010, 0b11111111)
+    gb.memory.write_8bit(0x8010, 0b11111111)
     cycle = op.code_cb_ee(gb)
     assert cycle == 16
-    assert_registers(gb, H=0x10, L=0x10)
-    assert_memory(gb,{0x1010:0b11111111})
+    assert_registers(gb, H=0x80, L=0x10)
+    assert_memory(gb,{0x8010:0b11111111})
 
 
 # noinspection PyShadowingNames
@@ -9181,18 +9176,18 @@ def test_code_cb_f5(gb):
 # noinspection PyShadowingNames
 def test_code_cb_f6(gb):
     """ SET 6,(HL) - Set the specified bit """
-    gb.cpu.register.set_hl(0x1010)
-    gb.memory.write_8bit(0x1010, 0b00000000)
+    gb.cpu.register.set_hl(0x8010)
+    gb.memory.write_8bit(0x8010, 0b00000000)
     cycle = op.code_cb_f6(gb)
     assert cycle == 16
-    assert_registers(gb, H=0x10, L=0x10)
-    assert_memory(gb, {0x1010: 0b01000000})
+    assert_registers(gb, H=0x80, L=0x10)
+    assert_memory(gb, {0x8010: 0b01000000})
 
-    gb.memory.write_8bit(0x1010, 0b11111111)
+    gb.memory.write_8bit(0x8010, 0b11111111)
     cycle = op.code_cb_f6(gb)
     assert cycle == 16
-    assert_registers(gb, H=0x10, L=0x10)
-    assert_memory(gb,{0x1010:0b11111111})
+    assert_registers(gb, H=0x80, L=0x10)
+    assert_memory(gb,{0x8010:0b11111111})
 
 
 # noinspection PyShadowingNames
@@ -9310,18 +9305,18 @@ def test_code_cb_fd(gb):
 # noinspection PyShadowingNames
 def test_code_cb_fe(gb):
     """ SET 7,(HL) - Set the specified bit """
-    gb.cpu.register.set_hl(0x1010)
-    gb.memory.write_8bit(0x1010, 0b00000000)
+    gb.cpu.register.set_hl(0x8010)
+    gb.memory.write_8bit(0x8010, 0b00000000)
     cycle = op.code_cb_fe(gb)
     assert cycle == 16
-    assert_registers(gb, H=0x10, L=0x10)
-    assert_memory(gb, {0x1010: 0b10000000})
+    assert_registers(gb, H=0x80, L=0x10)
+    assert_memory(gb, {0x8010: 0b10000000})
 
-    gb.memory.write_8bit(0x1010, 0b11111111)
+    gb.memory.write_8bit(0x8010, 0b11111111)
     cycle = op.code_cb_fe(gb)
     assert cycle == 16
-    assert_registers(gb, H=0x10, L=0x10)
-    assert_memory(gb,{0x1010:0b11111111})
+    assert_registers(gb, H=0x80, L=0x10)
+    assert_memory(gb,{0x8010:0b11111111})
 
 
 # noinspection PyShadowingNames

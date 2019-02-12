@@ -25,7 +25,7 @@ Tests
 """
 
 
-def assert_registers(reg, A=0x00, F=0x00, B=0x00, C=0x00, D=0x00, E=0x00, H=0x00, L=0x00, SP=0xFFFE, PC=0x0100):
+def assert_registers(reg, A=0x00, F=0x00, B=0x00, C=0x00, D=0x00, E=0x00, H=0x00, L=0x00, SP=0xFFFE, PC=0x0000):
     """
     Helper function to assert registers values.
     By default will check if values are the default, unless parameter is received.
