@@ -110,6 +110,11 @@ def assert_memory(gb, custom_address=None):
         assert value == expected_value
 
 
+def create_fake_cartridge(fake_data: str):
+    """ Create fake cartridge bytes array """
+    return bytes.fromhex(fake_data) + bytes.fromhex("00")*0x8000
+
+
 # noinspection PyShadowingNames
 def test_code_00(gb):
     """ NOP - Does nothing """
@@ -119,12 +124,11 @@ def test_code_00(gb):
     assert_memory(gb)
 
 
-# TODO: Not working...
 # noinspection PyShadowingNames
 def test_code_01(gb):
     """ LD BC,d16 - Stores given 16-bit value at BC """
-    gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.memory.cartridge = bytes.fromhex("FF 55").rjust(0x8000, bytes.fromhex("00"))
+    gb.cpu.register.PC = 0x0000
+    gb.memory.cartridge = create_fake_cartridge("FF 55")
     cycles = op.code_01(gb)
     assert cycles == 12
     assert_registers(gb,B=0x55,C=0xFF,PC=0x0002)
@@ -134,12 +138,12 @@ def test_code_01(gb):
 # noinspection PyShadowingNames
 def test_code_02(gb):
     """ LD (BC),A - Stores reg at the address in BC """
-    gb.cpu.register.set_bc(0x4050)
+    gb.cpu.register.set_bc(0x8050)
     gb.cpu.register.A = 0x99
     cycles = op.code_02(gb)
     assert cycles == 8
-    assert_registers(gb,A=0x99,B=0x40,C=0x50)
-    assert_memory(gb,{0x4050:0x99})
+    assert_registers(gb,A=0x99,B=0x80,C=0x50)
+    assert_memory(gb,{0x8050:0x99})
 
 
 # noinspection PyShadowingNames
@@ -219,7 +223,7 @@ def test_code_05(gb):
 def test_code_06(gb):
     """ LD B,d8 """
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = bytes.fromhex("99")
+    gb.memory.cartridge = create_fake_cartridge("99")
     cycles = op.code_06(gb)
     assert cycles == 8
     assert_registers(gb,B=0x99,PC=0x0001)
@@ -246,7 +250,7 @@ def test_code_07(gb):
 def test_code_08(gb):
     """ LD (a16),SP - Set SP value into address (a16) """
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = bytes.fromhex("22 FF")
+    gb.memory.cartridge = create_fake_cartridge("22 FF")
     gb.cpu.register.SP = 0x8842
     cycles = op.code_08(gb)
     assert cycles == 20
@@ -299,12 +303,12 @@ def test_code_09(gb):
 # noinspection PyShadowingNames
 def test_code_0a(gb):
     """ LD A,(BC) - Load reg with the value at the address in BC """
-    gb.memory.write_8bit(0x1234,0x11)
-    gb.cpu.register.set_bc(0x1234)
+    gb.memory.write_8bit(0x8234,0x11)
+    gb.cpu.register.set_bc(0x8234)
     cycles = op.code_0a(gb)
     assert cycles == 8
-    assert_registers(gb,A=0x11,B=0x12,C=0x34)
-    assert_memory(gb, {0x1234:0x11})
+    assert_registers(gb,A=0x11,B=0x82,C=0x34)
+    assert_memory(gb, {0x8234:0x11})
 
 
 # noinspection PyShadowingNames
@@ -379,7 +383,7 @@ def test_code_0d(gb):
 def test_code_0e(gb):
     """ LD C,d8 """
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = bytes.fromhex("99")
+    gb.memory.cartridge = create_fake_cartridge("99")
     cycles = op.code_0e(gb)
     assert cycles == 8
     assert_registers(gb,C=0x99,PC=0x0001)
@@ -419,7 +423,7 @@ def test_code_10(gb):
 def test_code_11(gb):
     """ LD DE,d16 - Stores given 16-bit value at DE """
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = bytes.fromhex("33 99")
+    gb.memory.cartridge = create_fake_cartridge("33 99")
     cycles = op.code_11(gb)
     assert cycles == 12
     assert_registers(gb,D=0x99,E=0x33,PC=0x0002)
@@ -429,12 +433,12 @@ def test_code_11(gb):
 # noinspection PyShadowingNames
 def test_code_12(gb):
     """ LD (DE),A - Stores reg at the address in DE """
-    gb.cpu.register.set_de(0x0110)
+    gb.cpu.register.set_de(0x8110)
     gb.cpu.register.A = 0x66
     cycles = op.code_12(gb)
     assert cycles == 8
-    assert_registers(gb,A=0x66,D=0x01,E=0x10)
-    assert_memory(gb,{0x0110:0x66})
+    assert_registers(gb,A=0x66,D=0x81,E=0x10)
+    assert_memory(gb,{0x8110:0x66})
 
 
 # noinspection PyShadowingNames
@@ -514,7 +518,7 @@ def test_code_15(gb):
 def test_code_16(gb):
     """ LD D,d8 """
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = bytes.fromhex("99")
+    gb.memory.cartridge = create_fake_cartridge("99")
     cycles = op.code_16(gb)
     assert cycles == 8
     assert_registers(gb,D=0x99,PC=0x0001)
@@ -543,13 +547,13 @@ def test_code_17(gb):
 def test_code_18(gb):
     """ JP r8 - make the command at address (current address + r8) the next to be executed (r8 is signed) """
     gb.cpu.register.PC = 0x0000
-    gb.cpu._cartridge_data = bytes.fromhex("03")
+    gb.memory.cartridge = create_fake_cartridge("03")
     cycles = op.code_18(gb)
     assert cycles == 12
     assert_registers(gb,PC=0x0004)
 
     gb.cpu.register.PC = 0x0000
-    gb.cpu._cartridge_data = bytes.fromhex("FD")  # -3
+    gb.memory.cartridge = create_fake_cartridge("FD")  # -3
     cycles = op.code_18(gb)
     assert cycles == 12
     assert_registers(gb, PC=0xFFFE)
@@ -602,12 +606,12 @@ def test_code_19(gb):
 # noinspection PyShadowingNames
 def test_code_1a(gb):
     """ LD A,(DE) - Load reg with the value at the address in DE """
-    gb.memory.write_8bit(0x1234, 0x11)
-    gb.cpu.register.set_de(0x1234)
+    gb.memory.write_8bit(0x8234, 0x11)
+    gb.cpu.register.set_de(0x8234)
     cycles = op.code_1a(gb)
     assert cycles == 8
-    assert_registers(gb, A=0x11, D=0x12, E=0x34)
-    assert_memory(gb, {0x1234: 0x11})
+    assert_registers(gb, A=0x11, D=0x82, E=0x34)
+    assert_memory(gb, {0x8234: 0x11})
 
 
 # noinspection PyShadowingNames
@@ -682,7 +686,7 @@ def test_code_1d(gb):
 def test_code_1e(gb):
     """ LD E,d8 """
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = bytes.fromhex("99")
+    gb.memory.cartridge = create_fake_cartridge("99")
     cycles = op.code_1e(gb)
     assert cycles == 8
     assert_registers(gb,E=0x99,PC=0x0001)
@@ -712,14 +716,14 @@ def test_code_20(gb):
     """ JR NZ,r8 - If flag Z is reset, add r8 to current address and jump to it """
     gb.cpu.register.PC = 0x0000
     gb.cpu.register.F = 0b00000000
-    gb.cpu._cartridge_data = bytes.fromhex("03")
+    gb.memory.cartridge = create_fake_cartridge("03")
     cycles = op.code_20(gb)
     assert cycles == 12
     assert_registers(gb, PC=0x0004)
 
     gb.cpu.register.PC = 0x0000
     gb.cpu.register.F = 0b10000000
-    gb.cpu._cartridge_data = bytes.fromhex("FD")  # -3
+    gb.memory.cartridge = create_fake_cartridge("FD")  # -3
     cycles = op.code_20(gb)
     assert cycles == 8
     assert_registers(gb, PC=0x0001, F=0b10000000)
@@ -731,7 +735,7 @@ def test_code_20(gb):
 def test_code_21(gb):
     """ LD HL,d16 - Stores given 16-bit value at HL """
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = bytes.fromhex("33 99")
+    gb.memory.cartridge = create_fake_cartridge("33 99")
     cycles = op.code_21(gb)
     assert cycles == 12
     assert_registers(gb,H=0x99,L=0x33, PC=0x0002)
@@ -742,11 +746,11 @@ def test_code_21(gb):
 def test_code_22(gb):
     """ LD (HL+),A or LD (HLI),A or LDI (HL),A - Put value at A into address HL. Increment HL """
     gb.cpu.register.A = 0x69
-    gb.cpu.register.set_hl(0x1010)
+    gb.cpu.register.set_hl(0x8010)
     cycles = op.code_22(gb)
     assert cycles == 8
-    assert_registers(gb,A=0x69,H=0x10,L=0x11)
-    assert_memory(gb,{0x1010:0x69})
+    assert_registers(gb,A=0x69,H=0x80,L=0x11)
+    assert_memory(gb,{0x8010:0x69})
 
 
 # noinspection PyShadowingNames
@@ -826,7 +830,7 @@ def test_code_25(gb):
 def test_code_26(gb):
     """ LD H,d8 """
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = bytes.fromhex("99")
+    gb.memory.cartridge = create_fake_cartridge("99")
     cycles = op.code_26(gb)
     assert cycles == 8
     assert_registers(gb,H=0x99,PC=0x0001)
@@ -877,14 +881,14 @@ def test_code_28(gb):
     """ JR Z,r8 - If flag Z is set, add r8 to current address and jump to it """
     gb.cpu.register.PC = 0x0000
     gb.cpu.register.F = 0b10000000
-    gb.cpu._cartridge_data = bytes.fromhex("03")
+    gb.memory.cartridge = create_fake_cartridge("03")
     cycles = op.code_28(gb)
     assert cycles == 12
     assert_registers(gb, PC=0x0004, F=0b10000000)
 
     gb.cpu.register.PC = 0x0000
     gb.cpu.register.F = 0b00000000
-    gb.cpu._cartridge_data = bytes.fromhex("FD")  # -3
+    gb.memory.cartridge = create_fake_cartridge("FD")  # -3
     cycles = op.code_28(gb)
     assert cycles == 8
     assert_registers(gb, PC=0x0001)
@@ -931,12 +935,12 @@ def test_code_29(gb):
 # noinspection PyShadowingNames
 def test_code_2a(gb):
     """ LD A,(HL+) or LD A,(HLI) or LDI A,(HL) - Put value at address HL into A. Increment HL """
-    gb.memory.write_8bit(0x1010,0x69)
-    gb.cpu.register.set_hl(0x1010)
+    gb.memory.write_8bit(0x8010,0x69)
+    gb.cpu.register.set_hl(0x8010)
     cycles = op.code_2a(gb)
     assert cycles == 8
-    assert_registers(gb, A=0x69, H=0x10, L=0x11)
-    assert_memory(gb, {0x1010: 0x69})
+    assert_registers(gb, A=0x69, H=0x80, L=0x11)
+    assert_memory(gb, {0x8010: 0x69})
 
 
 # noinspection PyShadowingNames
@@ -1011,7 +1015,7 @@ def test_code_2d(gb):
 def test_code_2e(gb):
     """ LD L,d8 """
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = bytes.fromhex("99")
+    gb.memory.cartridge = create_fake_cartridge("99")
     cycles = op.code_2e(gb)
     assert cycles == 8
     assert_registers(gb,L=0x99,PC=0x0001)
@@ -1033,14 +1037,14 @@ def test_code_30(gb):
     """ JR NC,r8 - If flag C is reset, add r8 to current address and jump to it """
     gb.cpu.register.PC = 0x0000
     gb.cpu.register.F = 0b00000000
-    gb.cpu._cartridge_data = bytes.fromhex("03")
+    gb.memory.cartridge = create_fake_cartridge("03")
     cycles = op.code_30(gb)
     assert cycles == 12
     assert_registers(gb, PC=0x0004)
 
     gb.cpu.register.PC = 0x0000
     gb.cpu.register.F = 0b00010000
-    gb.cpu._cartridge_data = bytes.fromhex("FD")  # -3
+    gb.memory.cartridge = create_fake_cartridge("FD")  # -3
     cycles = op.code_30(gb)
     assert cycles == 8
     assert_registers(gb, PC=0x0001, F=0b00010000)
@@ -1052,7 +1056,7 @@ def test_code_30(gb):
 def test_code_31(gb):
     """ LD SP,d16 - Stores given 16-bit value at SP """
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = bytes.fromhex("33 99")
+    gb.memory.cartridge = create_fake_cartridge("33 99")
     cycles = op.code_31(gb)
     assert cycles == 12
     assert_registers(gb, SP=0x9933, PC=0x0002)
@@ -1063,11 +1067,11 @@ def test_code_31(gb):
 def test_code_32(gb):
     """ LD (HL-),A or LD (HLD),A or LDD (HL),A - Put value at A into address HL. Decrement HL """
     gb.cpu.register.A = 0x69
-    gb.cpu.register.set_hl(0x1010)
+    gb.cpu.register.set_hl(0x8010)
     cycles = op.code_32(gb)
     assert cycles == 8
-    assert_registers(gb, A=0x69, H=0x10, L=0x0F)
-    assert_memory(gb, {0x1010: 0x69})
+    assert_registers(gb, A=0x69, H=0x80, L=0x0F)
+    assert_memory(gb, {0x8010: 0x69})
 
 
 # noinspection PyShadowingNames
@@ -1099,34 +1103,36 @@ def test_code_33(gb):
 # noinspection PyShadowingNames
 def test_code_34(gb):
     """ INC (HL) - (value at address HL)=(value at address HL)+1 """
-    gb.memory.write_8bit(0x1010,0x00)
-    gb.cpu.register.set_hl(0x1010)
+    gb.memory.write_8bit(0x8010,0x00)
+    gb.cpu.register.set_hl(0x8010)
     cycles = op.code_34(gb)
     assert cycles == 12
-    assert_registers(gb, H=0x10, L=0x10, F=0b00000000)
-    assert_memory(gb,{0x1010:0x01})
+    assert_registers(gb, H=0x80, L=0x10, F=0b00000000)
+    assert_memory(gb,{0x8010:0x01})
 
-    gb.memory.write_8bit(0x1010, 0x0F)
-    gb.cpu.register.set_hl(0x1010)
+    gb.memory.write_8bit(0x8010, 0x0F)
+    gb.cpu.register.set_hl(0x8010)
     cycles = op.code_34(gb)
     assert cycles == 12
-    assert_registers(gb, H=0x10, L=0x10, F=0b00100000)
-    assert_memory(gb, {0x1010: 0x10})
+    assert_registers(gb, H=0x80, L=0x10, F=0b00100000)
+    assert_memory(gb, {0x8010: 0x10})
 
-    gb.memory.write_8bit(0x1010, 0xF0)
-    gb.cpu.register.set_hl(0x1010)
+    gb.memory.write_8bit(0x8010, 0xF0)
+    gb.cpu.register.set_hl(0x8010)
     cycles = op.code_34(gb)
     assert cycles == 12
-    assert_registers(gb, H=0x10, L=0x10, F=0b00000000)
-    assert_memory(gb, {0x1010: 0xF1})
+    assert_registers(gb, H=0x80, L=0x10, F=0b00000000)
+    assert_memory(gb, {0x8010: 0xF1})
 
-    gb.memory.write_8bit(0x1010, 0xFF)
-    gb.cpu.register.set_hl(0x1010)
+    gb.memory.write_8bit(0x8010, 0xFF)
+    gb.cpu.register.set_hl(0x8010)
     cycles = op.code_34(gb)
     assert cycles == 12
-    assert_registers(gb, H=0x10, L=0x10, F=0b10100000)
-    assert_memory(gb, {0x1010: 0x00})
+    assert_registers(gb, H=0x80, L=0x10, F=0b10100000)
+    assert_memory(gb, {0x8010: 0x00})
 
+
+# TODO: Many tests starting from here are still failing, most of them because of writing to cartridge data space
 
 # noinspection PyShadowingNames
 def test_code_35(gb):
@@ -1157,7 +1163,7 @@ def test_code_35(gb):
 def test_code_36(gb):
     """ LD (HL),d8 - Stores d8 at the address in HL """
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = bytes.fromhex("99")
+    gb.memory.cartridge = create_fake_cartridge("99")
     gb.cpu.register.set_hl(0x1010)
     cycles = op.code_36(gb)
     assert cycles == 12
@@ -1184,14 +1190,14 @@ def test_code_38(gb):
     """ JR C,r8 - If flag C is set, add r8 to current address and jump to it """
     gb.cpu.register.PC = 0x0000
     gb.cpu.register.F = 0b00010000
-    gb.cpu._cartridge_data = bytes.fromhex("03")
+    gb.memory.cartridge = create_fake_cartridge("03")
     cycles = op.code_38(gb)
     assert cycles == 12
     assert_registers(gb, PC=0x0004, F=0b00010000)
 
     gb.cpu.register.PC = 0x0000
     gb.cpu.register.F = 0b00000000
-    gb.cpu._cartridge_data = bytes.fromhex("FD")  # -3
+    gb.memory.cartridge = create_fake_cartridge("FD")  # -3
     cycles = op.code_38(gb)
     assert cycles == 8
     assert_registers(gb, PC=0x0001)
@@ -1320,7 +1326,7 @@ def test_code_3d(gb):
 def test_code_3e(gb):
     """ LD A,d8 """
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = bytes.fromhex("99")
+    gb.memory.cartridge = create_fake_cartridge("99")
     cycles = op.code_3e(gb)
     assert cycles == 8
     assert_registers(gb,A=0x99,PC=0x0001)
@@ -4143,7 +4149,7 @@ def test_code_c1(gb):
 # noinspection PyShadowingNames
 def test_code_c2(gb):
     """ JP NZ,a16 - Jump to address a16 if Z flag is reset """
-    gb.cpu._cartridge_data = bytes.fromhex("FF 55")
+    gb.memory.cartridge = create_fake_cartridge("FF 55")
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
     gb.cpu.register.F = 0b00000000
     cycles = op.code_c2(gb)
@@ -4163,7 +4169,7 @@ def test_code_c2(gb):
 def test_code_c3(gb):
     """ JP a16 - Jump to address a16 """
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = bytes.fromhex("FF 55")
+    gb.memory.cartridge = create_fake_cartridge("FF 55")
     cycles = op.code_c3(gb)
     assert cycles == 16
     assert_registers(gb, PC=0x55FF)
@@ -4173,7 +4179,7 @@ def test_code_c3(gb):
 # noinspection PyShadowingNames
 def test_code_c4(gb):
     """ CALL NZ,a16 - Call address a16 if flag Z is reset """
-    gb.cpu._cartridge_data = bytes.fromhex("FF 55")
+    gb.memory.cartridge = create_fake_cartridge("FF 55")
 
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
     gb.cpu.register.SP = 0xFFFE
@@ -4208,42 +4214,42 @@ def test_code_c6(gb):
     """ ADD A,d8 - A=A+d8 """
     gb.cpu.register.A = 0x00
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = bytes.fromhex("00")
+    gb.memory.cartridge = create_fake_cartridge("00")
     cycles = op.code_c6(gb)
     assert cycles == 8
     assert_registers(gb, A=0x00, F=0b10000000, PC=0x0001)
 
     gb.cpu.register.A = 0x00
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = bytes.fromhex("01")
+    gb.memory.cartridge = create_fake_cartridge("01")
     cycles = op.code_c6(gb)
     assert cycles == 8
     assert_registers(gb, A=0x01, F=0b00000000, PC=0x0001)
 
     gb.cpu.register.A = 0x0F
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = bytes.fromhex("01")
+    gb.memory.cartridge = create_fake_cartridge("01")
     cycles = op.code_c6(gb)
     assert cycles == 8
     assert_registers(gb, A=0x10, F=0b00100000, PC=0x0001)
 
     gb.cpu.register.A = 0xF0
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = bytes.fromhex("10")
+    gb.memory.cartridge = create_fake_cartridge("10")
     cycles = op.code_c6(gb)
     assert cycles == 8
     assert_registers(gb, A=0x00, F=0b10010000, PC=0x0001)
 
     gb.cpu.register.A = 0xFF
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = bytes.fromhex("01")
+    gb.memory.cartridge = create_fake_cartridge("01")
     cycles = op.code_c6(gb)
     assert cycles == 8
     assert_registers(gb, A=0x00, F=0b10110000, PC=0x0001)
 
     gb.cpu.register.A = 0xFF
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = bytes.fromhex("02")
+    gb.memory.cartridge = create_fake_cartridge("02")
     cycles = op.code_c6(gb)
     assert cycles == 8
     assert_registers(gb, A=0x01, F=0b00110000, PC=0x0001)
@@ -4303,7 +4309,7 @@ def test_code_c9(gb):
 # noinspection PyShadowingNames
 def test_code_ca(gb):
     """ JP Z,a16 - Jump to address a16 if Z flag is set """
-    gb.cpu._cartridge_data = bytes.fromhex("FF 55")
+    gb.memory.cartridge = create_fake_cartridge("FF 55")
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
     gb.cpu.register.F = 0b10000000
     cycles = op.code_ca(gb)
@@ -4322,7 +4328,7 @@ def test_code_ca(gb):
 # noinspection PyShadowingNames
 def test_code_cb(gb):
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = bytes.fromhex("40")
+    gb.memory.cartridge = create_fake_cartridge("40")
     gb.cpu.register.B = 0b00000001
     cycles = op.code_cb(gb)
     assert cycles == 12  # 4 from CB + 8 from CB_40
@@ -4333,7 +4339,7 @@ def test_code_cb(gb):
 # noinspection PyShadowingNames
 def test_code_cc(gb):
     """ CALL Z,a16 - Call address a16 if flag Z is set """
-    gb.cpu._cartridge_data = bytes.fromhex("FF 55")
+    gb.memory.cartridge = create_fake_cartridge("FF 55")
 
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
     gb.cpu.register.SP = 0xFFFE
@@ -4357,7 +4363,7 @@ def test_code_cc(gb):
 def test_code_cd(gb):
     """ CALL a16 - Push address of next instruction onto stack then jump to address a16 """
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = bytes.fromhex("FF 55")
+    gb.memory.cartridge = create_fake_cartridge("FF 55")
     gb.cpu.register.SP = 0xFFFE
     cycles = op.code_cd(gb)
     assert cycles == 24
@@ -4370,7 +4376,7 @@ def test_code_ce(gb):
     """ ADC A,d8 - A=A+d8+carry_flag (yes, '+carry_flag' is just +1 or +0) """
     gb.cpu.register.A = 0x00
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = bytes.fromhex("00")
+    gb.memory.cartridge = create_fake_cartridge("00")
     gb.cpu.register.F = 0b00000000
     cycles = op.code_ce(gb)
     assert cycles == 8
@@ -4378,7 +4384,7 @@ def test_code_ce(gb):
 
     gb.cpu.register.A = 0x00
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = bytes.fromhex("00")
+    gb.memory.cartridge = create_fake_cartridge("00")
     gb.cpu.register.F = 0b00010000
     cycles = op.code_ce(gb)
     assert cycles == 8
@@ -4386,7 +4392,7 @@ def test_code_ce(gb):
 
     gb.cpu.register.A = 0x00
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = bytes.fromhex("01")
+    gb.memory.cartridge = create_fake_cartridge("01")
     gb.cpu.register.F = 0b00010000
     cycles = op.code_ce(gb)
     assert cycles == 8
@@ -4394,7 +4400,7 @@ def test_code_ce(gb):
 
     gb.cpu.register.A = 0x0E
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = bytes.fromhex("01")
+    gb.memory.cartridge = create_fake_cartridge("01")
     gb.cpu.register.F = 0b00010000
     cycles = op.code_ce(gb)
     assert cycles == 8
@@ -4402,7 +4408,7 @@ def test_code_ce(gb):
 
     gb.cpu.register.A = 0xF0
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = bytes.fromhex("0F")
+    gb.memory.cartridge = create_fake_cartridge("0F")
     gb.cpu.register.F = 0b00010000
     cycles = op.code_ce(gb)
     assert cycles == 8
@@ -4410,7 +4416,7 @@ def test_code_ce(gb):
 
     gb.cpu.register.A = 0xFE
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = bytes.fromhex("01")
+    gb.memory.cartridge = create_fake_cartridge("01")
     gb.cpu.register.F = 0b00010000
     cycles = op.code_ce(gb)
     assert cycles == 8
@@ -4418,7 +4424,7 @@ def test_code_ce(gb):
 
     gb.cpu.register.A = 0xFE
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = bytes.fromhex("02")
+    gb.memory.cartridge = create_fake_cartridge("02")
     gb.cpu.register.F = 0b00010000
     cycles = op.code_ce(gb)
     assert cycles == 8
@@ -4475,7 +4481,7 @@ def test_code_d1(gb):
 # noinspection PyShadowingNames
 def test_code_d2(gb):
     """ JP NC,a16 - Jump to address a16 if C flag is reset """
-    gb.cpu._cartridge_data = bytes.fromhex("FF 55")
+    gb.memory.cartridge = create_fake_cartridge("FF 55")
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
     gb.cpu.register.F = 0b00000000
     cycles = op.code_d2(gb)
@@ -4497,7 +4503,7 @@ def test_code_d2(gb):
 # noinspection PyShadowingNames
 def test_code_d4(gb):
     """ CALL NC,a16 - Call address a16 if flag C is reset """
-    gb.cpu._cartridge_data = bytes.fromhex("FF 55")
+    gb.memory.cartridge = create_fake_cartridge("FF 55")
 
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
     gb.cpu.register.SP = 0xFFFE
@@ -4532,42 +4538,42 @@ def test_code_d6(gb):
     """ SUB A,d8 - A=A-d8 """
     gb.cpu.register.A = 0x00
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = bytes.fromhex("00")
+    gb.memory.cartridge = create_fake_cartridge("00")
     cycles = op.code_d6(gb)
     assert cycles == 8
     assert_registers(gb, A=0x00, F=0b11000000, PC=0x0001)
 
     gb.cpu.register.A = 0x00
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = bytes.fromhex("01")
+    gb.memory.cartridge = create_fake_cartridge("01")
     cycles = op.code_d6(gb)
     assert cycles == 8
     assert_registers(gb, A=0xFF, F=0b01110000, PC=0x0001)
 
     gb.cpu.register.A = 0x0F
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = bytes.fromhex("01")
+    gb.memory.cartridge = create_fake_cartridge("01")
     cycles = op.code_d6(gb)
     assert cycles == 8
     assert_registers(gb, A=0x0E, F=0b01000000, PC=0x0001)
 
     gb.cpu.register.A = 0xF0
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = bytes.fromhex("10")
+    gb.memory.cartridge = create_fake_cartridge("10")
     cycles = op.code_d6(gb)
     assert cycles == 8
     assert_registers(gb, A=0xE0, F=0b01000000, PC=0x0001)
 
     gb.cpu.register.A = 0xFF
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = bytes.fromhex("01")
+    gb.memory.cartridge = create_fake_cartridge("01")
     cycles = op.code_d6(gb)
     assert cycles == 8
     assert_registers(gb, A=0xFE, F=0b01000000, PC=0x0001)
 
     gb.cpu.register.A = 0xFF
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = bytes.fromhex("FE")
+    gb.memory.cartridge = create_fake_cartridge("FE")
     cycles = op.code_d6(gb)
     assert cycles == 8
     assert_registers(gb, A=0x01, F=0b01000000, PC=0x0001)
@@ -4628,7 +4634,7 @@ def test_code_d9(gb):
 # noinspection PyShadowingNames
 def test_code_da(gb):
     """ JP C,a16 - Jump to address a16 if C flag is set """
-    gb.cpu._cartridge_data = bytes.fromhex("FF 55")
+    gb.memory.cartridge = create_fake_cartridge("FF 55")
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
     gb.cpu.register.F = 0b00010000
     cycles = op.code_da(gb)
@@ -4650,7 +4656,7 @@ def test_code_da(gb):
 # noinspection PyShadowingNames
 def test_code_dc(gb):
     """ CALL C,a16 - Call address a16 if flag C is set """
-    gb.cpu._cartridge_data = bytes.fromhex("FF 55")
+    gb.memory.cartridge = create_fake_cartridge("FF 55")
 
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
     gb.cpu.register.SP = 0xFFFE
@@ -4678,7 +4684,7 @@ def test_code_de(gb):
     """ SBC A,d8 - A=A-d8-carry_flag (yes, '-carry_flag' is just -1 or -0) """
     gb.cpu.register.A = 0x00
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = bytes.fromhex("00")
+    gb.memory.cartridge = create_fake_cartridge("00")
     gb.cpu.register.F = 0b00000000
     cycles = op.code_de(gb)
     assert cycles == 8
@@ -4686,7 +4692,7 @@ def test_code_de(gb):
 
     gb.cpu.register.A = 0x02
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = bytes.fromhex("00")
+    gb.memory.cartridge = create_fake_cartridge("00")
     gb.cpu.register.F = 0b00010000
     cycles = op.code_de(gb)
     assert cycles == 8
@@ -4694,7 +4700,7 @@ def test_code_de(gb):
 
     gb.cpu.register.A = 0x00
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = bytes.fromhex("01")
+    gb.memory.cartridge = create_fake_cartridge("01")
     gb.cpu.register.F = 0b00010000
     cycles = op.code_de(gb)
     assert cycles == 8
@@ -4702,7 +4708,7 @@ def test_code_de(gb):
 
     gb.cpu.register.A = 0x13
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = bytes.fromhex("04")
+    gb.memory.cartridge = create_fake_cartridge("04")
     gb.cpu.register.F = 0b00010000
     cycles = op.code_de(gb)
     assert cycles == 8
@@ -4726,7 +4732,7 @@ def test_code_df(gb):
 def test_code_e0(gb):
     """ LDH (d8),A or LD ($FF00+d8),A - Put A into address ($FF00 + d8) """
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = bytes.fromhex("55")
+    gb.memory.cartridge = create_fake_cartridge("55")
     gb.cpu.register.A = 0x10
     cycles = op.code_e0(gb)
     assert cycles == 12
@@ -4808,28 +4814,28 @@ def test_code_e8(gb):
     """ LD HL,SP+d8 or LDHL SP,r8 - Put result of SP+r8 into HL (r8 is a signed value) """
     gb.cpu.register.SP = 0x0000
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = bytes.fromhex("0F")
+    gb.memory.cartridge = create_fake_cartridge("0F")
     cycles = op.code_e8(gb)
     assert cycles == 16
     assert_registers(gb, SP=0x000F, F=0b00000000, PC=0x0001)
 
     gb.cpu.register.SP = 0x0101
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = bytes.fromhex("7F")
+    gb.memory.cartridge = create_fake_cartridge("7F")
     cycles = op.code_e8(gb)
     assert cycles == 16
     assert_registers(gb, SP=0x0180, F=0b00100000, PC=0x0001)
 
     gb.cpu.register.SP = 0xFFFF
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = bytes.fromhex("01")
+    gb.memory.cartridge = create_fake_cartridge("01")
     cycles = op.code_e8(gb)
     assert cycles == 16
     assert_registers(gb, SP=0x0000, F=0b00110000, PC=0x0001)
 
     gb.cpu.register.SP = 0xFFFF
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = bytes.fromhex("80")  # negative value, -128
+    gb.memory.cartridge = create_fake_cartridge("80")  # negative value, -128
     cycles = op.code_e8(gb)
     assert cycles == 16
     assert_registers(gb, SP=0xFF7F, F=0b00000000, PC=0x0001)
@@ -4852,7 +4858,7 @@ def test_code_e9(gb):
 def test_code_ea(gb):
     """ LD (a16),A - Stores reg at the address in a16 (least significant byte first) """
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = bytes.fromhex("11 10")
+    gb.memory.cartridge = create_fake_cartridge("11 10")
     gb.cpu.register.A = 0x99
     cycles = op.code_ea(gb)
     assert cycles == 16
@@ -4902,7 +4908,7 @@ def test_code_ef(gb):
 def test_code_f0(gb):
     """ LDH A,(d8) or LD A,($FF00+d8) - Put value at address ($FF00 + d8) into A """
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = bytes.fromhex("11")
+    gb.memory.cartridge = create_fake_cartridge("11")
     gb.memory.write_8bit(0xFF11,0x55)
     cycles = op.code_f0(gb)
     assert cycles == 12
@@ -4989,28 +4995,28 @@ def test_code_f8(gb):
     """ LD HL,SP+d8 or LDHL SP,r8 - Put result of SP+r8 into HL (r8 is a signed value) """
     gb.cpu.register.SP = 0x0000
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = bytes.fromhex("0F")
+    gb.memory.cartridge = create_fake_cartridge("0F")
     cycles = op.code_f8(gb)
     assert cycles == 12
     assert_registers(gb, H=0x00, L=0x0F, SP=0x0000, F=0b00000000, PC=0x0001)
 
     gb.cpu.register.SP = 0x0101
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = bytes.fromhex("7F")
+    gb.memory.cartridge = create_fake_cartridge("7F")
     cycles = op.code_f8(gb)
     assert cycles == 12
     assert_registers(gb, H=0x01, L=0x80, SP=0x0101, F=0b00100000, PC=0x0001)
 
     gb.cpu.register.SP = 0xFFFF
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = bytes.fromhex("01")
+    gb.memory.cartridge = create_fake_cartridge("01")
     cycles = op.code_f8(gb)
     assert cycles == 12
     assert_registers(gb, H=0x00, L=0x00, SP=0xFFFF, F=0b00110000, PC=0x0001)
 
     gb.cpu.register.SP = 0xFFFF
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = bytes.fromhex("80")  # negative value, -128
+    gb.memory.cartridge = create_fake_cartridge("80")  # negative value, -128
     cycles = op.code_f8(gb)
     assert cycles == 12
     assert_registers(gb, H=0xFF, L=0x7F, SP=0xFFFF, F=0b00000000, PC=0x0001)
@@ -5031,7 +5037,7 @@ def test_code_f9(gb):
 def test_code_fa(gb):
     """ LD A,(a16) - Load reg with the value at the address in a16 (least significant byte first) """
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = bytes.fromhex("11 10")
+    gb.memory.cartridge = create_fake_cartridge("11 10")
     gb.memory.write_8bit(0x1011,0x55)
     cycles = op.code_fa(gb)
     assert cycles == 16
@@ -5060,42 +5066,42 @@ def test_code_fe(gb):
     """ CP A,d8 - same as SUB A,d8 but throw the result away, only set flags """
     gb.cpu.register.A = 0x00
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = bytes.fromhex("00")
+    gb.memory.cartridge = create_fake_cartridge("00")
     cycles = op.code_fe(gb)
     assert cycles == 8
     assert_registers(gb, A=0x00, F=0b11000000, PC=0x0001)
 
     gb.cpu.register.A = 0x00
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = bytes.fromhex("01")
+    gb.memory.cartridge = create_fake_cartridge("01")
     cycles = op.code_fe(gb)
     assert cycles == 8
     assert_registers(gb, A=0x00, F=0b01110000, PC=0x0001)
 
     gb.cpu.register.A = 0x0F
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = bytes.fromhex("01")
+    gb.memory.cartridge = create_fake_cartridge("01")
     cycles = op.code_fe(gb)
     assert cycles == 8
     assert_registers(gb, A=0x0F, F=0b01000000, PC=0x0001)
 
     gb.cpu.register.A = 0xF0
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = bytes.fromhex("10")
+    gb.memory.cartridge = create_fake_cartridge("10")
     cycles = op.code_fe(gb)
     assert cycles == 8
     assert_registers(gb, A=0xF0, F=0b01000000, PC=0x0001)
 
     gb.cpu.register.A = 0xFF
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = bytes.fromhex("01")
+    gb.memory.cartridge = create_fake_cartridge("01")
     cycles = op.code_fe(gb)
     assert cycles == 8
     assert_registers(gb, A=0xFF, F=0b01000000, PC=0x0001)
 
     gb.cpu.register.A = 0xFF
     gb.cpu.register.PC = 0x0000  # So we can test without having to add a lot of useless blank data to test array
-    gb.cpu._cartridge_data = bytes.fromhex("FE")
+    gb.memory.cartridge = create_fake_cartridge("FE")
     cycles = op.code_fe(gb)
     assert cycles == 8
     assert_registers(gb, A=0xFF, F=0b01000000, PC=0x0001)
