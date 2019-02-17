@@ -60,7 +60,7 @@ See:
 - http://gbdev.gg8.se/wiki/articles/CPU_Registers_and_Flags
 - https://stackoverflow.com/questions/21639597/z80-register-endianness
 """
-import logging
+from log import Log
 
 
 class Register:
@@ -69,7 +69,7 @@ class Register:
     """
     def __init__(self):
         # Logger
-        self.logger = logging.getLogger("pgbe")
+        self.logger = Log()
 
         # 8-bit registers (can be combined to read as 16-bit registers)
         self.A = 0x00  # Accumulator
@@ -129,9 +129,8 @@ class Register:
         """
         Change specified flag bit in register F.
         :param bit_position: Bit to change
-        :param new_value: New value for specified bit
+        :param new_value: New value for specified bit (True == 1; False == 0)
         """
-        new_value = int(new_value)  # True == 1; False == 0
         mask = 1 << bit_position
         if (self.F & mask) != (new_value << bit_position):  # If current value is != from new_value, flip current value
             self.F = self.F ^ mask

@@ -6,24 +6,20 @@ from memory import Memory
 from interrupts import Interrupts
 from gpu import GPU
 from screen import Screen
-import logging
+from log import Log
 
 
 class GB:
     """ GB components instantiation """
 
     def __init__(self):
-        self.logger = logging.getLogger("pgbe")
-        # log_handler = logging.NullHandler()
-        log_handler = logging.FileHandler("test.log", mode="w")
-        formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
-        log_handler.setFormatter(formatter)
-        self.logger.addHandler(log_handler)
-        self.logger.setLevel(logging.DEBUG)
+        self.logger = Log()
 
+        # Create components
         self.cpu = CPU(self)
-        self.memory = Memory()
+        self.memory = Memory(self)
         self.interrupts = Interrupts(self)
+        self.screen = Screen(self)
         self.gpu = GPU(self)
 
         self.debug_mode = False
@@ -37,8 +33,12 @@ class GB:
         :param step: If it will stop after executing each loop or not. Requires debug==True.
         """
         self.print_cartridge_info(cartridge_data)
-        self.debug_mode = debug
+        self.gpu.prepare()
+
         self.step_mode = step
+        self.debug_mode = debug
+        self.logger.setDebugMode(self.debug_mode)
+
         self.logger.info("Debug: %s\tStep: %s",self.debug_mode,self.step_mode)
         self.memory.load_cartridge(cartridge_data)
         if self.memory.boot_rom is None:
@@ -46,7 +46,7 @@ class GB:
 
         # Instantiates the emulator screen. It will assume control of the main thread, so the emulator main loop must be
         # triggered by the Screen itself, as a scheduled method call.
-        Screen(self)
+        self.screen.run()
 
     def print_cartridge_info(self, cartridge_data: bytes):
         """

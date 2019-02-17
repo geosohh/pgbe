@@ -20,7 +20,7 @@ def gb():
     from memory import Memory
     from gb import GB
     gb = GB()
-    gb.memory = Memory()  # To remove all memory initialization made by other components
+    gb.memory = Memory(gb)  # To remove all memory initialization made by other components
     gb.memory.load_cartridge(cartridge_data=bytes.fromhex("00")*0x8000)
     gb.memory.boot_rom_loaded = False
     return gb

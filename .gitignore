@@ -69,3 +69,6 @@ GameBoy ROM files
 
 GameBoy boot ROM file
 boot.rom
+
+# Profiler files
+*.prof

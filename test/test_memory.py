@@ -16,8 +16,10 @@ def memory():
     Create Memory instance for testing.
     :return: new memory instance
     """
+    from gb import GB
     from memory import Memory
-    mem = Memory()
+    gb = GB()
+    mem = Memory(gb)
     mem.load_cartridge(cartridge_data=bytes.fromhex("00")*0x8000)
     return mem
 
@@ -114,3 +116,9 @@ def test_read_16bit(memory):
     memory._write(0x8010, 0x66)
     memory._write(0x8011, 0x55)
     assert memory.read_16bit(0x8010) == 0x5566
+
+
+# noinspection PyShadowingNames
+def test_tile_set_shared(memory):
+    memory.write_8bit(0x8800, 0x55)
+    assert memory.read_8bit(0x8800) == 0x55

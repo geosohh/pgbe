@@ -8,8 +8,7 @@ See:
 - http://imrannazar.com/GameBoy-Emulation-in-JavaScript:-GPU-Timings
 - http://imrannazar.com/GameBoy-Emulation-in-JavaScript:-Graphics
 """
-import logging
-import util
+from log import Log
 
 
 class GPU:
@@ -19,40 +18,34 @@ class GPU:
     SCREEN_WIDTH = 160
     SCREEN_HEIGHT = 144
     RGB_SIZE = 3  # R, G and B = 3
-    DISPLAY_COLORS = {0: [255, 255, 255],
-                      1: [192, 192, 192],
-                      2: [96, 96, 96],
-                      3: [0, 0, 0]}  # colors displayed by the GameBoy
+    RGB_LINE_SIZE = SCREEN_WIDTH * RGB_SIZE
     TILE_MAP_ADDRESS = {0: 0x9800,
                         1: 0x9C00}  # Memory address where each tile map begins
     TILE_SET_ADDRESS = {0: 0x8800,
                         1: 0x8000}  # Memory address where each tile set begins
     UPDATE_HZ = 70224  # (Modes 2, 3 and 0 * 144 lines) + (Mode 1 * 10 loops)
 
-    # GB Memory addresses
-    LCD_CONTROL_ADDRESS = 0xFF40  # also called LCDC
-    LCD_STATUS_ADDRESS = 0xFF41  # also called STAT
-    SCROLL_Y_ADDRESS = 0xFF42  # also called SCY
-    SCROLL_X_ADDRESS = 0xFF43  # also called SCX
-    LCD_Y_COORDINATE_ADDRESS = 0xFF44  # also called LY
-    BACKGROUND_PALETTE_DATA_ADDRESS = 0xFF47  # also called BGP
+    # Used when LCD is disabled. To avoid confusion, we will display a blue screen.
+    FRAME_LINE_LCD_DISABLED = [0, 0, 255] * SCREEN_WIDTH
+    FRAME_LINE_BACKGROUND_DISABLED = [255, 255, 255] * SCREEN_WIDTH
 
     def __init__(self, gb):
         """
         :type gb: gb.GB
         """
         # Logger
-        self.logger = logging.getLogger("pgbe")
+        self.logger = Log()
 
         # Communication with other components
         self.gb = gb
 
         # State initialization
         self.cpu_cycles = 0  # Used as a unit of measurement for gpu timing
-        self._set_lcd_controller_mode(2)
-
         self.framebuffer = [0, 0, 0] * (self.SCREEN_WIDTH * self.SCREEN_HEIGHT)  # Data being prepared to show on UI
-        self.screen = self.framebuffer.copy()  # Data to show on UI
+
+    def prepare(self):
+        """ Init code that cannot be executed on __init__ because not everything is initialized yet """
+        LCD_STATUS.set_lcd_controller_mode(self.gb.memory, 2)
 
     def update(self, cpu_cycles_spent: int):
         """
@@ -75,38 +68,38 @@ class GPU:
         full_update_cycle_completed = False
         self.cpu_cycles += cpu_cycles_spent
 
-        mode = self._lcd_controller_mode()
+        mode = LCD_STATUS.lcd_controller_mode
         if mode == 2:
             # The LCD controller is reading from OAM memory.
             # The CPU <cannot> access OAM memory (FE00h-FE9Fh) during this period.
             if self.cpu_cycles >= 80:
-                self._set_lcd_controller_mode(3)
+                LCD_STATUS.set_lcd_controller_mode(self.gb.memory, 3)
                 self.cpu_cycles -= 80
         elif mode == 3:
             # The LCD controller is reading from both OAM and VRAM.
             # The CPU <cannot> access OAM and VRAM during this period.
             if self.cpu_cycles >= 172:
                 self.copy_current_display_line_to_framebuffer()
-                self._set_lcd_controller_mode(0)
+                LCD_STATUS.set_lcd_controller_mode(self.gb.memory, 0)
                 self.cpu_cycles -= 172
         elif mode == 0:
             # H-Blank: the controller is moving to the beginning of the next display line.
             # The CPU can access both the VRAM (8000h-9FFFh) and OAM (FE00h-FE9Fh).
             if self.cpu_cycles >= 204:
-                next_line = self._go_to_next_lcd_y_line()
+                next_line = LCD_Y_COORDINATE.go_to_next_line(self.gb.memory)
                 if next_line == 144:  # Last screen line (144 to 153 only happen during V-Blank state)
-                    self.screen = self.framebuffer.copy()  # Draw framebuffer to screen
-                    self._set_lcd_controller_mode(1)
+                    self.gb.screen.update(self.framebuffer)  # Draw framebuffer to screen
+                    LCD_STATUS.set_lcd_controller_mode(self.gb.memory, 1)
                 else:
-                    self._set_lcd_controller_mode(2)
+                    LCD_STATUS.set_lcd_controller_mode(self.gb.memory, 2)
                 self.cpu_cycles -= 204
         elif mode == 1:
             # V-Blank: the controller finished drawing the frame and is now moving back to the display's top-left.
             # The CPU can access both the display RAM (8000h-9FFFh) and OAM (FE00h-FE9Fh).
             if self.cpu_cycles >= 456:  # takes 4560 cpu cycles, but divided as 10 gpu loops
-                next_line = self._go_to_next_lcd_y_line()
+                next_line = LCD_Y_COORDINATE.go_to_next_line(self.gb.memory)
                 if next_line == 0:  # First line, so restart drawing cycle
-                    self._set_lcd_controller_mode(2)
+                    LCD_STATUS.set_lcd_controller_mode(self.gb.memory, 2)
                     full_update_cycle_completed = True
                 self.cpu_cycles -= 456
 
@@ -127,136 +120,60 @@ class GPU:
         - https://realboyemulator.files.wordpress.com/2013/01/gbcpuman.pdf
         - http://www.codeslinger.co.uk/pages/projects/gameboy/graphics.html
         """
-        # TODO: This method works but is WAY TOO SLOW... Process for all 144 lines is taking about 3s...
-        current_display_line = self.gb.memory.read_8bit(self.LCD_Y_COORDINATE_ADDRESS)
-        if not self._lcd_display_enabled():
+        current_display_line = LCD_Y_COORDINATE.value
+        pos = current_display_line * self.RGB_LINE_SIZE
+        if not LCD_CONTROL.lcd_display_enabled:
             # LCD is disabled, so to avoid confusion we will display a blue screen
-            new_line = [0, 0, 255] * self.SCREEN_WIDTH
+            self.framebuffer[pos:pos + self.RGB_LINE_SIZE] = self.FRAME_LINE_LCD_DISABLED
         else:
-            tile_set = self._tile_set_selected()
-            if not self._display_background():
+            if not LCD_CONTROL.display_background:
                 # If background drawing is disabled, it must be draw as white
-                new_line = [255, 255, 255] * self.SCREEN_WIDTH
+                self.framebuffer[pos:pos + self.RGB_LINE_SIZE] = self.FRAME_LINE_BACKGROUND_DISABLED
             else:
-                display_vertical_offset = self._scroll_y()
-                total_y = display_vertical_offset + current_display_line
-                temp_tile_row = int(total_y/8)
-                if temp_tile_row >= 32:
-                    tile_row = temp_tile_row - 32  # To wrap the image on screen
-                else:
-                    tile_row = temp_tile_row
-                bitmap_vertical_offset = total_y - temp_tile_row*8  # Define which line in the bitmap needs to be drawn
-                tile_row_start_address_in_map = self.TILE_MAP_ADDRESS[self._background_tile_map()] + (tile_row * 32)
+                y_background = SCROLL_Y.value + current_display_line
+                y_tile_map = y_background // 8  # Each tile is 8 pixels tall (// = return int)
+                if y_tile_map >= 32:
+                    y_tile_map -= 32  # To wrap the background on screen
+                tile_line = y_background % 8  # Which line of the tile we need to draw
 
-                display_horizontal_offset = self._scroll_x()
-                tile_column = int(display_horizontal_offset/8)
-                new_line = []
-                while len(new_line) < self.SCREEN_WIDTH * self.RGB_SIZE:
-                    tile = self.gb.memory.read_8bit(tile_row_start_address_in_map + tile_column)
-                    if tile_set == 0:
-                        # Tile set 0 is indexed from -128 to 127, so we need to transform it into a positive value
-                        tile = util.convert_unsigned_integer_to_signed(tile) + 128
-                    # Each full tile is 16 bytes and each tile line is 2 bytes, so skip to the proper address
-                    tile_line_address = self.TILE_SET_ADDRESS[tile_set] + (tile*16) + (bitmap_vertical_offset*2)
-                    tile_line_data_lsb = self.gb.memory.read_8bit(tile_line_address)
-                    tile_line_data_msb = self.gb.memory.read_8bit(tile_line_address + 1)
-                    for bit_index in range(7, -1, -1):
-                        pixel_msb = (tile_line_data_msb >> bit_index) & 0b00000001
-                        pixel_lsb = (tile_line_data_lsb >> bit_index) & 0b00000001
-                        pixel_value = (pixel_msb << 1) | pixel_lsb
-                        new_line += self._apply_palette_transformation(pixel_value)
-                    tile_column += 1
-                    if tile_column == 32:
-                        tile_column = 0
+                tile_map_row = self.gb.memory.get_map(LCD_CONTROL.background_tile_map)[y_tile_map]  # unsigned int
 
-        rgb_line_size = self.SCREEN_WIDTH*self.RGB_SIZE
-        current_framebuffer_pos = current_display_line * rgb_line_size
-        self.framebuffer[current_framebuffer_pos:current_framebuffer_pos+rgb_line_size] = new_line
+                x_tile_map = SCROLL_X.value // 8
+                x_offset = SCROLL_X.value % 8
+                pixel_count = 0
+                while pixel_count < self.SCREEN_WIDTH:
+                    tile_number = tile_map_row[x_tile_map]
+                    tile_line_data = self.gb.memory.get_tile(LCD_CONTROL.tile_set_selected, tile_number)[tile_line]
+                    if x_offset > 0:
+                        tile_line_data = tile_line_data[x_offset:]
+                        x_offset = 0
+                    for pixel_value in tile_line_data:
+                        if pixel_count < self.SCREEN_WIDTH:
+                            self.framebuffer[pos:pos + self.RGB_SIZE] = self._apply_palette_transformation(pixel_value)
+                            pixel_count += 1
+                            pos += self.RGB_SIZE
+                    x_tile_map += 1
+                    if x_tile_map == 32:
+                        x_tile_map = 0
 
-    # LCD Control register
-    def _lcd_display_enabled(self):
-        """ :return: True if LCD is enabled, False otherwise """
-        lcd_control_byte = self.gb.memory.read_8bit(self.LCD_CONTROL_ADDRESS)
-        return ((lcd_control_byte & 0b10000000) >> 7) == 1  # 0=Off, 1=On
+    @staticmethod
+    def update_gpu_register(address: int, value: int):
+        """ Improve performance by updating internal data structures as soon as memory is changed """
+        if address == LCD_CONTROL.ADDRESS:
+            LCD_CONTROL.update(value)
+        elif address == LCD_STATUS.ADDRESS:
+            LCD_STATUS.update(value)
+        elif address == SCROLL_Y.ADDRESS:
+            SCROLL_Y.update(value)
+        elif address == SCROLL_X.ADDRESS:
+            SCROLL_X.update(value)
+        elif address == LCD_Y_COORDINATE.ADDRESS:
+            LCD_Y_COORDINATE.update(value)
+        elif address == BACKGROUND_PALETTE.ADDRESS:
+            BACKGROUND_PALETTE.update(value)
 
-    def _window_tile_map(self):
-        """ :return: Tile map selected for window """
-        lcd_control_byte = self.gb.memory.read_8bit(self.LCD_CONTROL_ADDRESS)
-        return (lcd_control_byte & 0b01000000) >> 6
-
-    def _display_window(self):
-        """ :return: True if window must be drawn, False otherwise """
-        lcd_control_byte = self.gb.memory.read_8bit(self.LCD_CONTROL_ADDRESS)
-        return ((lcd_control_byte & 0b00100000) >> 5) == 1  # 0=Off, 1=On
-
-    def _tile_set_selected(self):
-        """ :return: Tile set selected for background/window (sprites always use tile set 0) """
-        lcd_control_byte = self.gb.memory.read_8bit(self.LCD_CONTROL_ADDRESS)
-        return (lcd_control_byte & 0b00010000) >> 4
-
-    def _background_tile_map(self):
-        """ :return: Tile map selected for background """
-        lcd_control_byte = self.gb.memory.read_8bit(self.LCD_CONTROL_ADDRESS)
-        return (lcd_control_byte & 0b00001000) >> 3
-
-    def _sprite_size(self):
-        """ :return: Size of sprites """
-        lcd_control_byte = self.gb.memory.read_8bit(self.LCD_CONTROL_ADDRESS)
-        return (lcd_control_byte & 0b00000100) >> 2
-
-    def _display_sprites(self):
-        """ :return: True if sprites must be drawn, False otherwise """
-        lcd_control_byte = self.gb.memory.read_8bit(self.LCD_CONTROL_ADDRESS)
-        return ((lcd_control_byte & 0b00000010) >> 1) == 1  # 0=Off, 1=On
-
-    def _display_background(self):
-        """ :return: True if background must be drawn, False otherwise """
-        lcd_control_byte = self.gb.memory.read_8bit(self.LCD_CONTROL_ADDRESS)
-        return (lcd_control_byte & 0b00000001) == 1  # 0=Off, 1=On
-
-    # LCD Status register
-    def _lcd_controller_mode(self):
-        """ :return Current state of the LCD controller. Goes from 0 to 3. """
-        lcd_stat_byte = self.gb.memory.read_8bit(self.LCD_STATUS_ADDRESS)
-        return lcd_stat_byte & 0b00000011
-
-    def _set_lcd_controller_mode(self, new_mode: int):
-        """ Simulate display processing mode change """
-        lcd_stat_byte = self.gb.memory.read_8bit(self.LCD_STATUS_ADDRESS)
-        new_lcd_stat_byte = (lcd_stat_byte & 0b11111100) | new_mode
-        self.gb.memory.write_8bit(self.LCD_STATUS_ADDRESS,new_lcd_stat_byte)
-
-    # LY register
-    def _go_to_next_lcd_y_line(self):
-        """
-        Simulate display processing line change.
-        :return Number of the next line that will start processing now
-        """
-        current_line = self.gb.memory.read_8bit(self.LCD_Y_COORDINATE_ADDRESS)
-        if current_line == 153:
-            new_line = 0
-        else:
-            new_line = current_line + 1
-        self.gb.memory.write_8bit(self.LCD_Y_COORDINATE_ADDRESS,new_line)
-        return new_line
-
-    # SCY register
-    def _scroll_y(self):
-        """
-        Used to scroll the background image, i.e. select the part of it that will be shown on screen.
-        :return: Current Y offset
-        """
-        return self.gb.memory.read_8bit(self.SCROLL_Y_ADDRESS)
-
-    # SCX register
-    def _scroll_x(self):
-        """
-        Used to scroll the background image, i.e. select the part of it that will be shown on screen.
-        :return: Current X offset
-        """
-        return self.gb.memory.read_8bit(self.SCROLL_X_ADDRESS)
-
-    def _apply_palette_transformation(self, base_color: int):
+    @staticmethod
+    def _apply_palette_transformation(base_color: int):
         """
         Converts the default color value from a pixel into the correct one based on the palette being applied.
         Bit 7-6 - Shade for Color Number 3
@@ -266,14 +183,186 @@ class GPU:
         The four possible gray shades are: 0=White, 1=Light gray, 2=Dark gray, 3=Black
         :return:  Tuple with correct color based on palette
         """
-        palette = self.gb.memory.read_8bit(self.BACKGROUND_PALETTE_DATA_ADDRESS)
-        correct_color = (palette >> (base_color*2)) & 0b00000011
-        return self.DISPLAY_COLORS[correct_color]
+        return BACKGROUND_PALETTE.color[base_color]
 
     def debug(self):
         """
         Prints debug info to console.
         """
-        current_lcd_line = self.gb.memory.read_8bit(self.LCD_Y_COORDINATE_ADDRESS)
-        mode = self._lcd_controller_mode()
+        current_lcd_line = LCD_Y_COORDINATE.value
+        mode = LCD_STATUS.lcd_controller_mode
         self.logger.debug("Mode: %i\tLY(FF44): %i\tCycles: %i",mode,current_lcd_line,self.cpu_cycles)
+
+
+# noinspection PyPep8Naming
+class LCD_CONTROL:
+    """ 0xFF40 - LCDC - LCD CONTROL register """
+
+    ADDRESS = 0xFF40
+
+    lcd_display_enabled = False  # 7
+    window_tile_map = 0  # 6
+    display_window = False  # 5
+    tile_set_selected = 0  # 4
+    background_tile_map = 0  # 3
+    sprite_size = 0  # 2
+    display_sprites = False  # 1
+    display_background = False  # 0
+
+    @staticmethod
+    def update(new_register_value: int):
+        """ Update internal values according to new register value set """
+        LCD_CONTROL.lcd_display_enabled = LCD_CONTROL._lcd_display_enabled(new_register_value)
+        LCD_CONTROL.window_tile_map = LCD_CONTROL._window_tile_map(new_register_value)
+        LCD_CONTROL.display_window = LCD_CONTROL._display_window(new_register_value)
+        LCD_CONTROL.tile_set_selected = LCD_CONTROL._tile_set_selected(new_register_value)
+        LCD_CONTROL.background_tile_map = LCD_CONTROL._background_tile_map(new_register_value)
+        LCD_CONTROL.sprite_size = LCD_CONTROL._sprite_size(new_register_value)
+        LCD_CONTROL.display_sprites = LCD_CONTROL._display_sprites(new_register_value)
+        LCD_CONTROL.display_background = LCD_CONTROL._display_background(new_register_value)
+
+    @staticmethod
+    def _lcd_display_enabled(lcd_control_byte: int):
+        """ :return: True if LCD is enabled, False otherwise """
+        return ((lcd_control_byte & 0b10000000) >> 7) == 1  # 0=Off, 1=On
+
+    @staticmethod
+    def _window_tile_map(lcd_control_byte: int):
+        """ :return: Tile map selected for window """
+        return (lcd_control_byte & 0b01000000) >> 6
+
+    @staticmethod
+    def _display_window(lcd_control_byte: int):
+        """ :return: True if window must be drawn, False otherwise """
+        return ((lcd_control_byte & 0b00100000) >> 5) == 1  # 0=Off, 1=On
+
+    @staticmethod
+    def _tile_set_selected(lcd_control_byte: int):
+        """ :return: Tile set selected for background/window (sprites always use tile set 0) """
+        return (lcd_control_byte & 0b00010000) >> 4
+
+    @staticmethod
+    def _background_tile_map(lcd_control_byte: int):
+        """ :return: Tile map selected for background """
+        return (lcd_control_byte & 0b00001000) >> 3
+
+    @staticmethod
+    def _sprite_size(lcd_control_byte: int):
+        """ :return: Size of sprites """
+        return (lcd_control_byte & 0b00000100) >> 2
+
+    @staticmethod
+    def _display_sprites(lcd_control_byte: int):
+        """ :return: True if sprites must be drawn, False otherwise """
+        return ((lcd_control_byte & 0b00000010) >> 1) == 1  # 0=Off, 1=On
+
+    @staticmethod
+    def _display_background(lcd_control_byte: int):
+        """ :return: True if background must be drawn, False otherwise """
+        return (lcd_control_byte & 0b00000001) == 1  # 0=Off, 1=On
+
+
+# noinspection PyPep8Naming
+class LCD_STATUS:
+    """ 0xFF41 - STAT - LCD STATUS register """
+
+    ADDRESS = 0xFF41
+
+    lcd_controller_mode = 0
+
+    @staticmethod
+    def update(new_register_value: int):
+        """ Update internal values according to new register value set """
+        LCD_STATUS.lcd_controller_mode = LCD_STATUS._lcd_controller_mode(new_register_value)
+
+    @staticmethod
+    def _lcd_controller_mode(lcd_stat_byte: int):
+        """ :return Current state of the LCD controller. Goes from 0 to 3. """
+        return lcd_stat_byte & 0b00000011
+
+    @staticmethod
+    def set_lcd_controller_mode(memory, new_mode: int):
+        """ Simulate display processing mode change """
+        lcd_stat_byte = memory.read_8bit(LCD_STATUS.ADDRESS)
+        new_lcd_stat_byte = (lcd_stat_byte & 0b11111100) | new_mode
+        memory.write_8bit(LCD_STATUS.ADDRESS, new_lcd_stat_byte)  # Memory will call the update() method
+
+
+# noinspection PyPep8Naming
+class SCROLL_Y:
+    """ 0xFF42 - SCY - SCROLL Y register """
+
+    ADDRESS = 0xFF42
+
+    value = 0
+
+    @staticmethod
+    def update(new_register_value: int):
+        """ Update internal values according to new register value set """
+        SCROLL_Y.value = new_register_value
+
+
+# noinspection PyPep8Naming
+class SCROLL_X:
+    """ 0xFF43 - SCX - SCROLL X register """
+
+    ADDRESS = 0xFF43
+
+    value = 0
+
+    @staticmethod
+    def update(new_register_value: int):
+        """ Update internal values according to new register value set """
+        SCROLL_X.value = new_register_value
+
+
+# noinspection PyPep8Naming
+class LCD_Y_COORDINATE:
+    """ 0xFF44 - LY - LCD Y COORDINATE register """
+
+    ADDRESS = 0xFF44
+
+    value = 0
+
+    @staticmethod
+    def update(new_register_value: int):
+        """ Update internal values according to new register value set """
+        LCD_Y_COORDINATE.value = new_register_value
+
+    @staticmethod
+    def go_to_next_line(memory):
+        """
+        Simulate display processing line change.
+        :return Number of the next line that will start processing now
+        """
+        current_line = LCD_Y_COORDINATE.value
+        if current_line == 153:
+            new_line = 0
+        else:
+            new_line = current_line + 1
+        memory.write_8bit(LCD_Y_COORDINATE.ADDRESS,new_line)
+        return new_line
+
+
+# noinspection PyPep8Naming
+class BACKGROUND_PALETTE:
+    """ 0xFF47 - BGP - BACKGROUND PALETTE register """
+
+    ADDRESS = 0xFF47
+
+    _DISPLAY_COLORS = {0: [255, 255, 255],
+                       1: [192, 192, 192],
+                       2: [96, 96, 96],
+                       3: [0, 0, 0]}  # colors displayed by the GameBoy
+
+    color = [_DISPLAY_COLORS[0],
+             _DISPLAY_COLORS[1],
+             _DISPLAY_COLORS[2],
+             _DISPLAY_COLORS[3]]
+
+    @staticmethod
+    def update(new_register_value: int):
+        """ Update internal values according to new register value set """
+        for i in range(4):
+            correct_color = (new_register_value >> (i * 2)) & 0b00000011
+            BACKGROUND_PALETTE.color[i] = BACKGROUND_PALETTE._DISPLAY_COLORS[correct_color]

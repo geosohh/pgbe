@@ -15,7 +15,7 @@ See:
 - https://realboyemulator.wordpress.com/2013/01/18/emulating-the-core-2/
 - https://realboyemulator.wordpress.com/2013/07/01/interrupt-processing-a-real-world-example/
 """
-import logging
+from log import Log
 
 
 class Interrupts:
@@ -35,7 +35,7 @@ class Interrupts:
         :type gb: gb.GB
         """
         # Logger
-        self.logger = logging.getLogger("pgbe")
+        self.logger = Log()
 
         # Communication with other components
         self.gb = gb

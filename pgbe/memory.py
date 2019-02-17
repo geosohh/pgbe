@@ -56,20 +56,32 @@ See:
 - https://stackoverflow.com/questions/21639597/z80-register-endianness
 """
 import array
-import logging
+from log import Log
 
 
 class Memory:
     """ Memory """
 
-    def __init__(self):
+    def __init__(self, gb):
+        """
+        :type gb: gb.GB
+        """
         # Logger
-        self.logger = logging.getLogger("pgbe")
+        self.logger = Log()
+
+        # Communication with other components
+        self.gb = gb
 
         # State initialization
+        self.tile_set_1_only = None  # These will be initialized
+        self.tile_set_shared = None  # below, this is just to
+        self.tile_set_0_only = None  # have them declared in
+        self.tile_maps = None        # the __init__ method
+
         # Cartridge bank 0, so nothing to initialize:  0x3FFF - 0x0000
         # Cartridge bank N, so nothing to initialize:  0x7FFF - 0x4000
-        self.vram         = self._generate_memory_map( 0x9FFF - 0x8000 + 1)
+        self._generate_tile_set_memory()  # VRAM sets: 0x97FF - 0x8000
+        self._generate_tile_map_memory()  # VRAM maps: 0x9FFF - 0x9800
         self.external_ram = self._generate_memory_map((0xBFFF - 0xA000 + 1) * 4)  # Maximum RAM size, with 4 banks
         self.internal_ram = self._generate_memory_map( 0xDFFF - 0xC000 + 1)
         # Internal RAM echo, so nothing to initialize: 0xFDFF - 0xE000
@@ -80,10 +92,35 @@ class Memory:
         self.ie = 0x00  # Single address, no array:    0xFFFF
 
         self.cartridge: bytes = None
-        self.boot_rom: bytes = self.load_boot_rom()
-        self.boot_rom_loaded = (self.boot_rom is not None)
+        self.boot_rom: bytes = None
+        self.boot_rom_loaded = False
 
         self.mbc: MBC = None
+
+    def _generate_tile_set_memory(self):
+        """
+        GameBoy VRAM memory stores 2 tile sets. Each tile set contains 255 tiles (8x8 images). However, the GameBoy does
+        not have enough memory for two full sets, so they share half (128) their tiles. This method generates the data
+        structure to handle this.
+        """
+        self.tile_set_1_only = [self._generate_blank_tile() for _ in range(128)]  # 8000-87FF
+        self.tile_set_shared = [self._generate_blank_tile() for _ in range(128)]  # 8800-8FFF
+        self.tile_set_0_only = [self._generate_blank_tile() for _ in range(128)]  # 9000-97FF
+
+    @staticmethod
+    def _generate_blank_tile():
+        """ Creates an empty matrix, representing one tile (8x8 pixels) """
+        return [[0]*8 for _ in range(8)]
+
+    def _generate_tile_map_memory(self):
+        """
+        GameBoy VRAM memory stores 2 tile maps. Each tile map contains 32x32 tile IDs, and differently from the tile
+        sets, there is enough memory for two separate maps. This method generates the data structure to handle this.
+        """
+        self.tile_maps = [
+            [[0]*32 for _ in range(32)],  # Tile 0 comes first, uses memory 9800-9BFF
+            [[0]*32 for _ in range(32)]   # Tile 1 comes later, uses memory 9C00-9FFF
+        ]
 
     def load_cartridge(self, cartridge_data: bytes):
         """
@@ -94,49 +131,67 @@ class Memory:
         mbc_type = self.cartridge[0x0147]
         self.mbc = MBC(mbc_type)
 
+        self.load_boot_rom()
+        self.boot_rom_loaded = (self.boot_rom is not None)
+
     def _read(self, address: int):
         """
         Read a byte from a location mapped in memory, wherever it is.
         :param address: Address to read
         :return: Value at specified address
         """
-        if 0x0000 <= address <= 0x3FFF:    # 0x0000 - 0x3FFF: Cartridge bank 0
+        if address <= 0x3FFF:    # 0x0000 - 0x3FFF: Cartridge bank 0
             if 0x0000 <= address <= 0x00FF and self.boot_rom_loaded:
                 return self.boot_rom[address]
             return self.cartridge[address]
 
-        elif 0x4000 <= address <= 0x7FFF:  # 0x4000 - 0x7FFF: Cartridge bank N
+        elif address <= 0x7FFF:  # 0x4000 - 0x7FFF: Cartridge bank N
             return self.cartridge[self.mbc.cartridge_bank_offset() + (address-0x4000)]
 
-        elif 0x8000 <= address <= 0x9FFF:  # 0x8000 - 0x9FFF: Video RAM
-            return self.vram[address - 0x8000]
+        elif address <= 0x9FFF:  # 0x8000 - 0x9FFF: Video RAM
+            if address <= 0x97FF:  # Tile sets memory
+                return self._read_tile_set(address)
+            else:  # Tile maps memory
+                return self._read_tile_map(address)
 
-        elif 0xA000 <= address <= 0xBFFF:  # 0xA000 - 0xBFFF: External RAM
+        elif address <= 0xBFFF:  # 0xA000 - 0xBFFF: External RAM
             if self.mbc.external_ram_is_enabled:
                 return self.external_ram[self.mbc.external_ram_bank_offset() + (address-0xA000)]
             else:
                 return 0x00  # TODO: Is this the correct behavior?
 
-        elif 0xC000 <= address <= 0xDFFF:  # 0xC000 - 0xDFFF: Internal RAM
+        elif address <= 0xDFFF:  # 0xC000 - 0xDFFF: Internal RAM
             return self.internal_ram[address - 0xC000]
 
-        elif 0xE000 <= address <= 0xFDFF:  # 0xE000 - 0xFDFF: Internal RAM Echo
+        elif address <= 0xFDFF:  # 0xE000 - 0xFDFF: Internal RAM Echo
             return self.internal_ram[address - 0xE000]
 
-        elif 0xFE00 <= address <= 0xFE9F:  # 0xFE00 - 0xFE9F: Object Attribute Memory (OAM)
+        elif address <= 0xFE9F:  # 0xFE00 - 0xFE9F: Object Attribute Memory (OAM)
             return self.oam[address - 0xFE00]
 
-        elif 0xFEA0 <= address <= 0xFEFF:  # 0xFEA0 - 0xFEFF: Empty area
+        elif address <= 0xFEFF:  # 0xFEA0 - 0xFEFF: Empty area
             return 0x00
 
-        elif 0xFF00 <= address <= 0xFF7F:  # 0xFF00 - 0xFF7F: I/O Memory
+        elif address <= 0xFF7F:  # 0xFF00 - 0xFF7F: I/O Memory
             return self.io[address - 0xFF00]
 
-        elif 0xFF80 <= address <= 0xFFFE:  # 0xFF80 - 0xFFFE: High RAM
+        elif address <= 0xFFFE:  # 0xFF80 - 0xFFFE: High RAM
             return self.hram[address - 0xFF80]
 
-        elif address == 0xFFFF:            # 0xFFFF: Interrupts Enable Register (IE)
+        elif address == 0xFFFF:  # 0xFFFF: Interrupts Enable Register (IE)
             return self.ie
+
+    def _read_tile_set(self, address: int):
+        tile_line, tile_line_byte_to_read = self._find_tile_set(address)
+
+        byte = 0x00
+        for pixel_value in tile_line:  # pixel_value is 0-3, and we want the binary value from the desired position
+            byte = (byte << 1) | ((pixel_value >> tile_line_byte_to_read) & 0b00000001)
+        return byte
+
+    def _read_tile_map(self, address: int):
+        tile_map_line, tile_map_pos_number = self._find_tile_map(address)
+        return tile_map_line[tile_map_pos_number]
 
     def _write(self, address: int, value: int):
         """
@@ -144,46 +199,97 @@ class Memory:
         :param address: Address where data will be written
         :param value:   Data to write
         """
-        if 0x0000 <= address <= 0x1FFF:    # 0x0000 - 0x1FFF: MBC - Enable/Disable external RAM
+        if address <= 0x1FFF:    # 0x0000 - 0x1FFF: MBC - Enable/Disable external RAM
             self.mbc.change_external_ram_status(value)
 
-        if 0x2000 <= address <= 0x3FFF:    # 0x2000 - 0x3FFF: MBC - Change cartridge bank mapped to N
+        if address <= 0x3FFF:    # 0x2000 - 0x3FFF: MBC - Change cartridge bank mapped to N
             self.mbc.change_cartridge_bank(value)
 
-        if 0x4000 <= address <= 0x5FFF:    # 0x4000 - 0x5FFF: MBC - Change external RAM bank mapped
+        if address <= 0x5FFF:    # 0x4000 - 0x5FFF: MBC - Change external RAM bank mapped
             self.mbc.change_ram_bank(value)
 
-        if 0x6000 <= address <= 0x7FFF:    # 0x6000 - 0x7FFF: MBC - Change ROM/RAM Mode
+        if address <= 0x7FFF:    # 0x6000 - 0x7FFF: MBC - Change ROM/RAM Mode
             self.mbc.change_banking_mode(value)
 
-        if 0x8000 <= address <= 0x9FFF:    # 0x8000 - 0x9FFF: Video RAM
-            self.vram[address - 0x8000] = value
+        if address <= 0x9FFF:    # 0x8000 - 0x9FFF: Video RAM
+            if address <= 0x97FF:  # Tile sets memory
+                return self._write_tile_set(address, value)
+            else:  # Tile maps memory
+                return self._write_tile_map(address, value)
 
-        elif 0xA000 <= address <= 0xBFFF:  # 0xA000 - 0xBFFF: External RAM
+        elif address <= 0xBFFF:  # 0xA000 - 0xBFFF: External RAM
             if self.mbc.external_ram_is_enabled:
                 self.external_ram[address - 0xA000] = value
 
-        elif 0xC000 <= address <= 0xDFFF:  # 0xC000 - 0xDFFF: Internal RAM
+        elif address <= 0xDFFF:  # 0xC000 - 0xDFFF: Internal RAM
             self.internal_ram[address - 0xC000] = value
 
-        elif 0xE000 <= address <= 0xFDFF:  # 0xE000 - 0xFDFF: Internal RAM Echo
+        elif address <= 0xFDFF:  # 0xE000 - 0xFDFF: Internal RAM Echo
             self.internal_ram[address - 0xE000] = value
 
-        elif 0xFE00 <= address <= 0xFE9F:  # 0xFE00 - 0xFE9F: Object Attribute Memory (OAM)
+        elif address <= 0xFE9F:  # 0xFE00 - 0xFE9F: Object Attribute Memory (OAM)
             self.oam[address - 0xFE00] = value
 
-        # Empty area is empty:               0xFEA0 - 0xFEFF
+        elif address <= 0xFEFF:  # 0xFEA0 - 0xFEFF: Empty area is empty, so nothing to do
+            return
 
-        elif 0xFF00 <= address <= 0xFF7F:  # 0xFF00 - 0xFF7F: I/O Memory
+        elif address <= 0xFF7F:  # 0xFF00 - 0xFF7F: I/O Memory
             self.io[address - 0xFF00] = value
-            if address == 0xFF50 and value == 1:
+            if 0xFF40 <= address <= 0xFF47:
+                self.gb.gpu.update_gpu_register(address, value)
+            elif address == 0xFF50 and value == 1:
                 self.boot_rom_loaded = False  # Once the boot rom is unmapped it cannot be mapped again, so no "= True"
 
-        elif 0xFF80 <= address <= 0xFFFE:  # 0xFF80 - 0xFFFE: High RAM
+        elif address <= 0xFFFE:  # 0xFF80 - 0xFFFE: High RAM
             self.hram[address - 0xFF80] = value
 
-        elif address == 0xFFFF:            # 0xFFFF: Interrupts Enable Register (IE)
+        elif address == 0xFFFF:  # 0xFFFF: Interrupts Enable Register (IE)
             self.ie = value
+
+    def _write_tile_set(self, address: int, value: int):
+        tile_line, tile_line_byte_to_change = self._find_tile_set(address)
+
+        # For each value in the tile line, retrieve the byte that will not be modified, and sum with the byte received
+        for i in range(8):
+            bit_to_keep = (tile_line[i] >> int(not tile_line_byte_to_change)) & 0b00000001
+            bit_to_change = (value >> (7-i)) & 0b00000001
+            new_value = (bit_to_keep << int(not tile_line_byte_to_change)) | (bit_to_change << tile_line_byte_to_change)
+            tile_line[i] = new_value  # Edit the existing list, not replace it, so shared tiles keep working
+
+    def _write_tile_map(self, address: int, value: int):
+        tile_map_line, tile_map_pos_number = self._find_tile_map(address)
+        tile_map_line[tile_map_pos_number] = value
+
+    def _find_tile_set(self, address: int):
+        v_address = address - 0x8000
+        tile_number = v_address // 16  # length of each tile (8 lines * 2 bytes each = 16 bytes)
+        if tile_number < 128:
+            tile_number_fixed = tile_number
+            tile_set = self.tile_set_1_only
+        elif tile_number < 256:
+            tile_number_fixed = tile_number - 128
+            tile_set = self.tile_set_shared
+        else:
+            tile_number_fixed = tile_number - 256
+            tile_set = self.tile_set_0_only
+        tile_byte_number = v_address - (tile_number * 16)  # Will get a value 0-15, since each GameBoy tile has 8 lines,
+        tile_line_number = tile_byte_number // 2           # each made from 2 bytes. We are storing the tile line final
+        tile_line_byte_to_change = tile_byte_number % 2    # value instead, so we need to convert it back to 2 bytes.
+
+        tile_line = tile_set[tile_number_fixed][tile_line_number]
+        return tile_line, tile_line_byte_to_change
+
+    def _find_tile_map(self, address: int):
+        v_address = address - 0x9800
+        tile_map_number = v_address // 32
+        if tile_map_number < 32:
+            tile_map_number_fixed = tile_map_number
+            tile_map = self.tile_maps[0]
+        else:
+            tile_map_number_fixed = tile_map_number - 32
+            tile_map = self.tile_maps[1]
+        tile_map_pos_number = v_address - (tile_map_number * 32)
+        return tile_map[tile_map_number_fixed], tile_map_pos_number
 
     @staticmethod
     def _generate_memory_map(size: int):
@@ -195,6 +301,21 @@ class Memory:
         byte_array = array.array('B')  # 'B' == "unsigned char" in C / "int" in Python, minimum size is 1 byte
         byte_array.extend((0x00,) * size)
         return byte_array
+
+    def get_map(self, map_number: int):
+        """ Helper method to retrieve a tile map """
+        return self.tile_maps[map_number]
+
+    def get_tile(self, tile_set_number: int, tile_number: int):
+        """ Helper method to retrieve a tile from a set """
+        if tile_number < 128:
+            if tile_set_number == 0:
+                return self.tile_set_0_only[tile_number]
+            else:
+                return self.tile_set_1_only[tile_number]
+        else:
+            # It's in the shared area; 'tile_number' is unsigned so we do not need to worry about that
+            return self.tile_set_shared[tile_number-128]
 
     def load_boot_rom(self):
         """
@@ -303,8 +424,8 @@ class Memory:
         """
         Prints debug info to console.
         """
-        self.logger.debug("VRAM:")
-        self._debug_memory_map(self.vram)
+        # self.logger.debug("VRAM:")
+        # self._debug_memory_map(self.vram)
         # self.logger.debug("External RAM:")
         # self._debug_memory_map(self.external_ram)
         # self.logger.debug("Internal RAM:")
